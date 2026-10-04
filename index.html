@@ -9,7 +9,7 @@
   :root { --line:#222; --accent:#1f6feb; --bg:#f4f5f7; --panel:#fff; --muted:#6b7280; --danger:#d1242f; }
   * { box-sizing: border-box; }
   html, body { margin:0; height:100%; font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; color:#1f2328; background:var(--bg); }
-  #app { display:grid; grid-template-columns: 236px 1fr 268px; grid-template-rows: 48px 1fr; height:100vh; }
+  #app { display:grid; grid-template-columns: 236px 1fr 268px; grid-template-rows: 46px 40px 1fr; height:100vh; }
   #app { overflow:hidden; }
   header { min-width:0; overflow-x:auto; scrollbar-width:thin; grid-column: 1 / 4; display:flex; align-items:center; gap:6px; padding:0 12px; background:#fff; border-bottom:1px solid #e5e7eb; }
   header h1 { font-size:15px; margin:0 6px 0 0; white-space:nowrap; }
@@ -19,6 +19,15 @@
   #menubar { display:flex; gap:2px; }
   #menubar .mb { border:none; background:transparent; padding:6px 11px; font-size:13.5px; border-radius:6px; }
   #menubar .mb:hover, #menubar .mb.open { background:#eef2f7; }
+  #toolbar { grid-column: 1 / 4; grid-row: 2; display:flex; align-items:center; gap:4px; padding:0 10px; background:#fafbfc; border-bottom:1px solid #e5e7eb; overflow-x:auto; scrollbar-width:thin; }
+  #toolbar .tb { border:1px solid transparent; background:transparent; padding:4px 10px; font-size:13px; border-radius:6px; white-space:nowrap; }
+  #toolbar .tb:hover { background:#eef2f7; }
+  #toolbar .tb.on { background:#e0ecff; border-color:#a8c7fa; color:#0b57d0; }
+  #toolbar .seg { display:inline-flex; border:1px solid #d0d7de; border-radius:7px; overflow:hidden; margin-left:2px; }
+  #toolbar .seg .tb { border-radius:0; border:none; border-right:1px solid #e5e7eb; padding:4px 9px; }
+  #toolbar .seg .tb:last-child { border-right:none; }
+  #toolbar .seg .tb.on { background:#0b57d0; color:#fff; }
+  #toolbar .tsep { width:1px; height:22px; background:#e5e7eb; margin:0 6px; }
   #menuPop { position:fixed; background:#fff; border:1px solid #d0d7de; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.16); padding:5px; z-index:40; display:none; min-width:250px; font-size:13px; }
   #menuPop.show { display:block; }
   #menuPop .mi { display:grid; grid-template-columns:20px 1fr auto; gap:6px; align-items:center; padding:6px 10px; border-radius:5px; cursor:pointer; white-space:nowrap; }
@@ -94,7 +103,7 @@
   #props .list div.sel { background:#e8f0fe; }
   kbd { font-size:11px; border:1px solid #d0d7de; border-bottom-width:2px; border-radius:4px; padding:0 4px; background:#fafafa; }
   .muted { color:var(--muted); }
-  #toast { position:fixed; left:50%; top:60px; transform:translateX(-50%); background:#111827; color:#fff; padding:8px 14px; border-radius:8px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; z-index:10; }
+  #toast { position:fixed; left:50%; top:100px; transform:translateX(-50%); background:#111827; color:#fff; padding:8px 14px; border-radius:8px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; z-index:10; }
   #toast.show { opacity:.92; }
   /* SVG 樣式 */
   .wall { fill:#262626; }
@@ -136,14 +145,14 @@
   .gopt { display:block; width:100%; min-width:0; white-space:normal; text-align:left; border:1px solid #d0d7de; border-radius:10px; padding:12px 14px; cursor:pointer; background:#fff; font:inherit; }
   .gopt:hover { border-color:var(--accent); background:#f6f9ff; }
   .gopt b { display:block; font-size:15px; margin-bottom:3px; } .gopt span { font-size:12.5px; color:#6b7280; }
-  #basebar { position:fixed; top:52px; left:244px; right:276px; background:#fff; border:1px solid #93c5fd; box-shadow:0 4px 14px rgba(31,111,235,.15); border-radius:10px; padding:6px 10px; display:none; gap:6px; align-items:center; flex-wrap:wrap; z-index:14; font-size:13px; }
+  #basebar { position:fixed; top:92px; left:244px; right:276px; background:#fff; border:1px solid #93c5fd; box-shadow:0 4px 14px rgba(31,111,235,.15); border-radius:10px; padding:6px 10px; display:none; gap:6px; align-items:center; flex-wrap:wrap; z-index:14; font-size:13px; }
   #basebar.show { display:flex; }
   #basebar button { padding:4px 9px; }
   #basebar button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
   #basebar input { width:52px; font:inherit; font-size:13px; padding:2px 4px; border:1px solid #d0d7de; border-radius:5px; }
   #svg.basemode #itemLayer { opacity:.22; pointer-events:none; }
   #btnBaseEdit.on { background:#fff7ed; border-color:#fdba74; }
-  #calbar { position:fixed; top:56px; left:50%; transform:translateX(-50%); background:#fff7ed; border:1px solid #fdba74; color:#7c2d12; padding:8px 12px; border-radius:8px; font-size:13px; display:none; gap:10px; align-items:center; z-index:15; }
+  #calbar { position:fixed; top:96px; left:50%; transform:translateX(-50%); background:#fff7ed; border:1px solid #fdba74; color:#7c2d12; padding:8px 12px; border-radius:8px; font-size:13px; display:none; gap:10px; align-items:center; z-index:15; }
   #calbar.show { display:flex; }
   @media print { header, #palette, #props, #hint, #zoomInfo { display:none !important; } #app { display:block; } #stage { height:100vh; } }
 </style>
@@ -157,7 +166,6 @@
       <button class="mb" data-menu="edit">編輯</button>
       <button class="mb" data-menu="view">檢視</button>
       <button class="mb" data-menu="base">底圖</button>
-      <button class="mb" data-menu="tools">工具</button>
     </nav>
     <span class="grow"></span>
     <select id="selProj" title="切換專案" style="max-width:220px;font-size:13px;padding:4px;border:1px solid #d0d7de;border-radius:6px"></select>
@@ -187,6 +195,23 @@
     <span hidden><button id="btnPNG"></button><button id="btnSVG"></button><button id="btnPrint"></button></span>
     </div>
   </header>
+<div id="toolbar">
+  <button class="tb" id="tbMeasure" title="量測距離：拖曳拉線看距離，Shift 鎖水平／垂直（M）">📏 量測</button>
+  <span class="tsep"></span>
+  <button class="tb tog" id="tbEdge" data-chk="chkEdge" title="拖曳時物件邊緣自動貼齊其他家具與牆面（拖曳時按住 Alt 暫停）">🧲 貼邊</button>
+  <button class="tb tog" id="tbSnap" data-chk="chkSnap" title="移動、縮放時吸附格線">⌗ 吸附</button>
+  <span class="seg" title="吸附精度">
+    <button class="tb" data-step="1">1 cm</button><button class="tb" data-step="5">5 cm</button><button class="tb" data-step="10">10 cm</button>
+  </span>
+  <span class="tsep"></span>
+  <button class="tb tog" data-chk="chkGrid" title="顯示格線">格線</button>
+  <button class="tb tog" data-chk="chkSize" title="家具上顯示寬×深">尺寸</button>
+  <button class="tb tog" data-chk="chkDims" title="顯示底圖的牆面尺寸標註">牆尺寸</button>
+  <span class="tsep"></span>
+  <button class="tb" id="tbFit" title="全圖顯示">⤢ 全圖</button>
+  <button class="tb" id="tbZoomOut" title="縮小">－</button>
+  <button class="tb" id="tbZoomIn" title="放大">＋</button>
+</div>
 <div id="menuPop"></div>
   <aside id="palette"></aside>
   <main id="stage">
@@ -901,7 +926,7 @@ const snapV = v => opt.snap ? Math.round(v / opt.step) * opt.step : Math.round(v
 
 let drag = null;
 let measureMode = false, measure = null;
-function setMeasure(on) { measureMode = on; $("btnMeasure").classList.toggle("primary", on); svg.style.cursor = on ? "crosshair" : ""; if (!on) { measure = null; renderSelection(); } }
+function setMeasure(on) { measureMode = on; $("btnMeasure").classList.toggle("primary", on); if (typeof syncToolbar === "function") syncToolbar(); svg.style.cursor = on ? "crosshair" : ""; if (!on) { measure = null; renderSelection(); } }
 function drawMeasure() {
   if (!measure) return; const k = 1 / view.s, { a, b } = measure, len = Math.hypot(b.x - a.x, b.y - a.y);
   const g = el("g", {}, uiLayer);
@@ -1961,6 +1986,19 @@ document.addEventListener("keydown", e => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "o") { e.preventDefault(); $("fileIn").click(); }
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p" && BASE) { e.preventDefault(); $("btnPrint").click(); }
 });
+
+/* --- 常用工具列（全部展開） --- */
+function syncToolbar() {
+  document.querySelectorAll("#toolbar .tog").forEach(b => b.classList.toggle("on", $(b.dataset.chk).checked));
+  document.querySelectorAll("#toolbar [data-step]").forEach(b => b.classList.toggle("on", $("selSnap").value === b.dataset.step));
+  $("tbMeasure").classList.toggle("on", measureMode);
+}
+document.querySelectorAll("#toolbar .tog").forEach(b => b.onclick = () => { $(b.dataset.chk).click(); syncToolbar(); });
+document.querySelectorAll("#toolbar [data-step]").forEach(b => b.onclick = () => { $("selSnap").value = b.dataset.step; $("selSnap").dispatchEvent(new Event("change")); syncToolbar(); });
+$("tbMeasure").onclick = () => { if (BASE) setMeasure(!measureMode); };
+$("tbFit").onclick = fit; $("tbZoomIn").onclick = () => zoomBy(1.25); $("tbZoomOut").onclick = () => zoomBy(0.8);
+["chkEdge", "chkSnap", "chkGrid", "chkSize", "chkDims", "selSnap"].forEach(id => $(id).addEventListener("change", syncToolbar));
+syncToolbar();
 
 /* ============================================================
    啟動
