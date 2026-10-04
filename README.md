@@ -13,3 +13,9 @@
 ## 隱私
 
 整個工具只有一個靜態網頁（`index.html`），沒有後端、沒有追蹤程式。你的底圖與設計稿只存在瀏覽器（localStorage）與你下載的檔案中，不會上傳到任何伺服器。
+
+## 開發者
+
+- Josh Tsai（[@u9951064](https://github.com/u9951064)）
+- 原始碼：<https://github.com/u9951064/house-layout>
+- 問題回報與建議：<https://github.com/u9951064/house-layout/issues>
