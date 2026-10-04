@@ -1,0 +1,15 @@
+{
+  "name": "house-layout",
+  "version": "1.0.0",
+  "private": true,
+  "description": "在瀏覽器裡畫室內平面配置圖：匯入房屋底圖、拖拉家具、比較多個設計方案",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/serve.mjs 8000",
+    "test": "node --test tests/*.test.mjs",
+    "test:install": "playwright install chromium-headless-shell"
+  },
+  "devDependencies": {
+    "playwright": "^1.59.0"
+  }
+}

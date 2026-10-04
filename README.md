@@ -14,6 +14,47 @@
 
 整個工具只有一個靜態網頁（`index.html`），沒有後端、沒有追蹤程式。你的底圖與設計稿只存在瀏覽器（localStorage）與你下載的檔案中，不會上傳到任何伺服器。
 
+## 專案架構
+
+純前端、沒有建置步驟：`index.html` 以瀏覽器原生 ES Modules 載入 `src/main.js`，GitHub Pages 直接部署。
+
+```
+index.html            頁面結構（不含程式與樣式）
+css/
+  base.css            版面骨架、按鈕、選單列與工具列
+  panels.css          元件庫、屬性面板、分頁列、縮放列
+  dialogs.css         對話框、匯入畫面、底圖編輯列
+  canvas.css          SVG 畫布：牆、門窗、家具圖例
+src/
+  main.js             進入點：初始化各模組、還原上次的專案
+  core/               store（共用狀態 S）、dom 工具、history（復原／重做）、geometry
+  shapes/             library（元件定義）、draw（平面圖例繪製）
+  model/base.js       底圖資料：驗證、AI 回覆解析與正規化
+  canvas/             view（縮放平移）、base-render、items、selection、interact
+  tools/              measure（量測）、calibrate（圖片比例校正）
+  edit/               actions、clipboard、align（對齊／分布／貼合）
+  base-edit/          底圖編輯模式
+  project/            project（專案與暫存）、sheets（方案分頁）、compare、manager
+  io/                 file（存檔／開檔）、export（PNG／SVG／列印）
+  ui/                 palette、props、menubar、toolbar、zoombar、gate、ai、keyboard、context-menu
+scripts/serve.mjs     開發用靜態伺服器（零相依）
+tests/e2e.test.mjs    端對端測試（Playwright）
+PROMPT.md             AI 產生底圖的提示詞（網頁執行時讀取）
+```
+
+慣例：每個模組只放宣告；需要綁定事件的模組匯出 `init()`，由 `main.js` 依序呼叫。跨模組共用的可變狀態都在 `core/store.js` 的 `S`。
+
+## 開發
+
+```bash
+npm install
+npm run test:install   # 第一次：下載測試用的 Chromium
+npm run dev            # http://127.0.0.1:8000/
+npm test               # 端對端測試
+```
+
+ES Modules 不能用 `file://` 直接開啟，請用 `npm run dev`。
+
 ## 開發者
 
 - Josh Tsai（[@u9951064](https://github.com/u9951064)）
