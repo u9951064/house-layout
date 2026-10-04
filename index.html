@@ -108,7 +108,22 @@
       </g>
     </svg>
     <div id="sheets"></div>
-    <div id="hint">放大到 250% 以上會顯示 1 cm 細格 ｜ 拖拉左側元件到圖上 ｜ <kbd>M</kbd> 量測距離 ｜ 拖曳空白處平移、滾輪縮放 ｜ <kbd>R</kbd> 旋轉 90° ｜ <kbd>Delete</kbd> 刪除 ｜ <kbd>⌘C</kbd>/<kbd>⌘V</kbd> 複製貼上 ｜ Shift 點選／框選多選 ｜ 右鍵選單 ｜ 方向鍵微調</div>
+    <div id="hint">
+      <button id="hintBtn" type="button" title="操作提示" aria-label="操作提示" aria-expanded="false">!</button>
+      <div id="hintPop" role="tooltip">
+        <b>操作提示</b>
+        <ul>
+          <li>拖拉左側元件到圖上</li>
+          <li>拖曳空白處平移、滾輪縮放</li>
+          <li><kbd>M</kbd> 量測距離</li>
+          <li><kbd>R</kbd> 旋轉 90°、<kbd>Delete</kbd> 刪除、方向鍵微調</li>
+          <li><kbd>⌘C</kbd> / <kbd>⌘V</kbd> 複製貼上</li>
+          <li>Shift 點選或框選：多選</li>
+          <li>右鍵：開啟選單</li>
+          <li>放大到 250% 以上會顯示 1 cm 細格</li>
+        </ul>
+      </div>
+    </div>
     <div id="zoomInfo"></div>
     <div id="zoombar" title="縮放（1 m 在螢幕上的像素：100% ≈ 100 px）">
       <button id="zbOut" title="縮小">－</button>

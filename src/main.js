@@ -1,5 +1,6 @@
 // 進入點：初始化各模組並還原上次的專案
 import { S, state } from "./core/store.js";
+import { $ } from "./core/dom.js";
 import { snapshot, updateButtons } from "./core/history.js";
 import { DEFAULTS } from "./shapes/library.js";
 import { setBase, validBase } from "./model/base.js";
@@ -86,6 +87,18 @@ if (!S.BASE) showGate("new");
 renderItems();
 renderProps();
 updateButtons();
+// 左下角操作提示：滑鼠移上去或點一下展開，點其他地方收起
+$("hintBtn").onclick = e => {
+  e.stopPropagation();
+  const open = $("hint").classList.toggle("open");
+  $("hintBtn").setAttribute("aria-expanded", String(open));
+};
+document.addEventListener("pointerdown", e => {
+  if (!e.target.closest("#hint")) {
+    $("hint").classList.remove("open");
+    $("hintBtn").setAttribute("aria-expanded", "false");
+  }
+});
 window.addEventListener("resize", () => {
   if (S.BASE) fit();
 });
