@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>House Layout｜室內平面設計工具</title>
+<meta name="description" content="在瀏覽器裡畫室內平面配置圖：匯入自己的房屋底圖，拖拉家具、設定尺寸、量測距離。所有資料只存在你的電腦。">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --line:#222; --accent:#1f6feb; --bg:#f4f5f7; --panel:#fff; --muted:#6b7280; --danger:#d1242f; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; color:#1f2328; background:var(--bg); }
+  #app { display:grid; grid-template-columns: 236px 1fr 268px; grid-template-rows: 48px 1fr; height:100vh; }
+  header { grid-column: 1 / 4; display:flex; align-items:center; gap:6px; padding:0 12px; background:#fff; border-bottom:1px solid #e5e7eb; }
+  header h1 { font-size:15px; margin:0 12px 0 0; white-space:nowrap; }
+  header .sep { width:1px; height:24px; background:#e5e7eb; margin:0 4px; }
+  button, .btn { font:inherit; font-size:13px; padding:5px 10px; border:1px solid #d0d7de; background:#fff; border-radius:6px; cursor:pointer; white-space:nowrap; }
+  button:hover, .btn:hover { background:#f3f4f6; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button.primary:hover { background:#1a5fd0; }
+  button:disabled { opacity:.45; cursor:default; }
+  label.toggle { font-size:13px; display:flex; align-items:center; gap:4px; color:#374151; white-space:nowrap; }
+  #palette { background:var(--panel); border-right:1px solid #e5e7eb; overflow-y:auto; padding:8px 10px 20px; }
+  #palette h3 { font-size:12px; color:var(--muted); margin:12px 2px 6px; font-weight:600; letter-spacing:.05em; }
+  .grid { display:grid; grid-template-columns: 1fr 1fr; gap:6px; }
+  .pal { border:1px solid #e5e7eb; border-radius:8px; padding:4px 4px 3px; cursor:grab; background:#fff; text-align:center; user-select:none; }
+  .pal:hover { border-color:var(--accent); box-shadow:0 0 0 2px rgba(31,111,235,.12); }
+  .pal svg { width:100%; height:54px; display:block; }
+  .pal span { font-size:11.5px; display:block; line-height:1.25; color:#374151; }
+  .pal small { font-size:10px; color:var(--muted); }
+  #stage { position:relative; overflow:hidden; background:#eceef1; }
+  #svg { width:100%; height:100%; display:block; touch-action:none; cursor:default; }
+  #svg.panning { cursor:grabbing; }
+  #hint { position:absolute; left:10px; bottom:8px; font-size:11.5px; color:var(--muted); background:rgba(255,255,255,.85); padding:4px 8px; border-radius:6px; pointer-events:none; }
+  #zoomInfo { position:absolute; right:10px; bottom:8px; font-size:11.5px; color:var(--muted); background:rgba(255,255,255,.85); padding:4px 8px; border-radius:6px; }
+  #props { background:var(--panel); border-left:1px solid #e5e7eb; overflow-y:auto; padding:12px; font-size:13px; }
+  #props h2 { font-size:14px; margin:0 0 10px; }
+  #props .row { display:grid; grid-template-columns: 64px 1fr; align-items:center; gap:6px; margin:6px 0; }
+  #props .row2 { display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin:6px 0; }
+  #props input[type=number], #props input[type=text], #props select { width:100%; font:inherit; font-size:13px; padding:4px 6px; border:1px solid #d0d7de; border-radius:6px; }
+  #props .empty { color:var(--muted); line-height:1.6; }
+  #props .actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  #props .warn { color:var(--danger); font-size:12px; margin-top:8px; }
+  #props .list { margin-top:16px; border-top:1px solid #e5e7eb; padding-top:10px; }
+  #props .list div { display:flex; justify-content:space-between; padding:3px 4px; border-radius:4px; cursor:pointer; }
+  #props .list div:hover { background:#f3f4f6; }
+  #props .list div.sel { background:#e8f0fe; }
+  kbd { font-size:11px; border:1px solid #d0d7de; border-bottom-width:2px; border-radius:4px; padding:0 4px; background:#fafafa; }
+  .muted { color:var(--muted); }
+  #toast { position:fixed; left:50%; top:60px; transform:translateX(-50%); background:#111827; color:#fff; padding:8px 14px; border-radius:8px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; z-index:10; }
+  #toast.show { opacity:.92; }
+  /* SVG 樣式 */
+  .wall { fill:#262626; }
+  .win { fill:#fff; stroke:#262626; stroke-width:1.2; }
+  .winline { stroke:#262626; stroke-width:1; }
+  .door-leaf { stroke:#262626; stroke-width:1.6; fill:none; }
+  .door-arc { stroke:#262626; stroke-width:.8; fill:none; stroke-dasharray:4 3; }
+  .base-fix { fill:#fff; stroke:#262626; stroke-width:1.2; }
+  .base-thin { fill:none; stroke:#262626; stroke-width:.8; }
+  .hatch { fill:url(#hatch); stroke:#9ca3af; stroke-width:.8; stroke-dasharray:5 4; }
+  .oos { fill:#e5e7eb; stroke:#9ca3af; stroke-width:1; }
+  .roomlabel { font-size:22px; fill:#9ca3af; font-weight:600; text-anchor:middle; pointer-events:none; }
+  .roomsub { font-size:12px; fill:#9ca3af; text-anchor:middle; pointer-events:none; }
+  .dim { stroke:#2563eb; stroke-width:.8; fill:none; }
+  .dimtext { font-size:13px; fill:#2563eb; text-anchor:middle; }
+  .item { cursor:move; }
+  .item .s { fill:#fff; stroke:var(--line); stroke-width:1.3; }
+  .item .t { fill:none; stroke:var(--line); stroke-width:.8; }
+  .item .d { fill:none; stroke:var(--line); stroke-width:.8; stroke-dasharray:4 3; }
+  .item .f { fill:var(--line); stroke:none; }
+  .item .g { fill:#f3f4f6; stroke:var(--line); stroke-width:1; }
+  .item text { font-size:12px; fill:#111; text-anchor:middle; dominant-baseline:middle; pointer-events:none; }
+  .item text.sz { font-size:10px; fill:#4b5563; }
+  .item.bad .s { stroke:var(--danger); }
+  .item.locked { cursor:default; }
+  .selbox { fill:none; stroke:var(--accent); stroke-width:1.2; stroke-dasharray:6 4; pointer-events:none; }
+  .handle { fill:#fff; stroke:var(--accent); stroke-width:1.5; }
+  .rothandle { fill:var(--accent); stroke:#fff; stroke-width:1.5; cursor:grab; }
+  .gridline { stroke:#e5e7eb; stroke-width:.6; }
+  .gridline.major { stroke:#d1d5db; }
+  #gate { position:fixed; inset:0; background:rgba(17,24,39,.55); display:flex; align-items:center; justify-content:center; z-index:20; }
+  #gate.hidden { display:none; }
+  .gcard { background:#fff; border-radius:14px; padding:26px 28px; width:min(620px, 92vw); box-shadow:0 20px 50px rgba(0,0,0,.25); }
+  .gcard h2 { margin:0 0 8px; font-size:20px; }
+  .gcard p { font-size:14px; line-height:1.6; color:#374151; }
+  .gopts { display:grid; gap:10px; margin:16px 0 10px; }
+  .gopt { display:block; text-align:left; border:1px solid #d0d7de; border-radius:10px; padding:12px 14px; cursor:pointer; background:#fff; font:inherit; }
+  .gopt:hover { border-color:var(--accent); background:#f6f9ff; }
+  .gopt b { display:block; font-size:15px; margin-bottom:3px; } .gopt span { font-size:12.5px; color:#6b7280; }
+  #calbar { position:fixed; top:56px; left:50%; transform:translateX(-50%); background:#fff7ed; border:1px solid #fdba74; color:#7c2d12; padding:8px 12px; border-radius:8px; font-size:13px; display:none; gap:10px; align-items:center; z-index:15; }
+  #calbar.show { display:flex; }
+  @media print { header, #palette, #props, #hint, #zoomInfo { display:none !important; } #app { display:block; } #stage { height:100vh; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>🏠 House Layout</h1>
+    <button id="btnBase" title="底圖設定：名稱、透明度、重新校正、匯出或更換底圖">底圖</button>
+    <button id="btnNew" title="清空所有家具（保留底圖）">新設計</button>
+    <label class="btn" title="匯入先前儲存的 .json 專案檔">開啟檔案<input id="fileIn" type="file" accept=".json,application/json" hidden></label>
+    <button id="btnSave" class="primary" title="下載 .json 專案檔，下次可匯入">儲存檔案</button>
+    <span class="sep"></span>
+    <button id="btnUndo" title="復原 (⌘/Ctrl+Z)">↶ 復原</button>
+    <button id="btnRedo" title="重做 (⌘/Ctrl+Shift+Z)">↷ 重做</button>
+    <span class="sep"></span>
+    <label class="toggle"><input id="chkSnap" type="checkbox" checked>吸附</label>
+    <select id="selSnap" title="吸附精度" style="font-size:13px;padding:3px 4px;border:1px solid #d0d7de;border-radius:6px"><option value="1" selected>1 cm</option><option value="5">5 cm</option><option value="10">10 cm</option></select>
+    <label class="toggle"><input id="chkGrid" type="checkbox" checked>格線</label>
+    <label class="toggle"><input id="chkSize" type="checkbox" checked>顯示尺寸</label>
+    <label class="toggle" title="底圖檔若含尺寸標註才會顯示"><input id="chkDims" type="checkbox">牆面尺寸</label>
+    <span class="sep"></span>
+    <button id="btnMeasure" title="量測距離：按住拖曳拉出量測線（快捷鍵 M）">📏 量測</button>
+    <button id="btnFit" title="全圖顯示">全圖</button>
+    <button id="btnPNG" title="匯出 PNG 圖檔">匯出 PNG</button>
+    <button id="btnSVG" title="匯出 1:50 實際比例的 SVG 向量圖">匯出 SVG（1:50）</button>
+    <button id="btnPrint" title="列印">列印</button>
+  </header>
+  <aside id="palette"></aside>
+  <main id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="hatch" patternUnits="userSpaceOnUse" width="14" height="14" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="14" stroke="#c4c8ce" stroke-width="1.2"/>
+        </pattern>
+      </defs>
+      <g id="viewport">
+        <g id="gridLayer"></g>
+        <g id="baseLayer"></g>
+        <g id="itemLayer"></g>
+        <g id="uiLayer"></g>
+      </g>
+    </svg>
+    <div id="hint">放大到 250% 以上會顯示 1 cm 細格 ｜ 拖拉左側元件到圖上 ｜ <kbd>M</kbd> 量測距離 ｜ 拖曳空白處平移、滾輪縮放 ｜ <kbd>R</kbd> 旋轉 90° ｜ <kbd>Delete</kbd> 刪除 ｜ <kbd>⌘/Ctrl+D</kbd> 複製 ｜ 方向鍵微調</div>
+    <div id="zoomInfo"></div>
+  </main>
+  <aside id="props"></aside>
+</div>
+<div id="toast"></div>
+<div id="gate"><div class="gcard">
+  <h2>開始之前：匯入你的房屋底圖</h2>
+  <p>先提供牆面圖面與尺寸，才能開始畫設計稿。<b>所有資料只存在你的瀏覽器</b>，不會上傳到任何伺服器；存檔時會下載到你的電腦。</p>
+  <div class="gopts">
+    <label class="gopt"><b>① 匯入底圖或專案檔</b><span>本工具輸出的 .json（底圖檔或含底圖的專案檔）</span><input id="gateJson" type="file" accept=".json,application/json" hidden></label>
+    <label class="gopt"><b>② 上傳平面圖圖片</b><span>PNG／JPG。上傳後在圖上點兩個已知距離的端點，輸入實際公分數即可校正比例</span><input id="gateImg" type="file" accept="image/*" hidden></label>
+    <button class="gopt" id="gateRect" type="button"><b>③ 輸入外框尺寸</b><span>建立矩形外牆，再用「隔間牆」「門」「柱子」等元件自己畫格局</span></button>
+  </div>
+  <p class="muted" style="font-size:12px">PDF 平面圖請先截圖或轉成 PNG。建議圖片中有一段標示尺寸的牆，方便校正。</p>
+  <p id="gateClose" class="muted" style="font-size:12px;display:none"><a href="#" id="gateCancel">取消，回到目前的底圖</a></p>
+</div></div>
+<div id="calbar"><span>📐 校正比例：在圖上依序點選<b>兩個已知距離的端點</b>（例如一面牆的兩端）。</span><button id="calCancel">取消</button></div>
+
+<script>
+"use strict";
+/* ============================================================
+   底圖：由使用者匯入（底圖檔、平面圖圖片，或輸入外框尺寸）。所有資料只存在瀏覽器，不會上傳。
+   ============================================================ */
+let BASE = null;   // 由使用者匯入（不內建任何房屋資料）
+
+
+/* ============================================================
+   元件庫（建商平面圖常見畫法）。本地座標：左上為原點，w 為寬、d 為深，前方朝下
+   ============================================================ */
+const LIB = [
+  { cat: "床與寢具", items: [
+    { type: "bed2", name: "雙人床", w: 152, d: 188 },
+    { type: "bed2", name: "加大雙人床", w: 182, d: 188 },
+    { type: "bed1", name: "單人床", w: 106, d: 188 },
+    { type: "bed1", name: "兒童床", w: 90, d: 170 },
+    { type: "bunk", name: "上下舖", w: 100, d: 200 },
+    { type: "crib", name: "嬰兒床", w: 70, d: 130 },
+    { type: "mattress", name: "床墊／軟床墊", w: 106, d: 188 },
+    { type: "tatami", name: "架高和室", w: 180, d: 180 },
+    { type: "nightstand", name: "床頭櫃", w: 45, d: 40 },
+  ]},
+  { cat: "衣物收納", items: [
+    { type: "wardrobe", name: "衣櫃（開門）", w: 180, d: 60 },
+    { type: "wardrobeSlide", name: "衣櫃（拉門）", w: 180, d: 65 },
+    { type: "wardrobeL", name: "L 型轉角衣櫃", w: 180, d: 180 },
+    { type: "rack", name: "開放式吊衣桿", w: 120, d: 50 },
+    { type: "mirror", name: "穿衣鏡", w: 50, d: 6 },
+    { type: "vanity", name: "化妝台", w: 90, d: 45 },
+    { type: "vanityArc", name: "轉角弧形化妝台", w: 90, d: 90 },
+  ]},
+  { cat: "客廳", items: [
+    { type: "sofa", name: "雙人沙發", w: 160, d: 85, seats: 2 },
+    { type: "sofa", name: "三人沙發", w: 210, d: 90, seats: 3 },
+    { type: "sofaL", name: "L 型沙發", w: 240, d: 160 },
+    { type: "sofabed", name: "沙發床", w: 190, d: 90 },
+    { type: "chaise", name: "躺椅", w: 70, d: 150 },
+    { type: "armchair", name: "單椅", w: 75, d: 75 },
+    { type: "beanbag", name: "懶骨頭", w: 80, d: 80 },
+    { type: "ottoman", name: "腳凳／坐墩", w: 45, d: 45 },
+    { type: "coffee", name: "茶几", w: 100, d: 50 },
+    { type: "side", name: "邊几", w: 45, d: 45 },
+    { type: "tv", name: "電視櫃", w: 150, d: 40 },
+    { type: "tvwall", name: "壁掛電視", w: 125, d: 8 },
+    { type: "screen", name: "投影布幕（上方）", w: 220, d: 8 },
+    { type: "rug", name: "地毯", w: 200, d: 140 },
+    { type: "rugRound", name: "圓地毯", w: 160, d: 160 },
+    { type: "plant", name: "植栽", w: 45, d: 45 },
+    { type: "floorLamp", name: "落地燈", w: 40, d: 40 },
+  ]},
+  { cat: "餐廚", items: [
+    { type: "fridge", name: "冰箱", w: 70, d: 70 },
+    { type: "appliance", name: "電器櫃", w: 60, d: 60 },
+    { type: "counter", name: "流理台", w: 210, d: 60 },
+    { type: "island", name: "中島／吧檯", w: 140, d: 70 },
+    { type: "dining", name: "方餐桌", w: 120, d: 75, chairs: 4 },
+    { type: "diningRound", name: "圓餐桌", w: 90, d: 90, chairs: 4 },
+    { type: "dchair", name: "餐椅", w: 45, d: 48 },
+    { type: "benchSeat", name: "長凳", w: 110, d: 35 },
+    { type: "stool", name: "吧檯椅", w: 38, d: 38 },
+    { type: "sideboard", name: "餐邊櫃", w: 120, d: 45 },
+    { type: "trash", name: "垃圾桶", w: 35, d: 30 },
+  ]},
+  { cat: "書房・工作", items: [
+    { type: "desk", name: "活動書桌", w: 120, d: 60 },
+    { type: "deskLift", name: "升降桌", w: 120, d: 60 },
+    { type: "deskFixed", name: "固定書桌", w: 160, d: 60 },
+    { type: "deskL", name: "L 型書桌", w: 160, d: 140 },
+    { type: "chair", name: "辦公椅", w: 55, d: 55 },
+    { type: "bookshelf", name: "書櫃", w: 120, d: 35 },
+    { type: "drawer", name: "活動抽屜櫃", w: 40, d: 50 },
+  ]},
+  { cat: "櫃體與收納", items: [
+    { type: "cabinet", name: "儲物櫃（高櫃）", w: 90, d: 45 },
+    { type: "lowcab", name: "矮櫃", w: 120, d: 40 },
+    { type: "upper", name: "吊櫃（上方）", w: 120, d: 35 },
+    { type: "display", name: "展示櫃（玻璃門）", w: 90, d: 40 },
+    { type: "screenCab", name: "屏風櫃／雙面櫃", w: 135, d: 30 },
+    { type: "shoe", name: "鞋櫃", w: 120, d: 35 },
+    { type: "openShelf", name: "開放層架", w: 90, d: 35 },
+    { type: "bench", name: "臥榻／卡座", w: 120, d: 45 },
+    { type: "cabinetArc", name: "轉角弧形櫃", w: 60, d: 60 },
+  ]},
+  { cat: "運動・生活", items: [
+    { type: "yogamat", name: "瑜伽墊", w: 61, d: 183 },
+    { type: "treadmill", name: "跑步機", w: 75, d: 170 },
+    { type: "bike", name: "飛輪／健身車", w: 55, d: 120 },
+    { type: "dumbbell", name: "啞鈴架", w: 60, d: 40 },
+    { type: "petbed", name: "寵物窩", w: 60, d: 50 },
+    { type: "ac", name: "冷氣室內機（上方）", w: 90, d: 22 },
+    { type: "curtain", name: "窗簾", w: 160, d: 12 },
+  ]},
+  { cat: "門・牆・標示", items: [
+    { type: "swingDoor", name: "單開門", w: 80, d: 80 },
+    { type: "doubleDoor", name: "雙開門", w: 140, d: 70 },
+    { type: "slideDoor", name: "拉門", w: 160, d: 12 },
+    { type: "pocketDoor", name: "推入式拉門", w: 90, d: 12 },
+    { type: "foldDoor", name: "折門", w: 120, d: 30 },
+    { type: "slideDoorArc", name: "弧形拉門", w: 120, d: 120 },
+    { type: "wall", name: "隔間牆", w: 120, d: 12 },
+    { type: "wallArc", name: "弧形牆", w: 100, d: 100, thick: 12 },
+    { type: "glassWall", name: "玻璃隔間", w: 120, d: 8 },
+    { type: "halfWall", name: "半高牆", w: 120, d: 12 },
+    { type: "column", name: "柱子", w: 40, d: 40 },
+    { type: "dimension", name: "尺寸標註線", w: 100, d: 10 },
+    { type: "text", name: "文字標籤", w: 80, d: 24 },
+  ]},
+];
+const DEFAULTS = {}; LIB.forEach(c => c.items.forEach(it => { if (!DEFAULTS[it.type]) DEFAULTS[it.type] = it; }));
+
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const R = (g, x, y, w, h, c = "s", rx = 0) => el("rect", { x, y, width: Math.max(w, 0.1), height: Math.max(h, 0.1), rx, class: c }, g);
+const L = (g, x1, y1, x2, y2, c = "t") => el("line", { x1, y1, x2, y2, class: c }, g);
+const C = (g, cx, cy, r, c = "s") => el("circle", { cx, cy, r: Math.max(r, 0.1), class: c }, g);
+const PATH = (g, d, c = "t") => el("path", { d, class: c }, g);
+const TXT = (g, x, y, s, c = "") => { const t = el("text", { x, y, class: c }, g); t.textContent = s; return t; };
+
+/* ---------- 各元件繪製 ---------- */
+const DRAW = {
+  bed2(g, w, d, it) { bedCommon(g, w, d, 2); },
+  bed1(g, w, d, it) { bedCommon(g, w, d, 1); },
+  nightstand(g, w, d) { R(g, 0, 0, w, d); C(g, w / 2, d / 2, Math.min(w, d) * 0.22, "t"); L(g, w / 2 - Math.min(w, d) * 0.3, d / 2, w / 2 + Math.min(w, d) * 0.3, d / 2); L(g, w / 2, d / 2 - Math.min(w, d) * 0.3, w / 2, d / 2 + Math.min(w, d) * 0.3); },
+  wardrobe(g, w, d) {
+    R(g, 0, 0, w, d); const rod = d * 0.45; L(g, 6, rod, w - 6, rod, "d");
+    for (let x = 14; x < w - 8; x += 11) L(g, x - 4, rod - d * 0.28, x + 4, rod + d * 0.28, "t");
+    const n = Math.max(1, Math.round(w / 50)); for (let i = 1; i < n; i++) L(g, i * w / n, d - 4, i * w / n, d, "t");
+    for (let i = 0; i < n; i++) { const x = i * w / n; PATH(g, `M${x + 2} ${d} A ${w / n - 4} ${w / n - 4} 0 0 1 ${x + w / n - 2} ${d + Math.min(w / n - 4, 40)}`, "d"); }
+  },
+  wardrobeSlide(g, w, d) {
+    R(g, 0, 0, w, d); const rod = d * 0.42; L(g, 6, rod, w - 6, rod, "d");
+    for (let x = 14; x < w - 8; x += 11) L(g, x - 4, rod - d * 0.26, x + 4, rod + d * 0.26, "t");
+    const n = Math.max(2, Math.round(w / 90)); const pw = w / n;
+    for (let i = 0; i < n; i++) { const y = i % 2 ? d - 9 : d - 4; R(g, i * pw - (i ? 4 : 0), y - 2.5, pw + (i && i < n - 1 ? 8 : 4), 4, "g"); }
+  },
+  vanity(g, w, d) {
+    R(g, 0, 0, w, d); L(g, 8, 4, w - 8, 4, "t"); el("rect", { x: 8, y: 1.5, width: w - 16, height: 3, class: "f" }, g);
+    const r = Math.min(18, w * 0.2); C(g, w / 2, d + r + 6, r, "s"); C(g, w / 2, d + r + 6, r * 0.6, "t");
+  },
+  sofa(g, w, d, it) {
+    R(g, 0, 0, w, d, "s", 6); const arm = Math.min(16, w * 0.1), back = Math.min(20, d * 0.24);
+    R(g, arm, 0, w - 2 * arm, back, "t", 4); R(g, 0, 0, arm, d, "t", 6); R(g, w - arm, 0, arm, d, "t", 6);
+    const n = it.seats || Math.max(1, Math.round((w - 2 * arm) / 65)); const cw = (w - 2 * arm) / n;
+    for (let i = 0; i < n; i++) R(g, arm + i * cw + 1.5, back + 1.5, cw - 3, d - back - 4, "t", 4);
+  },
+  sofaL(g, w, d) {
+    const dep = Math.min(90, w * 0.4, d * 0.6), arm = 14;
+    PATH(g, `M0 0 H${w} V${dep} H${dep} V${d} H0 Z`, "s");
+    L(g, arm, 18, w - arm, 18); L(g, 18, 18, 18, d - arm);
+    R(g, w - arm, 0, arm, dep, "t", 4); R(g, 0, d - arm, dep, arm, "t", 4);
+    const n = Math.max(1, Math.round((w - dep - arm) / 65)); const cw = (w - dep - arm) / n;
+    for (let i = 0; i < n; i++) R(g, dep + i * cw + 1.5, 20, cw - 3, dep - 23, "t", 4);
+    R(g, 20, 20, dep - 22, dep - 22, "t", 4);
+    const m = Math.max(1, Math.round((d - dep - arm) / 65)); const ch = (d - dep - arm) / m;
+    for (let i = 0; i < m; i++) R(g, 20, dep + i * ch + 1.5, dep - 22, ch - 3, "t", 4);
+  },
+  armchair(g, w, d) { R(g, 0, 0, w, d, "s", 8); R(g, 10, 0, w - 20, d * 0.24, "t", 4); R(g, 0, 0, 10, d, "t", 5); R(g, w - 10, 0, 10, d, "t", 5); R(g, 12, d * 0.27, w - 24, d * 0.68, "t", 5); },
+  coffee(g, w, d) { R(g, 0, 0, w, d, "s", 4); R(g, 5, 5, w - 10, d - 10, "t", 3); },
+  tv(g, w, d) { R(g, 0, 0, w, d); const tw = Math.min(w - 10, 125); R(g, (w - tw) / 2, 3, tw, 4, "f"); },
+  rug(g, w, d) { R(g, 0, 0, w, d, "d"); R(g, 8, 8, w - 16, d - 16, "t"); },
+  plant(g, w, d) {
+    const cx = w / 2, cy = d / 2, r = Math.min(w, d) / 2; let p = "";
+    for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8, rr = i % 2 ? r * 0.6 : r; p += (i ? "L" : "M") + (cx + rr * Math.cos(a)).toFixed(1) + " " + (cy + rr * Math.sin(a)).toFixed(1); }
+    PATH(g, p + "Z", "s"); for (let i = 0; i < 16; i += 2) L(g, cx, cy, cx + r * 0.85 * Math.cos(i * Math.PI / 8), cy + r * 0.85 * Math.sin(i * Math.PI / 8));
+  },
+  fridge(g, w, d) { R(g, 0, 0, w, d); L(g, 3, d - 6, w - 3, d - 6); L(g, w / 2, d - 6, w / 2, d); TXT(g, w / 2, d * 0.45, "REF"); },
+  appliance(g, w, d) { R(g, 0, 0, w, d); L(g, 0, 0, w, d); L(g, w, 0, 0, d); },
+  counter(g, w, d) {
+    R(g, 0, 0, w, d); L(g, 0, d - 3, w, d - 3);
+    const sw = Math.min(70, w * 0.35); R(g, w * 0.62, 8, sw, d - 18, "t", 6); C(g, w * 0.62 + sw / 2, d / 2 - 2, 2.5, "t");
+    const bx = w * 0.12; R(g, bx, 6, 58, d - 14, "t", 4); C(g, bx + 15, d / 2 - 1, 9, "t"); C(g, bx + 43, d / 2 - 1, 9, "t");
+  },
+  dining(g, w, d, it) {
+    const n = it.chairs ?? 4, cw = 42, cd = 40; const per = Math.ceil(n / 2);
+    for (let i = 0; i < n; i++) {
+      const top = i < per, k = top ? i : i - per, cnt = top ? per : n - per;
+      const x = (k + 0.5) * w / cnt - cw / 2;
+      chairSym(g, x, top ? -cd + 8 : d - 8, cw, cd, top ? "N" : "S");
+    }
+    R(g, 0, 0, w, d, "s", 3);
+  },
+  diningRound(g, w, d, it) {
+    const n = it.chairs ?? 4, r = Math.min(w, d) / 2;
+    for (let i = 0; i < n; i++) {
+      const a = -Math.PI / 2 + i * 2 * Math.PI / n, cx = w / 2 + (r + 12) * Math.cos(a), cy = d / 2 + (r + 12) * Math.sin(a);
+      const cg = el("g", { transform: `translate(${cx} ${cy}) rotate(${a * 180 / Math.PI + 90})` }, g);
+      chairSym(cg, -21, -20, 42, 40, "N");
+    }
+    el("ellipse", { cx: w / 2, cy: d / 2, rx: w / 2, ry: d / 2, class: "s" }, g);
+  },
+  island(g, w, d) { R(g, 0, 0, w, d, "s", 3); R(g, 4, 4, w - 8, d - 8, "t", 2); },
+  stool(g, w, d) { C(g, w / 2, d / 2, Math.min(w, d) / 2); C(g, w / 2, d / 2, Math.min(w, d) * 0.3, "t"); },
+  desk(g, w, d) { R(g, 0, 0, w, d); R(g, w / 2 - Math.min(30, w * 0.25), 4, Math.min(60, w * 0.5), 3, "f"); chairSym(g, w / 2 - 26, d - 6, 52, 50, "S"); },
+  deskLift(g, w, d) {
+    R(g, 0, 0, w, d); L(g, 10, 4, 10, d - 4, "d"); L(g, w - 10, 4, w - 10, d - 4, "d");
+    R(g, w / 2 - Math.min(30, w * 0.25), 4, Math.min(60, w * 0.5), 3, "f"); TXT(g, w / 2, d * 0.62, "升降", "sz"); chairSym(g, w / 2 - 26, d - 6, 52, 50, "S");
+  },
+  deskFixed(g, w, d) {
+    R(g, 0, 0, w, d); const cl = el("clipPath", { id: "cp" + Math.random().toString(36).slice(2) }, g); R(cl, 0, 0, w, d, "");
+    const hg = el("g", { "clip-path": `url(#${cl.id})` }, g);
+    for (let x = -d; x < w; x += 12) L(hg, x, d, x + d, 0, "t");
+    R(g, 0, 0, w, d, "t");
+  },
+  chair(g, w, d) { chairSym(g, 0, 0, w, d, "S"); },
+  bookshelf(g, w, d) { R(g, 0, 0, w, d); L(g, 0, d * 0.35, w, d * 0.35, "t"); const n = Math.max(1, Math.round(w / 40)); for (let i = 1; i < n; i++) L(g, i * w / n, 0, i * w / n, d, "t"); },
+  cabinet(g, w, d) { R(g, 0, 0, w, d); L(g, 0, 0, w, d); L(g, w, 0, 0, d); },
+  lowcab(g, w, d) { R(g, 0, 0, w, d); const n = Math.max(1, Math.round(w / 45)); for (let i = 1; i < n; i++) L(g, i * w / n, 0, i * w / n, d, "t"); L(g, 0, d - 4, w, d - 4, "t"); },
+  shoe(g, w, d) { R(g, 0, 0, w, d); L(g, 0, 0, w, d, "d"); L(g, w, 0, 0, d, "d"); const n = Math.max(1, Math.round(w / 45)); for (let i = 1; i < n; i++) L(g, i * w / n, 0, i * w / n, d, "t"); },
+  bench(g, w, d) { R(g, 0, 0, w, d); R(g, 4, 4, w - 8, d - 8, "t", 6); const n = Math.max(1, Math.round(w / 60)); for (let i = 1; i < n; i++) L(g, i * w / n, 4, i * w / n, d - 4, "d"); },
+  slideDoor(g, w, d) {
+    el("rect", { x: 0, y: 0, width: w, height: d, fill: "#fff", stroke: "none" }, g);
+    const pw = w / 2 + 6; R(g, 0, d * 0.15, pw, d * 0.3, "g"); R(g, w - pw, d * 0.55, pw, d * 0.3, "g");
+    PATH(g, `M${w * 0.18} ${-6} l10 -4 m-10 4 l10 4 M${w * 0.18} -6 H${w * 0.42}`, "t");
+  },
+  swingDoor(g, w, d, it) {
+    el("rect", { x: 0, y: -6, width: w, height: 12, fill: "#fff", stroke: "none" }, g);
+    L(g, 0, 0, 0, -0, "t");
+    PATH(g, `M0 0 V${-w}`, "door-leaf"); PATH(g, `M0 ${-w} A ${w} ${w} 0 0 1 ${w} 0`, "door-arc");
+    L(g, -3, 0, -3, 0, "t");
+  },
+  vanityArc(g, w, d) {   // 轉角四分之一圓：直角在左上，弧形前緣朝右下
+    PATH(g, `M0 0 H${w} A ${w} ${d} 0 0 1 0 ${d} Z`, "s");
+    el("rect", { x: 3, y: 1.5, width: w * 0.85, height: 3, class: "f" }, g);
+    PATH(g, `M${w * 0.82} 8 A ${w * 0.82} ${d * 0.82} 0 0 1 8 ${d * 0.82}`, "d");
+    const r = Math.min(18, w * 0.18); const cx = w * 0.707 + r * 0.9, cy = d * 0.707 + r * 0.9; C(g, cx, cy, r); C(g, cx, cy, r * 0.6, "t");
+  },
+  cabinetArc(g, w, d) { PATH(g, `M0 0 H${w} A ${w} ${d} 0 0 1 0 ${d} Z`, "s"); L(g, 0, 0, w * 0.707, d * 0.707); PATH(g, `M${w * 0.75} 0 A ${w * 0.75} ${d * 0.75} 0 0 1 0 ${d * 0.75}`, "d"); },
+  wallArc(g, w, d, it) {   // 圓心在左下，弧從左上到右下
+    const t = Math.min(it.thick || 12, w - 1, d - 1);
+    el("path", { d: `M0 0 A ${w} ${d} 0 0 1 ${w} ${d} H${w - t} A ${w - t} ${d - t} 0 0 0 0 ${t} Z`, class: "wall" }, g);
+  },
+  slideDoorArc(g, w, d) {
+    const pt = (u, k) => { const a = u * Math.PI / 2; return [(w - k) * Math.sin(a), d - (d - k) * Math.cos(a)]; };
+    const arc = (u1, u2, k) => { let p = ""; for (let i = 0; i <= 24; i++) { const [x, y] = pt(u1 + (u2 - u1) * i / 24, k); p += (i ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1); } return p; };
+    el("path", { d: arc(0, 1, 0) + arc(1, 0, 12).replace("M", "L") + "Z", fill: "#fff", stroke: "none" }, g);
+    PATH(g, arc(0, 1, 0), "t"); PATH(g, arc(0, 1, 12), "t");
+    el("path", { d: arc(0, 0.56, 3), fill: "none", stroke: "#222", "stroke-width": 3.2 }, g);
+    el("path", { d: arc(0.44, 1, 9), fill: "none", stroke: "#222", "stroke-width": 3.2 }, g);
+  },
+  bunk(g, w, d) { R(g, 0, 0, w, d); R(g, 0, 0, w, 6, "f"); R(g, 8, 10, w - 16, 28, "t", 8); L(g, 0, 0, w, d, "d"); L(g, w, 0, 0, d, "d"); R(g, w - 14, d * 0.35, 10, d * 0.4, "t"); for (let y = d * 0.4; y < d * 0.75; y += 12) L(g, w - 14, y, w - 4, y); TXT(g, w / 2, d * 0.62, "上下舖", "sz"); },
+  crib(g, w, d) { R(g, 0, 0, w, d); R(g, 4, 4, w - 8, d - 8, "t"); for (let x = 10; x < w - 4; x += 8) { L(g, x, 0, x, 4); L(g, x, d - 4, x, d); } },
+  mattress(g, w, d) { R(g, 0, 0, w, d, "s", 6); R(g, 6, 6, w - 12, d - 12, "t", 4); R(g, 10, 10, w - 20, 26, "t", 8); },
+  tatami(g, w, d) { R(g, 0, 0, w, d); const m = 90; for (let x = m; x < w - 5; x += m) L(g, x, 0, x, d); for (let y = m; y < d - 5; y += m) L(g, 0, y, w, y); R(g, 3, 3, w - 6, d - 6, "t"); TXT(g, w / 2, d - 12, "架高 H40", "sz"); },
+  wardrobeL(g, w, d) {
+    const dp = Math.min(60, w * 0.45, d * 0.45);
+    PATH(g, `M0 0 H${w} V${dp} H${dp} V${d} H0 Z`, "s");
+    L(g, 8, dp * 0.45, w - 8, dp * 0.45, "d"); L(g, dp * 0.45, dp, dp * 0.45, d - 8, "d");
+    for (let x = dp + 8; x < w - 8; x += 11) L(g, x - 4, dp * 0.18, x + 4, dp * 0.72);
+    for (let y = dp + 8; y < d - 8; y += 11) L(g, dp * 0.18, y - 4, dp * 0.72, y + 4);
+    L(g, 0, 0, dp, dp, "t");
+  },
+  rack(g, w, d) { R(g, 0, 0, w, d, "d"); L(g, 4, d / 2, w - 4, d / 2); for (let x = 10; x < w - 6; x += 10) L(g, x - 4, d * 0.2, x + 4, d * 0.8); },
+  mirror(g, w, d) { R(g, 0, 0, w, d, "g"); L(g, 4, d / 2, w - 4, d / 2); },
+  sofabed(g, w, d) { DRAW.sofa(g, w, d, { seats: 3 }); L(g, 0, d + 6, w, d + 6, "d"); L(g, 0, d + 6, 0, d + 100, "d"); L(g, w, d + 6, w, d + 100, "d"); L(g, 0, d + 100, w, d + 100, "d"); },
+  chaise(g, w, d) { R(g, 0, 0, w, d, "s", 10); R(g, 4, 0, w - 8, d * 0.22, "t", 6); R(g, 6, d * 0.25, w - 12, d * 0.72, "t", 8); },
+  beanbag(g, w, d) { el("ellipse", { cx: w / 2, cy: d / 2, rx: w / 2, ry: d / 2, class: "s" }, g); el("ellipse", { cx: w / 2, cy: d * 0.58, rx: w * 0.3, ry: d * 0.26, class: "t" }, g); },
+  ottoman(g, w, d) { R(g, 0, 0, w, d, "s", Math.min(w, d) * 0.2); R(g, 5, 5, w - 10, d - 10, "t", Math.min(w, d) * 0.15); },
+  side(g, w, d) { C(g, w / 2, d / 2, Math.min(w, d) / 2); C(g, w / 2, d / 2, Math.min(w, d) * 0.12, "t"); },
+  tvwall(g, w, d) { R(g, 0, 0, w, d, "f"); },
+  screen(g, w, d) { R(g, 0, 0, w, d, "d"); L(g, 0, d / 2, w, d / 2, "d"); },
+  rugRound(g, w, d) { el("ellipse", { cx: w / 2, cy: d / 2, rx: w / 2, ry: d / 2, class: "d" }, g); el("ellipse", { cx: w / 2, cy: d / 2, rx: w / 2 - 8, ry: d / 2 - 8, class: "t" }, g); },
+  floorLamp(g, w, d) { C(g, w / 2, d / 2, Math.min(w, d) / 2); L(g, 4, d / 2, w - 4, d / 2); L(g, w / 2, 4, w / 2, d - 4); C(g, w / 2, d / 2, 3, "f"); },
+  dchair(g, w, d) { chairSym(g, 0, 0, w, d, "N"); },
+  benchSeat(g, w, d) { R(g, 0, 0, w, d, "s", 3); L(g, 6, d / 2, w - 6, d / 2, "d"); },
+  sideboard(g, w, d) { R(g, 0, 0, w, d); const n = Math.max(2, Math.round(w / 40)); for (let i = 1; i < n; i++) L(g, i * w / n, 0, i * w / n, d); L(g, 0, d - 4, w, d - 4); },
+  trash(g, w, d) { R(g, 0, 0, w, d, "s", 4); L(g, 0, d * 0.3, w, d * 0.3); },
+  deskL(g, w, d) {
+    const dp = Math.min(60, w * 0.45, d * 0.45);
+    PATH(g, `M0 0 H${w} V${dp} H${dp} V${d} H0 Z`, "s");
+    R(g, w / 2 - 20, 4, 40, 3, "f"); R(g, 4, d / 2 - 20, 3, 40, "f");
+    chairSym(g, dp + 8, dp + 8, 52, 50, "S");
+  },
+  drawer(g, w, d) { R(g, 0, 0, w, d); for (let i = 1; i < 3; i++) L(g, 0, i * d / 3, w, i * d / 3); },
+  upper(g, w, d) { R(g, 0, 0, w, d, "d"); L(g, 0, 0, w, d, "d"); L(g, w, 0, 0, d, "d"); },
+  display(g, w, d) { R(g, 0, 0, w, d); L(g, 0, 0, w, d); L(g, w, 0, 0, d); R(g, 3, d - 6, w - 6, 3, "g"); },
+  screenCab(g, w, d) { R(g, 0, 0, w, d); L(g, 0, d / 2, w, d / 2); const n = Math.max(2, Math.round(w / 45)); for (let i = 1; i < n; i++) L(g, i * w / n, 0, i * w / n, d, "t"); L(g, 0, 0, w, d / 2, "d"); L(g, 0, d / 2, w, d, "d"); },
+  openShelf(g, w, d) { R(g, 0, 0, w, d); const n = Math.max(1, Math.round(w / 30)); for (let i = 1; i < n; i++) L(g, i * w / n, 0, i * w / n, d, "d"); },
+  yogamat(g, w, d) { R(g, 0, 0, w, d, "s", 4); const hz = w > d; if (hz) { el("ellipse", { cx: w - 7, cy: d / 2, rx: 7, ry: d / 2 - 1, class: "t" }, g); } else { el("ellipse", { cx: w / 2, cy: d - 7, rx: w / 2 - 1, ry: 7, class: "t" }, g); } },
+  treadmill(g, w, d) { R(g, 0, 0, w, d, "s", 4); R(g, 8, d * 0.18, w - 16, d * 0.76, "g", 3); R(g, 2, 0, w - 4, d * 0.15, "t", 3); },
+  bike(g, w, d) { R(g, w * 0.3, 0, w * 0.4, d, "s", 6); C(g, w / 2, d * 0.15, Math.min(w, d) * 0.18, "t"); L(g, 0, d * 0.3, w, d * 0.3); el("ellipse", { cx: w / 2, cy: d * 0.75, rx: w * 0.3, ry: d * 0.08, class: "t" }, g); },
+  dumbbell(g, w, d) { R(g, 0, 0, w, d); for (let x = 10; x < w - 5; x += 16) { C(g, x, d * 0.35, 5, "t"); C(g, x, d * 0.7, 5, "t"); } },
+  petbed(g, w, d) { el("ellipse", { cx: w / 2, cy: d / 2, rx: w / 2, ry: d / 2, class: "s" }, g); el("ellipse", { cx: w / 2, cy: d / 2, rx: w / 2 - 8, ry: d / 2 - 8, class: "t" }, g); },
+  ac(g, w, d) {
+    el("rect", { x: 0, y: 0, width: w, height: d, rx: 4, class: "d", fill: "#fff5f5", stroke: "#c92a2a" }, g);
+    for (const k of [0.25, 0.5, 0.75]) { el("line", { x1: w * k, y1: d + 4, x2: w * k, y2: d + 30, stroke: "#c92a2a", "stroke-width": 1.2 }, g); el("path", { d: `M${w * k - 5} ${d + 24} L${w * k} ${d + 32} L${w * k + 5} ${d + 24}`, fill: "none", stroke: "#c92a2a", "stroke-width": 1.2 }, g); }
+  },
+  curtain(g, w, d) { let p = ""; for (let i = 0; i <= Math.round(w / 6); i++) { const x = i * 6; p += (i ? "L" : "M") + Math.min(x, w) + " " + (d / 2 + (i % 2 ? -d * 0.35 : d * 0.35)); } PATH(g, p, "t"); },
+  doubleDoor(g, w, d) {
+    const r = w / 2;
+    el("rect", { x: 0, y: -6, width: w, height: 12, fill: "#fff", stroke: "none" }, g);
+    PATH(g, `M0 0 V${-r}`, "door-leaf"); PATH(g, `M0 ${-r} A ${r} ${r} 0 0 1 ${r} 0`, "door-arc");
+    PATH(g, `M${w} 0 V${-r}`, "door-leaf"); PATH(g, `M${w} ${-r} A ${r} ${r} 0 0 0 ${r} 0`, "door-arc");
+  },
+  pocketDoor(g, w, d) { el("rect", { x: 0, y: 0, width: w, height: d, fill: "#fff", stroke: "none" }, g); R(g, 0, d * 0.3, w * 0.55, d * 0.4, "g"); L(g, w * 0.55, d / 2, w, d / 2, "d"); el("rect", { x: -w * 0.5, y: 0, width: w * 0.5, height: d, class: "wall" }, g); },
+  foldDoor(g, w, d) { el("rect", { x: 0, y: -2, width: w, height: 4, fill: "#fff", stroke: "none" }, g); const n = 4, pw = w / n; let p = "M0 0"; for (let i = 1; i <= n; i++) p += ` L${i * pw} ${i % 2 ? -d : 0}`; el("path", { d: p, fill: "none", stroke: "#222", "stroke-width": 2 }, g); },
+  glassWall(g, w, d) { el("rect", { x: 0, y: 0, width: w, height: d, fill: "#e7f1f8", stroke: "#222", "stroke-width": 1 }, g); L(g, 0, d / 2, w, d / 2); },
+  halfWall(g, w, d) { el("rect", { x: 0, y: 0, width: w, height: d, fill: "#9ca3af", stroke: "#222", "stroke-width": 1 }, g); TXT(g, w / 2, d + 10, "H110", "sz"); },
+  column(g, w, d) { el("rect", { x: 0, y: 0, width: w, height: d, class: "wall" }, g); },
+  dimension(g, w, d) {
+    el("line", { x1: 0, y1: d / 2, x2: w, y2: d / 2, stroke: "#2563eb", "stroke-width": 1 }, g);
+    for (const x of [0, w]) { el("line", { x1: x - 4, y1: d / 2 + 4, x2: x + 4, y2: d / 2 - 4, stroke: "#2563eb", "stroke-width": 1.2 }, g); el("line", { x1: x, y1: 0, x2: x, y2: d, stroke: "#2563eb", "stroke-width": .8 }, g); }
+  },
+  wall(g, w, d) { el("rect", { x: 0, y: 0, width: w, height: d, class: "wall" }, g); },
+  text(g, w, d, it) { /* 只有文字 */ },
+};
+function bedCommon(g, w, d, n) {
+  R(g, 0, 0, w, d); R(g, 0, 0, w, 7, "f");
+  const pw = n === 2 ? (w - 24) / 2 : w - 20;
+  for (let i = 0; i < n; i++) R(g, 10 + i * (pw + 4), 12, pw, 32, "t", 8);
+  const fy = d * 0.36; L(g, 2, fy, w - 2, fy); PATH(g, `M${w - 2} ${fy} L${w - 34} ${fy + 26} L${w - 2} ${fy + 26}`, "t");
+}
+function chairSym(g, x, y, w, h, back) {
+  const gg = el("g", { transform: `translate(${x} ${y})` }, g);
+  R(gg, 2, 2, w - 4, h - 4, "s", 7);
+  if (back === "S") R(gg, 4, h - 9, w - 8, 6, "t", 3); else R(gg, 4, 3, w - 8, 6, "t", 3);
+}
+
+/* ============================================================
+   狀態
+   ============================================================ */
+const state = { items: [], sel: null, nextId: 1 };
+const view = { x: 0, y: 0, s: 1 };
+let undoStack = [], redoStack = [];
+const svg = document.getElementById("svg"), vp = document.getElementById("viewport");
+const gridLayer = document.getElementById("gridLayer"), baseLayer = document.getElementById("baseLayer"), itemLayer = document.getElementById("itemLayer"), uiLayer = document.getElementById("uiLayer");
+const $ = id => document.getElementById(id);
+const opt = { snap: true, step: 1, grid: true, size: true, dims: false };
+const STORE_KEY = "house-layout-v1";
+
+function snapshot() { return JSON.stringify({ items: state.items, nextId: state.nextId }); }
+function commit() { undoStack.push(lastSnap); if (undoStack.length > 200) undoStack.shift(); redoStack = []; lastSnap = snapshot(); autosave(); updateButtons(); }
+let lastSnap = snapshot();
+function restore(snap) { const o = JSON.parse(snap); state.items = o.items; state.nextId = o.nextId; if (!state.items.find(i => i.id === state.sel)) state.sel = null; lastSnap = snap; renderItems(); renderProps(); autosave(); updateButtons(); }
+function undo() { if (!undoStack.length) return; redoStack.push(lastSnap); restore(undoStack.pop()); }
+function redo() { if (!redoStack.length) return; undoStack.push(lastSnap); restore(redoStack.pop()); }
+function updateButtons() { $("btnUndo").disabled = !undoStack.length; $("btnRedo").disabled = !redoStack.length; }
+let quotaWarned = false;
+function autosave() { if (!BASE) return; try { localStorage.setItem(STORE_KEY, JSON.stringify(projectData())); } catch (e) { if (!quotaWarned) { quotaWarned = true; toast("瀏覽器暫存空間不足（底圖圖片較大），請記得用「儲存檔案」存檔"); } } }
+
+/* ============================================================
+   座標轉換、縮放平移
+   ============================================================ */
+let gridT;
+function applyView() { vp.setAttribute("transform", `translate(${view.x} ${view.y}) scale(${view.s})`); clearTimeout(gridT); gridT = setTimeout(() => { if (typeof drawGrid === "function") drawGrid(); }, 120); $("zoomInfo").textContent = `縮放 ${Math.round(view.s * 100)}%（1 m ≈ ${Math.round(view.s * 100)} px）`; }
+function toWorld(cx, cy) { const r = svg.getBoundingClientRect(); return { x: (cx - r.left - view.x) / view.s, y: (cy - r.top - view.y) / view.s }; }
+function fit() {
+  if (!BASE) return; const r = svg.getBoundingClientRect(), b = BASE.bounds, pad = 30;
+  view.s = Math.min((r.width - pad * 2) / b.w, (r.height - pad * 2) / b.h);
+  view.x = (r.width - b.w * view.s) / 2 - b.x * view.s; view.y = (r.height - b.h * view.s) / 2 - b.y * view.s; applyView();
+}
+svg.addEventListener("wheel", e => {
+  e.preventDefault(); const p = toWorld(e.clientX, e.clientY), k = Math.exp(-e.deltaY * 0.0015);
+  view.s = Math.min(6, Math.max(0.15, view.s * k)); const r = svg.getBoundingClientRect();
+  view.x = e.clientX - r.left - p.x * view.s; view.y = e.clientY - r.top - p.y * view.s; applyView();
+}, { passive: false });
+
+/* ============================================================
+   底圖繪製
+   ============================================================ */
+function drawGrid() {
+  gridLayer.innerHTML = ""; if (!opt.grid || !BASE) return; const b = BASE.bounds;
+  if (view.s >= 2.5) {   // 放大時加畫 1 cm 細格（只畫可見範圍）
+    const r = svg.getBoundingClientRect(), p0 = toWorld(r.left, r.top), p1 = toWorld(r.right, r.bottom);
+    const fine = el("g", { stroke: "#f0f1f3", "stroke-width": 0.25 }, gridLayer);
+    for (let x = Math.ceil(Math.max(b.x, p0.x)); x <= Math.min(b.x + b.w, p1.x); x++) if (x % 10) el("line", { x1: x, y1: Math.max(b.y, p0.y), x2: x, y2: Math.min(b.y + b.h, p1.y) }, fine);
+    for (let y = Math.ceil(Math.max(b.y, p0.y)); y <= Math.min(b.y + b.h, p1.y); y++) if (y % 10) el("line", { x1: Math.max(b.x, p0.x), y1: y, x2: Math.min(b.x + b.w, p1.x), y2: y }, fine);
+  }
+  for (let x = Math.ceil(b.x / 10) * 10; x <= b.x + b.w; x += 10) el("line", { x1: x, y1: b.y, x2: x, y2: b.y + b.h, class: "gridline" + (x % 100 === 0 ? " major" : "") }, gridLayer);
+  for (let y = Math.ceil(b.y / 10) * 10; y <= b.y + b.h; y += 10) el("line", { x1: b.x, y1: y, x2: b.x + b.w, y2: y, class: "gridline" + (y % 100 === 0 ? " major" : "") }, gridLayer);
+}
+function computeBounds(B) {
+  const xs = [], ys = [], add = (x, y) => { if (isFinite(x) && isFinite(y)) { xs.push(x); ys.push(y); } };
+  (B.walls || []).forEach(w => { add(w[0], w[1]); add(w[2], w[3]); });
+  [...(B.columns || []), ...(B.canopies || [])].forEach(r => { add(r[0], r[1]); add(r[2], r[3]); });
+  (B.outOfScope || []).forEach(o => { add(o.r[0], o.r[1]); add(o.r[2], o.r[3]); });
+  if (B.image) { add(B.image.x, B.image.y); add(B.image.x + B.image.w, B.image.y + B.image.h); }
+  if (!xs.length) return { x: -100, y: -100, w: 1000, h: 800 };
+  const x1 = Math.min(...xs) - 70, y1 = Math.min(...ys) - 70, x2 = Math.max(...xs) + 70, y2 = Math.max(...ys) + 110;
+  return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+}
+function drawBase() {
+  baseLayer.innerHTML = ""; if (!BASE) return;
+  const B = BASE, bb = B.bounds;
+  if (B.image) el("image", { href: B.image.src, x: B.image.x, y: B.image.y, width: B.image.w, height: B.image.h, opacity: B.image.opacity ?? 0.6, preserveAspectRatio: "none" }, baseLayer);
+  (B.canopies || []).forEach(([x1, y1, x2, y2]) => R(baseLayer, x1, y1, x2 - x1, y2 - y1, "hatch"));
+  if (B.canopies && B.canopies.length && B.canopyLabel) { const c = B.canopies[0]; TXT(baseLayer, (c[0] + c[2]) / 2, (c[1] + c[3]) / 2, B.canopyLabel, "roomsub"); }
+  (B.outOfScope || []).forEach(o => { const [x1, y1, x2, y2] = o.r; R(baseLayer, x1, y1, x2 - x1, y2 - y1, "oos"); TXT(baseLayer, (x1 + x2) / 2, (y1 + y2) / 2 - 6, o.name || "", "roomlabel"); TXT(baseLayer, (x1 + x2) / 2, (y1 + y2) / 2 + 16, "不在設計範圍", "roomsub"); });
+  if (B.decor) { const dg = el("g", { opacity: 0.45 }, baseLayer); B.decor.forEach(d => d.t === "ellipse" ? el("ellipse", { cx: d.cx, cy: d.cy, rx: d.rx, ry: d.ry, class: "base-fix" }, dg) : R(dg, d.x, d.y, d.w, d.h, "base-fix", d.rx || 0)); }
+  (B.rooms || []).forEach(r => { TXT(baseLayer, r.x, r.y, r.n, "roomlabel"); if (r.s) TXT(baseLayer, r.x, r.y + 20, r.s, "roomsub"); });
+  for (const [x1, y1, x2, y2, th, ops = []] of (B.walls || [])) {
+    const hz = Math.abs(y1 - y2) < Math.abs(x1 - x2), h = th / 2;
+    if (hz ? Math.abs(y1 - y2) > 0.01 : Math.abs(x1 - x2) > 0.01) {   // 斜牆：直接畫粗線
+      el("line", { x1, y1, x2, y2, stroke: "#262626", "stroke-width": th }, baseLayer); continue;
+    }
+    const a0 = Math.min(hz ? x1 : y1, hz ? x2 : y2) - h, a1 = Math.max(hz ? x1 : y1, hz ? x2 : y2) + h;
+    const seg = (a, b, cls) => b > a && (hz ? R(baseLayer, a, y1 - h, b - a, th, cls) : R(baseLayer, x1 - h, a, th, b - a, cls));
+    let cur = a0;
+    for (const [a, b, k] of ops.slice().sort((p, q) => p[0] - q[0])) {
+      seg(cur, a, "wall");
+      if (k === "win") { seg(a, b, "win"); if (hz) L(baseLayer, a, y1, b, y1, "winline"); else L(baseLayer, x1, a, x1, b, "winline"); }
+      cur = b;
+    }
+    seg(cur, a1, "wall");
+  }
+  (B.columns || []).forEach(([x1, y1, x2, y2]) => R(baseLayer, x1, y1, x2 - x1, y2 - y1, "wall"));
+  for (const d of (B.doors || [])) {
+    const [hx, hy] = d.h, [ox, oy] = d.o, [cx, cy] = d.c, r = Math.hypot(ox - hx, oy - hy);
+    L(baseLayer, hx, hy, ox, oy, "door-leaf");
+    const sweep = ((ox - hx) * (cy - hy) - (oy - hy) * (cx - hx)) > 0 ? 1 : 0;
+    PATH(baseLayer, `M${ox} ${oy} A ${r} ${r} 0 0 ${sweep} ${cx} ${cy}`, "door-arc");
+  }
+  for (const f of (B.fixtures || [])) {   // 固定設備（例如既有流理台），鎖定不可移動
+    if (!DRAW[f.type]) continue;
+    const g = el("g", { class: "item locked", style: "pointer-events:none", transform: `translate(${f.x} ${f.y}) rotate(${f.rot || 0} ${f.w / 2} ${f.d / 2})` + (f.flip ? ` translate(${f.w} 0) scale(-1 1)` : "") }, baseLayer);
+    DRAW[f.type](g, f.w, f.d, f);
+    if (f.label) { const tg = el("g", { transform: (f.flip ? `translate(${f.w} 0) scale(-1 1) ` : "") + `rotate(${-(f.rot || 0)} ${f.w / 2} ${f.d / 2})` }, g); const t = TXT(tg, f.w / 2, f.d / 2, f.label); t.style.fontSize = "11px"; t.style.fill = "#6b7280"; }
+  }
+  // 比例尺 0–3 m（與家具同一比例，會跟著縮放與匯出）
+  const sb = el("g", {}, baseLayer), sx = bb.x + 50, sy = bb.y + bb.h - 45;
+  for (let i = 0; i < 6; i++) el("rect", { x: sx + i * 50, y: sy, width: 50, height: 8, fill: i % 2 ? "#fff" : "#222", stroke: "#222", "stroke-width": 1 }, sb);
+  for (let i = 0; i <= 3; i++) { const t = TXT(sb, sx + i * 100, sy + 24, i + " m", "roomsub"); t.style.fill = "#222"; }
+  const st = TXT(sb, sx + 150, sy - 10, "比例尺（家具與牆面同一比例，單位 cm）", "roomsub"); st.style.fill = "#444";
+  if (opt.dims) drawDims();
+}
+function dimLine(x1, y1, x2, y2, label, off) {
+  const g = el("g", {}, baseLayer), hz = Math.abs(y1 - y2) < Math.abs(x1 - x2);
+  L(g, x1, y1, x2, y2, "dim");
+  for (const [x, y] of [[x1, y1], [x2, y2]]) L(g, x - 4, y + 4, x + 4, y - 4, "dim");
+  const mx = (x1 + x2) / 2 + (hz ? 0 : -6), my = (y1 + y2) / 2 + (hz ? -6 : 0);
+  const t = TXT(g, mx, my, label, "dimtext");
+  if (!hz) t.setAttribute("transform", `rotate(-90 ${mx} ${my})`);
+}
+function drawDims() { (BASE.dims || []).forEach(([x1, y1, x2, y2]) => dimLine(x1, y1, x2, y2, Math.round(Math.hypot(x2 - x1, y2 - y1)))); }
+
+/* ============================================================
+   家具繪製、選取、拖曳
+   ============================================================ */
+function itemBox(it) { // 旋轉後的外框（世界座標）
+  const a = it.rot * Math.PI / 180, cx = it.x + it.w / 2, cy = it.y + it.d / 2;
+  const pts = [[-it.w / 2, -it.d / 2], [it.w / 2, -it.d / 2], [it.w / 2, it.d / 2], [-it.w / 2, it.d / 2]].map(([px, py]) => [cx + px * Math.cos(a) - py * Math.sin(a), cy + px * Math.sin(a) + py * Math.cos(a)]);
+  return { x1: Math.min(...pts.map(p => p[0])), y1: Math.min(...pts.map(p => p[1])), x2: Math.max(...pts.map(p => p[0])), y2: Math.max(...pts.map(p => p[1])) };
+}
+function inOutOfScope(it) {
+  if (["text", "wall", "wallArc", "slideDoor", "slideDoorArc", "swingDoor", "doubleDoor", "pocketDoor", "foldDoor", "glassWall", "halfWall", "column", "dimension", "rug", "rugRound", "curtain", "ac", "upper", "screen"].includes(it.type)) return false;
+  const b = itemBox(it);
+  return (BASE && BASE.outOfScope || []).some(o => b.x1 < o.r[2] - 1 && b.x2 > o.r[0] + 1 && b.y1 < o.r[3] - 1 && b.y2 > o.r[1] + 1);
+}
+function renderItems() {
+  itemLayer.innerHTML = "";
+  const order = { rug: -2, rugRound: -2, yogamat: -1, wall: 5, wallArc: 5, glassWall: 5, halfWall: 5, column: 5, slideDoor: 6, slideDoorArc: 6, swingDoor: 6, doubleDoor: 6, pocketDoor: 6, foldDoor: 6, upper: 7, ac: 7, screen: 7, curtain: 7, dimension: 8, text: 9 };
+  const list = state.items.slice().sort((a, b) => (order[a.type] ?? 0) - (order[b.type] ?? 0) || (a.z ?? 0) - (b.z ?? 0));
+  for (const it of list) {
+    const g = el("g", { class: "item" + (it.locked ? " locked" : "") + (inOutOfScope(it) ? " bad" : ""), "data-id": it.id,
+      transform: `translate(${it.x} ${it.y}) rotate(${it.rot} ${it.w / 2} ${it.d / 2})` + (it.flip ? ` translate(${it.w} 0) scale(-1 1)` : "") }, itemLayer);
+    el("rect", { x: 0, y: 0, width: it.w, height: it.d, fill: "transparent", stroke: "none" }, g);   // 點擊範圍
+    (DRAW[it.type] || DRAW.cabinet)(g, it.w, it.d, it);
+    const showName = it.showName !== false, showSize = opt.size && !["text", "wall", "wallArc", "column", "dimension", "curtain", "tvwall"].includes(it.type);
+    if (showName || showSize || it.type === "text") {
+      const tg = el("g", { transform: (it.flip ? `translate(${it.w} 0) scale(-1 1) ` : "") + `rotate(${-it.rot} ${it.w / 2} ${it.d / 2})` }, g);
+      const label = it.type === "text" ? (it.label || "文字") : it.type === "dimension" ? `${Math.round(it.w)} cm` : (it.label || "");
+      const big = Math.min(14, Math.max(9, Math.min(it.w, it.d) * 0.22));
+      if (it.type === "dimension") { const t = TXT(tg, it.w / 2, -6, label); t.style.fontSize = "12px"; t.style.fill = "#2563eb"; }
+      else if ((showName && label) || it.type === "text") { const t = TXT(tg, it.w / 2, it.d / 2 - (showSize ? big * 0.45 : 0), label); t.style.fontSize = (it.type === "text" ? (it.fontSize || 16) : big) + "px"; }
+      if (showSize) { const t = TXT(tg, it.w / 2, it.d / 2 + (showName && label ? big * 0.75 : 0), `${Math.round(it.w)}×${Math.round(it.d)}`, "sz"); t.style.fontSize = Math.max(8, big * 0.75) + "px"; }
+    }
+  }
+  renderSelection();
+}
+function renderSelection() {
+  uiLayer.innerHTML = ""; drawMeasure(); drawCalib(); const it = cur(); if (!it) return;
+  const g = el("g", { transform: `translate(${it.x} ${it.y}) rotate(${it.rot} ${it.w / 2} ${it.d / 2})` }, uiLayer);
+  const k = 1 / view.s;
+  el("rect", { x: -3 * k, y: -3 * k, width: it.w + 6 * k, height: it.d + 6 * k, class: "selbox", "stroke-width": 1.4 * k }, g);
+  if (it.locked) return;
+  const hs = 9 * k;
+  for (const [hx, hy, kind] of [[it.w, it.d / 2, "e"], [it.w / 2, it.d, "s"], [it.w, it.d, "se"], [0, it.d / 2, "w"], [it.w / 2, 0, "n"]]) {
+    el("rect", { x: hx - hs / 2, y: hy - hs / 2, width: hs, height: hs, class: "handle", "data-h": kind, "stroke-width": 1.5 * k, style: `cursor:${{ e: "ew-resize", w: "ew-resize", s: "ns-resize", n: "ns-resize", se: "nwse-resize" }[kind]}` }, g);
+  }
+  el("line", { x1: it.w / 2, y1: 0, x2: it.w / 2, y2: -22 * k, stroke: "#1f6feb", "stroke-width": 1.2 * k }, g);
+  el("circle", { cx: it.w / 2, cy: -26 * k, r: 6 * k, class: "rothandle", "data-h": "rot", "stroke-width": 1.5 * k }, g);
+}
+const cur = () => state.items.find(i => i.id === state.sel);
+const snapV = v => opt.snap ? Math.round(v / opt.step) * opt.step : Math.round(v * 10) / 10;
+
+let drag = null;
+let measureMode = false, measure = null;
+function setMeasure(on) { measureMode = on; $("btnMeasure").classList.toggle("primary", on); svg.style.cursor = on ? "crosshair" : ""; if (!on) { measure = null; renderSelection(); } }
+function drawMeasure() {
+  if (!measure) return; const k = 1 / view.s, { a, b } = measure, len = Math.hypot(b.x - a.x, b.y - a.y);
+  const g = el("g", {}, uiLayer);
+  el("line", { x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: "#e8590c", "stroke-width": 2 * k }, g);
+  for (const p of [a, b]) el("circle", { cx: p.x, cy: p.y, r: 4 * k, fill: "#e8590c" }, g);
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  el("rect", { x: mx - 34 * k, y: my - 24 * k, width: 68 * k, height: 20 * k, rx: 4 * k, fill: "#e8590c" }, g);
+  const t = el("text", { x: mx, y: my - 14 * k, fill: "#fff", "font-size": 13 * k, "text-anchor": "middle", "dominant-baseline": "middle" }, g);
+  t.textContent = `${Math.round(len)} cm`;
+}
+let calib = null;   // { pts: [] }
+function startCalib() { if (!BASE || !BASE.image) { toast("只有圖片底圖需要校正比例"); return; } calib = { pts: [] }; $("calbar").classList.add("show"); svg.style.cursor = "crosshair"; }
+function endCalib() { calib = null; $("calbar").classList.remove("show"); svg.style.cursor = ""; renderSelection(); }
+function drawCalib() { if (!calib) return; const k = 1 / view.s; calib.pts.forEach(p => el("circle", { cx: p.x, cy: p.y, r: 6 * k, fill: "#ea580c" }, uiLayer)); if (calib.pts.length === 2) el("line", { x1: calib.pts[0].x, y1: calib.pts[0].y, x2: calib.pts[1].x, y2: calib.pts[1].y, stroke: "#ea580c", "stroke-width": 2 * k }, uiLayer); }
+function applyCalib() {
+  const [a, b] = calib.pts, cur = Math.hypot(b.x - a.x, b.y - a.y);
+  const v = prompt(`這兩點的實際距離是幾公分？（目前量到 ${Math.round(cur)} 個單位）`, "300");
+  const real = parseFloat(v);
+  if (!real || real <= 0 || !cur) { endCalib(); return; }
+  const k = real / cur, im = BASE.image;
+  im.x *= k; im.y *= k; im.w *= k; im.h *= k;
+  BASE.bounds = computeBounds(BASE); endCalib(); drawGrid(); drawBase(); fit(); autosave();
+  toast(`比例已校正：圖上 ${Math.round(cur)} → 實際 ${real} cm。可用「量測」再確認一次`);
+}
+svg.addEventListener("pointerdown", e => {
+  if (calib && e.button === 0) { calib.pts.push(toWorld(e.clientX, e.clientY)); renderSelection(); if (calib.pts.length === 2) setTimeout(applyCalib, 30); return; }
+  if (e.button === 1 || e.button === 2) { startPan(e); return; }
+  if (measureMode) { let p = toWorld(e.clientX, e.clientY); if (opt.snap) p = { x: snapV(p.x), y: snapV(p.y) }; measure = { a: p, b: p }; drag = { kind: "measure" }; svg.setPointerCapture(e.pointerId); renderSelection(); return; }
+  const h = e.target.getAttribute && e.target.getAttribute("data-h");
+  const p = toWorld(e.clientX, e.clientY);
+  if (h && cur()) {
+    const it = cur(); drag = { kind: h, id: it.id, start: p, orig: { ...it } }; svg.setPointerCapture(e.pointerId); e.preventDefault(); return;
+  }
+  const ig = e.target.closest && e.target.closest(".item");
+  if (ig) {
+    const id = +ig.getAttribute("data-id"); state.sel = id; const it = cur(); renderSelection(); renderProps();
+    if (!it.locked) { drag = { kind: "move", id, start: p, orig: { ...it } }; svg.setPointerCapture(e.pointerId); }
+    e.preventDefault(); return;
+  }
+  state.sel = null; renderSelection(); renderProps(); startPan(e);
+});
+function startPan(e) { drag = { kind: "pan", sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y }; svg.classList.add("panning"); svg.setPointerCapture(e.pointerId); }
+svg.addEventListener("contextmenu", e => e.preventDefault());
+svg.addEventListener("pointermove", e => {
+  if (!drag) return;
+  if (drag.kind === "pan") { view.x = drag.vx + e.clientX - drag.sx; view.y = drag.vy + e.clientY - drag.sy; applyView(); renderSelection(); return; }
+  if (drag.kind === "measure") { let p = toWorld(e.clientX, e.clientY); if (opt.snap) p = { x: snapV(p.x), y: snapV(p.y) };
+    if (e.shiftKey) { if (Math.abs(p.x - measure.a.x) > Math.abs(p.y - measure.a.y)) p.y = measure.a.y; else p.x = measure.a.x; }
+    measure.b = p; renderSelection(); return; }
+  const it = state.items.find(i => i.id === drag.id); if (!it) return;
+  const p = toWorld(e.clientX, e.clientY), o = drag.orig;
+  if (drag.kind === "move") { it.x = snapV(o.x + p.x - drag.start.x); it.y = snapV(o.y + p.y - drag.start.y); }
+  else if (drag.kind === "rot") {
+    const cx = o.x + o.w / 2, cy = o.y + o.d / 2; let a = Math.atan2(p.y - cy, p.x - cx) * 180 / Math.PI + 90;
+    a = e.shiftKey ? Math.round(a) : Math.round(a / 15) * 15; it.rot = ((a % 360) + 360) % 360;
+  } else {
+    // 轉到物件本地座標系計算拉伸
+    const a = o.rot * Math.PI / 180, dx = p.x - drag.start.x, dy = p.y - drag.start.y;
+    const lx = dx * Math.cos(a) + dy * Math.sin(a), ly = -dx * Math.sin(a) + dy * Math.cos(a);
+    let w = o.w, d = o.d, sx = 0, sy = 0;
+    if (drag.kind.includes("e")) w = Math.max(5, snapV(o.w + lx));
+    if (drag.kind === "w") { w = Math.max(5, snapV(o.w - lx)); sx = -(w - o.w); }
+    if (drag.kind.includes("s")) d = Math.max(3, snapV(o.d + ly));
+    if (drag.kind === "n") { d = Math.max(3, snapV(o.d - ly)); sy = -(d - o.d); }
+    // 保持對邊固定：計算本地左上角在世界座標的位移
+    const ocx = o.x + o.w / 2, ocy = o.y + o.d / 2;
+    const tl = [ocx + (-o.w / 2) * Math.cos(a) - (-o.d / 2) * Math.sin(a), ocy + (-o.w / 2) * Math.sin(a) + (-o.d / 2) * Math.cos(a)];
+    const ntl = [tl[0] + sx * Math.cos(a) - sy * Math.sin(a), tl[1] + sx * Math.sin(a) + sy * Math.cos(a)];
+    const ncx = ntl[0] + (w / 2) * Math.cos(a) - (d / 2) * Math.sin(a), ncy = ntl[1] + (w / 2) * Math.sin(a) + (d / 2) * Math.cos(a);
+    it.w = w; it.d = d; it.x = Math.round((ncx - w / 2) * 10) / 10; it.y = Math.round((ncy - d / 2) * 10) / 10;
+  }
+  renderItems(); renderProps(true);
+});
+svg.addEventListener("pointerup", e => {
+  if (!drag) return; svg.classList.remove("panning");
+  if (drag.kind !== "pan" && drag.kind !== "measure") { const it = state.items.find(i => i.id === drag.id); if (it && JSON.stringify(it) !== JSON.stringify(drag.orig)) commit(); }
+  drag = null;
+});
+
+/* ---------- 新增、刪除、複製 ---------- */
+function addItem(def, x, y) {
+  if (!BASE) { showGate(); return null; }
+  const it = { id: state.nextId++, type: def.type, label: def.name, x: 0, y: 0, w: def.w, d: def.d, rot: 0, z: state.nextId };
+  if (def.seats) it.seats = def.seats; if (def.thick) it.thick = def.thick; if (def.chairs != null) it.chairs = def.chairs;
+  if (def.type === "text") { it.label = "文字"; it.fontSize = 16; }
+  it.x = snapV(x - it.w / 2); it.y = snapV(y - it.d / 2);
+  state.items.push(it); state.sel = it.id; renderItems(); renderProps(); commit(); return it;
+}
+function delSel() { const it = cur(); if (!it || it.locked) return; state.items = state.items.filter(i => i !== it); state.sel = null; renderItems(); renderProps(); commit(); }
+function dupSel() { const it = cur(); if (!it) return; const c = { ...JSON.parse(JSON.stringify(it)), id: state.nextId++, x: it.x + 20, y: it.y + 20, locked: false, z: state.nextId }; state.items.push(c); state.sel = c.id; renderItems(); renderProps(); commit(); }
+
+/* ============================================================
+   元件庫面板（含拖拉）
+   ============================================================ */
+function buildPalette() {
+  const pal = $("palette"); pal.innerHTML = "";
+  const sw = document.createElement("input"); sw.type = "search"; sw.placeholder = "搜尋元件（例如：門、櫃、床）";
+  sw.style.cssText = "width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;margin:4px 0 2px";
+  sw.oninput = () => { const q = sw.value.trim(); pal.querySelectorAll(".pal").forEach(c => c.style.display = !q || c.dataset.name.includes(q) ? "" : "none"); pal.querySelectorAll("h3").forEach(h => { const g = h.nextSibling; h.style.display = g.querySelector('.pal:not([style*="none"])') ? "" : "none"; }); };
+  pal.appendChild(sw);
+  for (const cat of LIB) {
+    el("h3", {}, null); const h = document.createElement("h3"); h.textContent = cat.cat; pal.appendChild(h);
+    const grid = document.createElement("div"); grid.className = "grid"; pal.appendChild(grid);
+    for (const def of cat.items) {
+      const card = document.createElement("div"); card.className = "pal"; card.draggable = true; card.dataset.name = def.name + cat.cat; card.title = `拖拉到圖上（${def.w}×${def.d} cm）`;
+      const ps = el("svg", {}); const pad = 14, m = Math.max(def.w, def.d) + pad * 2;
+      const extra = ["vanity", "desk", "deskLift", "dining", "diningRound", "ac"].includes(def.type) ? 45 : def.type === "sofabed" ? 110 : 0;
+      ps.setAttribute("viewBox", `${-pad - (def.w < def.d ? (def.d - def.w) / 2 : 0)} ${-pad - extra * 0.5 - (def.type === "swingDoor" ? def.w : def.type === "doubleDoor" ? def.w / 2 : def.type === "foldDoor" ? def.d : 0) - (def.d < def.w ? (def.w - def.d) / 2 - extra * 0.3 : 0)} ${m} ${m + extra * 0.4}`);
+      const g = el("g", { class: "item" }, ps); (DRAW[def.type])(g, def.w, def.d, def);
+      if (def.type === "text") { const t = TXT(g, def.w / 2, def.d / 2, "Aa"); t.style.fontSize = "22px"; }
+      card.appendChild(ps);
+      const s = document.createElement("span"); s.innerHTML = `${def.name}<br><small>${def.w}×${def.d}</small>`; card.appendChild(s);
+      card.addEventListener("dragstart", e => { e.dataTransfer.setData("text/x-floorplan", JSON.stringify(def)); e.dataTransfer.effectAllowed = "copy"; });
+      card.addEventListener("click", () => { const r = svg.getBoundingClientRect(); const p = toWorld(r.left + r.width / 2, r.top + r.height / 2); addItem(def, p.x, p.y); toast(`已加入「${def.name}」，可拖曳移動`); });
+      grid.appendChild(card);
+    }
+  }
+}
+svg.addEventListener("dragover", e => { if ([...e.dataTransfer.types].includes("text/x-floorplan")) { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; } });
+svg.addEventListener("drop", e => {
+  const data = e.dataTransfer.getData("text/x-floorplan"); if (!data) return; e.preventDefault();
+  const p = toWorld(e.clientX, e.clientY); addItem(JSON.parse(data), p.x, p.y);
+});
+
+/* ============================================================
+   屬性面板
+   ============================================================ */
+function renderProps(light) {
+  const P = $("props"), it = cur();
+  if (light && it && document.activeElement && P.contains(document.activeElement)) return;
+  if (!it) {
+    P.innerHTML = `<h2>屬性</h2><div class="empty">點選圖上的物件即可設定尺寸、角度與名稱。<br><br>
+      <b>操作方式</b><br>・從左側把元件拖到圖上（或點一下元件直接加入）<br>・拖曳物件移動；拖曳藍色方塊調整寬深；拖曳上方圓點旋轉（每 15°，按住 Shift 自由旋轉）<br>
+      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br><br>
+      <b>存檔</b><br>「儲存檔案」會下載 .json 專案檔（含底圖），下次用「開啟檔案」匯入即可；瀏覽器也會自動暫存目前進度。資料不會上傳到任何伺服器。</div>` + listHTML();
+    $("props").insertAdjacentHTML("beforeend", renderBaseSection()); bindBaseSection();
+    bindList(); return;
+  }
+  const def = DEFAULTS[it.type] || {};
+  const bad = inOutOfScope(it);
+  P.innerHTML = `<h2>${def.name || it.type}</h2>
+    <div class="row"><span>名稱</span><input id="pLabel" type="text" value="${esc(it.label || "")}"></div>
+    ${it.type === "text" ? `<div class="row"><span>字級</span><input id="pFont" type="number" min="8" max="60" value="${it.fontSize || 16}"></div>` : ""}
+    <div class="row"><span>寬 (cm)</span><input id="pW" type="number" min="5" step="1" value="${Math.round(it.w * 10) / 10}"></div>
+    <div class="row"><span>深 (cm)</span><input id="pD" type="number" min="3" step="1" value="${Math.round(it.d * 10) / 10}"></div>
+    <div class="row"><span>旋轉 (°)</span><input id="pRot" type="number" step="15" value="${it.rot}"></div>
+    <div class="row2"><label>X (cm)<input id="pX" type="number" step="5" value="${Math.round(it.x)}"></label><label>Y (cm)<input id="pY" type="number" step="5" value="${Math.round(it.y)}"></label></div>
+    ${it.type === "wallArc" ? `<div class="row"><span>牆厚 (cm)</span><input id="pThick" type="number" min="3" max="40" value="${it.thick || 12}"></div>` : ""}
+    ${["wallArc", "slideDoorArc", "vanityArc", "cabinetArc"].includes(it.type) ? `<div class="muted" style="font-size:12px">弧形：寬＝水平半徑、深＝垂直半徑（兩者相同為正圓弧）。用旋轉或鏡像調整朝向。</div>` : ""}
+    ${it.type === "sofa" ? `<div class="row"><span>座位數</span><input id="pSeats" type="number" min="1" max="5" value="${it.seats || 2}"></div>` : ""}
+    ${["dining", "diningRound"].includes(it.type) ? `<div class="row"><span>椅子數</span><input id="pChairs" type="number" min="0" max="10" value="${it.chairs ?? 4}"></div>` : ""}
+    <label class="toggle" style="margin-top:8px"><input id="pShow" type="checkbox" ${it.showName !== false ? "checked" : ""}>圖上顯示名稱</label>
+    <label class="toggle" style="margin-top:6px"><input id="pLock" type="checkbox" ${it.locked ? "checked" : ""}>鎖定位置</label>
+    ${bad ? `<div class="warn">⚠ 此物件放在衛浴或陽台內（不在設計範圍）</div>` : ""}
+    <div class="actions">
+      <button id="aRot">旋轉 90°</button><button id="aFlip">左右鏡像</button><button id="aDup">複製</button>
+      <button id="aFront">移到上層</button><button id="aBack">移到下層</button><button id="aDel" style="color:#d1242f">刪除</button>
+    </div>` + listHTML();
+  const num = (id, fn) => { const e = $(id); if (e) e.addEventListener("change", () => { const v = parseFloat(e.value); if (!isNaN(v)) { fn(v); renderItems(); commit(); renderProps(); } }); };
+  $("pLabel").addEventListener("input", e => { it.label = e.target.value; renderItems(); });
+  $("pLabel").addEventListener("change", () => commit());
+  num("pFont", v => it.fontSize = Math.max(8, v));
+  num("pW", v => { const cx = it.x + it.w / 2; it.w = Math.max(5, v); it.x = cx - it.w / 2; });
+  num("pD", v => { const cy = it.y + it.d / 2; it.d = Math.max(3, v); it.y = cy - it.d / 2; });
+  num("pRot", v => it.rot = ((v % 360) + 360) % 360);
+  num("pX", v => it.x = v); num("pY", v => it.y = v);
+  num("pThick", v => it.thick = Math.max(3, v));
+  num("pSeats", v => it.seats = Math.max(1, Math.round(v))); num("pChairs", v => it.chairs = Math.max(0, Math.round(v)));
+  $("pShow").addEventListener("change", e => { it.showName = e.target.checked; renderItems(); commit(); });
+  $("pLock").addEventListener("change", e => { it.locked = e.target.checked; renderItems(); commit(); });
+  $("aRot").onclick = () => rotSel(90); $("aFlip").onclick = flipSel; $("aDup").onclick = dupSel; $("aDel").onclick = delSel;
+  $("aFront").onclick = () => { it.z = Math.max(...state.items.map(i => i.z || 0)) + 1; renderItems(); commit(); };
+  $("aBack").onclick = () => { it.z = Math.min(...state.items.map(i => i.z || 0)) - 1; renderItems(); commit(); };
+  bindList();
+}
+function listHTML() {
+  if (!state.items.length) return "";
+  return `<div class="list"><b>物件清單（${state.items.length}）</b>` + state.items.map(i => `<div data-id="${i.id}" class="${i.id === state.sel ? "sel" : ""}"><span>${esc(i.label || DEFAULTS[i.type]?.name || i.type)}</span><span class="muted">${Math.round(i.w)}×${Math.round(i.d)}</span></div>`).join("") + "</div>";
+}
+function bindList() { document.querySelectorAll("#props .list div[data-id]").forEach(d => d.onclick = () => { state.sel = +d.getAttribute("data-id"); renderSelection(); renderProps(); }); }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function rotSel(deg) { const it = cur(); if (!it || it.locked) return; it.rot = ((it.rot + deg) % 360 + 360) % 360; renderItems(); renderProps(); commit(); }
+function flipSel() { const it = cur(); if (!it || it.locked) return; it.flip = !it.flip; renderItems(); commit(); }
+
+/* ============================================================
+   鍵盤
+   ============================================================ */
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input, textarea, select")) return;
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); return; }
+  if (mod && e.key.toLowerCase() === "d") { e.preventDefault(); dupSel(); return; }
+  if (mod && e.key.toLowerCase() === "s") { e.preventDefault(); saveFile(); return; }
+  if (!mod && (e.key === "m" || e.key === "M")) { setMeasure(!measureMode); return; }
+  if (e.key === "Escape" && measureMode) { setMeasure(false); return; }
+  const it = cur(); if (!it) return;
+  if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); delSel(); }
+  else if (e.key === "r" || e.key === "R") rotSel(e.shiftKey ? -90 : 90);
+  else if (e.key === "f" || e.key === "F") flipSel();
+  else if (e.key === "Escape") { state.sel = null; renderSelection(); renderProps(); }
+  else if (e.key.startsWith("Arrow") && !it.locked) {
+    e.preventDefault(); const st = (e.shiftKey ? 10 : 1) * (opt.snap ? opt.step : 1);
+    if (e.key === "ArrowLeft") it.x -= st; if (e.key === "ArrowRight") it.x += st; if (e.key === "ArrowUp") it.y -= st; if (e.key === "ArrowDown") it.y += st;
+    renderItems(); renderProps(true); clearTimeout(arrowT); arrowT = setTimeout(commit, 400);
+  }
+});
+let arrowT;
+
+/* ============================================================
+   檔案：儲存、開啟、匯出
+   ============================================================ */
+function projectData() { return { app: "house-layout", version: 2, savedAt: new Date().toISOString(), base: BASE, items: state.items, nextId: state.nextId }; }
+function baseData() { const { bounds, ...b } = BASE; return { ...b, app: "house-layout-base", version: 1, unit: "cm" }; }
+const safeName = () => (BASE && BASE.name ? BASE.name : "平面設計").replace(/[\\/:*?"<>|]/g, "_");
+function download(name, blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+function stamp() { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; }
+function saveFile() { if (!BASE) return; download(`${safeName()}-平面設計-${stamp()}.json`, new Blob([JSON.stringify(projectData(), null, 2)], { type: "application/json" })); toast("已下載專案檔，下次用「開啟檔案」匯入"); }
+function validBase(b) {
+  if (!b || typeof b !== "object") return false;
+  const okWalls = Array.isArray(b.walls) && b.walls.every(w => Array.isArray(w) && w.length >= 5 && w.slice(0, 5).every(isFinite));
+  const okImg = b.image && typeof b.image.src === "string" && /^data:image\//.test(b.image.src) && [b.image.x, b.image.y, b.image.w, b.image.h].every(isFinite);
+  return okWalls || okImg;
+}
+function setBase(b, keepItems = true) {
+  if (!validBase(b)) throw new Error("底圖格式不正確（需要 walls 牆面資料或 image 圖片）");
+  const { app, version, unit, savedAt, ...rest } = b;
+  BASE = { walls: [], ...rest }; BASE.bounds = computeBounds(BASE);
+  if (!keepItems) { state.items = []; state.nextId = 1; }
+  state.sel = null; hideGate(); drawGrid(); drawBase(); fit(); renderItems(); renderProps(); autosave(); updateButtons();
+}
+function loadData(o) {
+  if (!o || typeof o !== "object") throw new Error("檔案格式不正確");
+  if (!Array.isArray(o.items)) {   // 純底圖檔
+    if (state.items.length && BASE && !confirm("要更換底圖嗎？目前的家具會保留在原座標。")) return;
+    setBase(o, true); return;
+  }
+  if (o.base && typeof o.base === "object") setBase(o.base, true);
+  else if (!BASE) throw new Error("這個專案檔沒有包含底圖，請先匯入底圖，再開啟專案檔");
+  const items = o.items.filter(i => i && typeof i.type === "string" && isFinite(i.x) && isFinite(i.y) && isFinite(i.w) && isFinite(i.d))
+    .map(i => ({ ...i, rot: +i.rot || 0, label: i.label != null ? String(i.label) : "" }));
+  undoStack.push(lastSnap); redoStack = [];
+  state.items = items; state.nextId = Math.max(o.nextId || 1, ...items.map(i => (i.id || 0) + 1), 1); state.sel = null;
+  lastSnap = snapshot(); renderItems(); renderProps(); autosave(); updateButtons();
+}
+function openFile(file) {
+  const rd = new FileReader();
+  rd.onload = () => { try { loadData(JSON.parse(rd.result)); toast(`已開啟「${file.name}」`); } catch (err) { alert("無法開啟：" + err.message); } };
+  rd.readAsText(file);
+}
+$("fileIn").addEventListener("change", e => { if (e.target.files[0]) openFile(e.target.files[0]); e.target.value = ""; });
+document.addEventListener("dragover", e => { if ([...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
+document.addEventListener("drop", e => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f && /\.json$/i.test(f.name)) { e.preventDefault(); openFile(f); } });
+
+function exportSVGString(scale = 1) {
+  if (!BASE) return ""; const b = BASE.bounds, clone = svg.cloneNode(true);
+  clone.querySelector("#uiLayer").innerHTML = ""; clone.querySelector("#viewport").removeAttribute("transform");
+  if (!opt.grid) clone.querySelector("#gridLayer").innerHTML = "";
+  clone.setAttribute("viewBox", `${b.x} ${b.y - 40} ${b.w} ${b.h + 40}`); clone.setAttribute("width", b.w * scale); clone.setAttribute("height", (b.h + 40) * scale);
+  const style = document.createElementNS(NS, "style"); style.textContent = [...document.styleSheets[0].cssRules].filter(r => /^\.(wall|win|door|base|hatch|oos|room|dim|item|gridline)/.test(r.selectorText || "") || /^\.item/.test(r.selectorText || "")).map(r => r.cssText).join("\n").replace(/var\(--line\)/g, "#222").replace(/var\(--danger\)/g, "#d1242f") + "\ntext{font-family:-apple-system,'PingFang TC','Noto Sans TC','Microsoft JhengHei',sans-serif}";
+  clone.insertBefore(style, clone.firstChild);
+  const bg = document.createElementNS(NS, "rect"); bg.setAttribute("x", b.x); bg.setAttribute("y", b.y - 40); bg.setAttribute("width", b.w); bg.setAttribute("height", b.h + 40); bg.setAttribute("fill", "#fff");
+  clone.insertBefore(bg, clone.querySelector("#viewport"));
+  const title = document.createElementNS(NS, "text"); title.setAttribute("x", b.x + 20); title.setAttribute("y", b.y - 10); title.setAttribute("font-size", "22"); title.setAttribute("font-weight", "600"); title.textContent = `${BASE.name}　平面配置圖（${new Date().toLocaleDateString("zh-TW")}）`;
+  clone.appendChild(title);
+  return new XMLSerializer().serializeToString(clone);
+}
+$("btnSVG").onclick = () => {
+  if (!BASE) return; const b = BASE.bounds; let s = exportSVGString();
+  s = s.replace(/ width="[^"]*" height="[^"]*"/, ` width="${(b.w / 5).toFixed(1)}mm" height="${((b.h + 40) / 5).toFixed(1)}mm"`);   // 1:50
+  download(`${safeName()}-平面配置-1比50-${stamp()}.svg`, new Blob([s], { type: "image/svg+xml" }));
+  toast("SVG 為 1:50 實際尺寸，列印時選 100%");
+};
+$("btnPNG").onclick = () => {
+  if (!BASE) return; const s = exportSVGString(2), img = new Image(), b = BASE.bounds;
+  img.onload = () => { const c = document.createElement("canvas"); c.width = b.w * 2; c.height = (b.h + 40) * 2; const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0); c.toBlob(bl => download(`${safeName()}-平面配置-${stamp()}.png`, bl)); };
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
+};
+$("btnPrint").onclick = () => { state.sel = null; renderSelection(); fit(); setTimeout(() => window.print(), 100); };
+$("btnSave").onclick = saveFile;
+$("btnNew").onclick = () => { if (state.items.length && !confirm("清空所有家具？（底圖保留；可用「復原」救回）")) return; undoStack.push(lastSnap); state.items = []; state.sel = null; lastSnap = snapshot(); renderItems(); renderProps(); autosave(); updateButtons(); };
+$("btnMeasure").onclick = () => setMeasure(!measureMode);
+$("btnUndo").onclick = undo; $("btnRedo").onclick = redo; $("btnFit").onclick = fit;
+$("chkSnap").onchange = e => opt.snap = e.target.checked;
+$("selSnap").onchange = e => { opt.step = +e.target.value; drawGrid(); toast(`吸附精度：${opt.step} cm`); };
+$("chkGrid").onchange = e => { opt.grid = e.target.checked; drawGrid(); };
+$("chkSize").onchange = e => { opt.size = e.target.checked; renderItems(); };
+$("chkDims").onchange = e => { opt.dims = e.target.checked; drawBase(); };
+
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2200); }
+
+/* ============================================================
+   匯入畫面與底圖設定
+   ============================================================ */
+function showGate() { $("gate").classList.remove("hidden"); $("gateClose").style.display = BASE ? "" : "none"; }
+function hideGate() { $("gate").classList.add("hidden"); }
+$("gateCancel").onclick = e => { e.preventDefault(); if (BASE) hideGate(); };
+$("gateJson").addEventListener("change", e => { const f = e.target.files[0]; if (f) openFile(f); e.target.value = ""; });
+$("gateImg").addEventListener("change", e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 2400, sc = Math.min(1, max / Math.max(img.width, img.height));   // 縮小大圖，避免存檔過大
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      const src = c.toDataURL("image/jpeg", 0.85);
+      try { setBase({ name: f.name.replace(/\.[^.]+$/, ""), walls: [], image: { src, x: 0, y: 0, w: c.width, h: c.height, opacity: 0.6 } }, true); }
+      catch (err) { alert(err.message); return; }
+      startCalib();
+    };
+    img.onerror = () => alert("無法讀取這張圖片");
+    img.src = rd.result;
+  };
+  rd.readAsDataURL(f);
+});
+$("gateRect").onclick = () => {
+  const name = prompt("房屋名稱（例如：我的新家）", "我的新家"); if (name === null) return;
+  const w = parseFloat(prompt("外框寬度（cm，牆中心線）", "800")), d = parseFloat(prompt("外框深度（cm，牆中心線）", "900"));
+  if (!(w > 50) || !(d > 50)) { alert("請輸入正確的尺寸"); return; }
+  const t = parseFloat(prompt("外牆厚度（cm）", "20")) || 20;
+  setBase({ name, walls: [[0, 0, w, 0, t, []], [w, 0, w, d, t, []], [0, d, w, d, t, []], [0, 0, 0, d, t, []]] }, true);
+  toast("已建立外牆。用左側「隔間牆」「門」「柱子」元件畫出格局");
+};
+$("calCancel").onclick = endCalib;
+function renderBaseSection() {
+  if (!BASE) return "";
+  const im = BASE.image;
+  return `<div class="list"><b>底圖</b>
+    <div class="row" style="display:grid"><span>名稱</span><input id="bName" type="text" value="${esc(BASE.name || "")}"></div>
+    ${im ? `<div class="row" style="display:grid"><span>透明度</span><input id="bOp" type="range" min="0.1" max="1" step="0.05" value="${im.opacity ?? 0.6}"></div>` : ""}
+    <div class="actions">${im ? `<button id="bCal">重新校正比例</button>` : ""}<button id="bExp">匯出底圖檔</button><button id="bChg">更換底圖</button></div></div>`;
+}
+function bindBaseSection() {
+  if (!$("bName")) return;
+  $("bName").onchange = e => { BASE.name = e.target.value; autosave(); };
+  if ($("bOp")) $("bOp").oninput = e => { BASE.image.opacity = +e.target.value; drawBase(); autosave(); };
+  if ($("bCal")) $("bCal").onclick = startCalib;
+  $("bExp").onclick = () => download(`${safeName()}-底圖.json`, new Blob([JSON.stringify(baseData(), null, 1)], { type: "application/json" }));
+  $("bChg").onclick = showGate;
+}
+$("btnBase").onclick = () => { state.sel = null; renderSelection(); renderProps(); if (!BASE) showGate(); };
+
+/* ============================================================
+   啟動
+   ============================================================ */
+buildPalette();
+try {
+  const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+  if (saved && saved.base && validBase(saved.base)) {
+    setBase(saved.base, false); state.items = saved.items || []; state.nextId = saved.nextId || 1; lastSnap = snapshot();
+    toast(`已還原上次的進度（${state.items.length} 個物件）`);
+  }
+} catch (e) {}
+if (!BASE) showGate();
+renderItems(); renderProps(); updateButtons();
+window.addEventListener("resize", () => { if (BASE) fit(); });
+window.__fp = { state, addItem, DEFAULTS, loadData, projectData, exportSVGString, setBase, get base() { return BASE; } };
+</script>
+</body>
+</html>
