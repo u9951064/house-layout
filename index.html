@@ -242,10 +242,6 @@
   <button class="tb tog" data-chk="chkGrid" title="顯示格線">格線</button>
   <button class="tb tog" data-chk="chkSize" title="家具上顯示寬×深">尺寸</button>
   <button class="tb tog" data-chk="chkDims" title="顯示底圖的牆面尺寸標註">牆尺寸</button>
-  <span class="tsep"></span>
-  <button class="tb" id="tbFit" title="全圖顯示">⤢ 全圖</button>
-  <button class="tb" id="tbZoomOut" title="縮小">－</button>
-  <button class="tb" id="tbZoomIn" title="放大">＋</button>
 </div>
 <div id="menuPop"></div>
   <aside id="palette"></aside>
@@ -2071,7 +2067,6 @@ function syncToolbar() {
 document.querySelectorAll("#toolbar .tog").forEach(b => b.onclick = () => { $(b.dataset.chk).click(); syncToolbar(); });
 document.querySelectorAll("#toolbar [data-step]").forEach(b => b.onclick = () => { $("selSnap").value = b.dataset.step; $("selSnap").dispatchEvent(new Event("change")); syncToolbar(); });
 $("tbMeasure").onclick = () => { if (BASE) setMeasure(!measureMode); };
-$("tbFit").onclick = fit; $("tbZoomIn").onclick = () => zoomBy(1.25); $("tbZoomOut").onclick = () => zoomBy(0.8);
 ["chkEdge", "chkSnap", "chkGrid", "chkSize", "chkDims", "selSnap"].forEach(id => $(id).addEventListener("change", syncToolbar));
 syncToolbar();
 
