@@ -7,7 +7,7 @@ export function serve(port = 8000) {
     let p = decodeURIComponent(new URL(req.url, "http://x").pathname); if (p.endsWith("/")) p += "index.html";
     const file = path.join(ROOT, p);
     if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); res.end("Not found"); return; }
-    res.writeHead(200, { "Content-Type": TYPES[path.extname(file)] || "application/octet-stream", "Cache-Control": "no-cache" });
+    res.writeHead(200, { "Content-Type": TYPES[path.extname(file)] || (path.extname(file) ? "application/octet-stream" : "text/plain; charset=utf-8"), "Cache-Control": "no-cache" });
     fs.createReadStream(file).pipe(res);
   });
   return new Promise(r => server.listen(port, "127.0.0.1", () => r(server)));

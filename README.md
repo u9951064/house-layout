@@ -60,3 +60,7 @@ ES Modules 不能用 `file://` 直接開啟，請用 `npm run dev`。
 - Josh Tsai（[@u9951064](https://github.com/u9951064)）
 - 原始碼：<https://github.com/u9951064/house-layout>
 - 問題回報與建議：<https://github.com/u9951064/house-layout/issues>
+
+## 授權
+
+[MIT License](LICENSE) © 2026 Josh Tsai

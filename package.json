@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "在瀏覽器裡畫室內平面配置圖：匯入房屋底圖、拖拉家具、比較多個設計方案",
+  "license": "MIT",
+  "author": "Josh Tsai (https://github.com/u9951064)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/u9951064/house-layout.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs 8000",
