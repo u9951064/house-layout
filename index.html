@@ -10,8 +10,11 @@
   * { box-sizing: border-box; }
   html, body { margin:0; height:100%; font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; color:#1f2328; background:var(--bg); }
   #app { display:grid; grid-template-columns: 236px 1fr 268px; grid-template-rows: 48px 1fr; height:100vh; }
-  header { grid-column: 1 / 4; display:flex; align-items:center; gap:6px; padding:0 12px; background:#fff; border-bottom:1px solid #e5e7eb; }
-  header h1 { font-size:15px; margin:0 12px 0 0; white-space:nowrap; }
+  #app { overflow:hidden; }
+  header { min-width:0; overflow-x:auto; scrollbar-width:thin; grid-column: 1 / 4; display:flex; align-items:center; gap:6px; padding:0 12px; background:#fff; border-bottom:1px solid #e5e7eb; }
+  header h1 { font-size:15px; margin:0 6px 0 0; white-space:nowrap; }
+  header button, header .btn, header select { padding:4px 8px; font-size:12.5px; }
+  header label.toggle { font-size:12.5px; }
   header .sep { width:1px; height:24px; background:#e5e7eb; margin:0 4px; }
   button, .btn { font:inherit; font-size:13px; padding:5px 10px; border:1px solid #d0d7de; background:#fff; border-radius:6px; cursor:pointer; white-space:nowrap; }
   button:hover, .btn:hover { background:#f3f4f6; }
@@ -30,8 +33,34 @@
   #stage { position:relative; overflow:hidden; background:#eceef1; }
   #svg { width:100%; height:100%; display:block; touch-action:none; cursor:default; }
   #svg.panning { cursor:grabbing; }
-  #hint { position:absolute; left:10px; bottom:8px; font-size:11.5px; color:var(--muted); background:rgba(255,255,255,.85); padding:4px 8px; border-radius:6px; pointer-events:none; }
-  #zoomInfo { position:absolute; right:10px; bottom:8px; font-size:11.5px; color:var(--muted); background:rgba(255,255,255,.85); padding:4px 8px; border-radius:6px; }
+  #sheets { position:absolute; left:0; right:0; bottom:0; height:34px; background:#f3f4f6; border-top:1px solid #d1d5db; display:flex; align-items:stretch; gap:0; padding:0 6px; z-index:4; font-size:13px; user-select:none; }
+  #sheets .sh { border:none; border-right:1px solid #d1d5db; border-radius:0; background:transparent; padding:0 14px; cursor:pointer; color:#374151; display:flex; align-items:center; gap:6px; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #sheets .sh:hover { background:#e5e7eb; }
+  #sheets .sh.on { background:#fff; color:#111; font-weight:600; box-shadow:inset 0 3px 0 var(--accent); }
+  #sheets .sh small { color:#9ca3af; font-weight:400; }
+  #sheets .sh.ghost { box-shadow:inset 0 -3px 0 #e03131; }
+  #sheets .add { font-size:18px; padding:0 12px; color:#6b7280; }
+  #sheets .grow { flex:1; }
+  #sheets .ctl { display:flex; align-items:center; gap:6px; padding:0 8px; color:#374151; }
+  #sheets select, #sheets .ctl button { font-size:12.5px; padding:2px 6px; }
+  #sheetMenu { position:fixed; background:#fff; border:1px solid #d0d7de; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.15); padding:4px; z-index:30; display:none; min-width:150px; }
+  #sheetMenu.show { display:block; }
+  #sheetMenu div { padding:6px 12px; border-radius:5px; cursor:pointer; font-size:13px; }
+  #sheetMenu div:hover { background:#f3f4f6; }
+  #sheetMenu div.danger { color:#d1242f; }
+  #sheetMenu hr { border:none; border-top:1px solid #e5e7eb; margin:4px 0; }
+  #ghostLayer { opacity:.5; pointer-events:none; }
+  #ghostLayer .s, #ghostLayer .t, #ghostLayer .d, #ghostLayer .g { stroke:#e03131 !important; fill:none !important; }
+  #ghostLayer .f { fill:#e03131 !important; }
+  #svg.basemode #ghostLayer { display:none; }
+  #cmpModal, #projModal { position:fixed; inset:0; background:rgba(17,24,39,.55); display:none; align-items:center; justify-content:center; z-index:22; }
+  #cmpModal.show, #projModal.show { display:flex; }
+  #cmpGrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:14px; max-height:72vh; overflow-y:auto; margin:10px 0; }
+  .cmpCard { border:1px solid #e5e7eb; border-radius:10px; padding:10px; }
+  .cmpCard img { width:100%; background:#fff; border:1px solid #f3f4f6; border-radius:6px; margin:6px 0; }
+  .projRow { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f3f4f6; }
+  #hint { position:absolute; left:10px; bottom:42px; font-size:11.5px; color:var(--muted); background:rgba(255,255,255,.85); padding:4px 8px; border-radius:6px; pointer-events:none; }
+  #zoomInfo { position:absolute; right:10px; bottom:42px; font-size:11.5px; color:var(--muted); background:rgba(255,255,255,.85); padding:4px 8px; border-radius:6px; }
   #props { background:var(--panel); border-left:1px solid #e5e7eb; overflow-y:auto; padding:12px; font-size:13px; }
   #props h2 { font-size:14px; margin:0 0 10px; }
   #props .row { display:grid; grid-template-columns: 64px 1fr; align-items:center; gap:6px; margin:6px 0; }
@@ -106,9 +135,11 @@
     <h1>🏠 House Layout</h1>
     <button id="btnBase" title="底圖設定：名稱、透明度、重新校正、匯出或更換底圖">底圖</button>
     <button id="btnBaseEdit" title="編輯底圖：畫牆、加門窗、柱子、房間名稱、固定設備">✏️ 編輯底圖</button>
-    <button id="btnNew" title="清空所有家具（保留底圖）">新設計</button>
-    <label class="btn" title="匯入先前儲存的 .json 專案檔">開啟檔案<input id="fileIn" type="file" accept=".json,application/json" hidden></label>
-    <button id="btnSave" class="primary" title="下載 .json 專案檔，下次可匯入">儲存檔案</button>
+    <select id="selProj" title="切換專案" style="max-width:170px;font-size:13px;padding:4px;border:1px solid #d0d7de;border-radius:6px"></select>
+    <button id="btnProj" title="專案管理：開啟、重新命名、刪除">專案…</button>
+    <button id="btnNew" title="建立新專案：命名後匯入新的底圖">＋新專案</button>
+    <label class="btn" title="開啟專案檔（底圖＋所有方案分頁），會開成一個新專案">開啟檔案<input id="fileIn" type="file" accept=".json,application/json" hidden></label>
+    <button id="btnSave" class="primary" title="把整個專案（底圖＋所有方案分頁＋疊圖設定）存成一個 .json 檔">儲存檔案</button>
     <span class="sep"></span>
     <button id="btnUndo" title="復原 (⌘/Ctrl+Z)">↶ 復原</button>
     <button id="btnRedo" title="重做 (⌘/Ctrl+Shift+Z)">↷ 重做</button>
@@ -116,14 +147,13 @@
     <label class="toggle"><input id="chkSnap" type="checkbox" checked>吸附</label>
     <select id="selSnap" title="吸附精度" style="font-size:13px;padding:3px 4px;border:1px solid #d0d7de;border-radius:6px"><option value="1" selected>1 cm</option><option value="5">5 cm</option><option value="10">10 cm</option></select>
     <label class="toggle"><input id="chkGrid" type="checkbox" checked>格線</label>
-    <label class="toggle"><input id="chkSize" type="checkbox" checked>顯示尺寸</label>
-    <label class="toggle" title="底圖檔若含尺寸標註才會顯示"><input id="chkDims" type="checkbox">牆面尺寸</label>
+    <label class="toggle"><input id="chkSize" type="checkbox" checked>尺寸</label>
+    <label class="toggle" title="底圖檔若含尺寸標註才會顯示"><input id="chkDims" type="checkbox">牆尺寸</label>
     <span class="sep"></span>
     <button id="btnMeasure" title="量測距離：按住拖曳拉出量測線（快捷鍵 M）">📏 量測</button>
     <button id="btnFit" title="全圖顯示">全圖</button>
-    <button id="btnPNG" title="匯出 PNG 圖檔">匯出 PNG</button>
-    <button id="btnSVG" title="匯出 1:50 實際比例的 SVG 向量圖">匯出 SVG（1:50）</button>
-    <button id="btnPrint" title="列印">列印</button>
+    <select id="selExport" title="匯出目前方案" style="font-size:13px;padding:4px;border:1px solid #d0d7de;border-radius:6px"><option value="">匯出／列印…</option><option value="btnPNG">匯出 PNG</option><option value="btnSVG">匯出 SVG（1:50）</option><option value="btnPrint">列印</option></select>
+    <span hidden><button id="btnPNG"></button><button id="btnSVG"></button><button id="btnPrint"></button></span>
   </header>
   <aside id="palette"></aside>
   <main id="stage">
@@ -136,16 +166,30 @@
       <g id="viewport">
         <g id="gridLayer"></g>
         <g id="baseLayer"></g>
+        <g id="ghostLayer"></g>
         <g id="itemLayer"></g>
         <g id="uiLayer"></g>
       </g>
     </svg>
+    <div id="sheets"></div>
     <div id="hint">放大到 250% 以上會顯示 1 cm 細格 ｜ 拖拉左側元件到圖上 ｜ <kbd>M</kbd> 量測距離 ｜ 拖曳空白處平移、滾輪縮放 ｜ <kbd>R</kbd> 旋轉 90° ｜ <kbd>Delete</kbd> 刪除 ｜ <kbd>⌘/Ctrl+D</kbd> 複製 ｜ 方向鍵微調</div>
     <div id="zoomInfo"></div>
   </main>
   <aside id="props"></aside>
 </div>
 <div id="toast"></div>
+<div id="sheetMenu"></div>
+<div id="cmpModal"><div class="gcard" style="width:min(1240px,96vw)">
+  <h2>並排比較所有方案</h2>
+  <div id="cmpGrid"></div>
+  <div class="actions" style="justify-content:flex-end"><button id="cmpClose">關閉</button></div>
+</div></div>
+<div id="projModal"><div class="gcard" style="width:min(640px,94vw)">
+  <h2>專案管理</h2>
+  <p class="muted" style="font-size:13px">專案暫存在這個瀏覽器。要備份或換電腦，請用「儲存檔案」存成一個 .json 檔（含底圖與所有方案分頁）。</p>
+  <div id="projList"></div>
+  <div class="actions" style="justify-content:flex-end"><button id="projNew">＋新專案</button><button id="projClose">關閉</button></div>
+</div></div>
 <div id="gate"><div class="gcard">
   <h2>開始之前：匯入你的房屋底圖</h2>
   <p>先提供牆面圖面與尺寸，才能開始畫設計稿。<b>所有資料只存在你的瀏覽器</b>，不會上傳到任何伺服器；存檔時會下載到你的電腦。</p>
@@ -631,7 +675,11 @@ function undo() { if (!undoStack.length) return; redoStack.push(lastSnap); resto
 function redo() { if (!redoStack.length) return; undoStack.push(lastSnap); restore(redoStack.pop()); }
 function updateButtons() { $("btnUndo").disabled = !undoStack.length; $("btnRedo").disabled = !redoStack.length; }
 let quotaWarned = false;
-function autosave() { if (!BASE) return; try { localStorage.setItem(STORE_KEY, JSON.stringify(projectData())); } catch (e) { if (!quotaWarned) { quotaWarned = true; toast("瀏覽器暫存空間不足（底圖圖片較大），請記得用「儲存檔案」存檔"); } } }
+function autosave() { if (!BASE || !PROJ) return; try {
+  localStorage.setItem(PKEY(PROJ.id), JSON.stringify(projectData()));
+  const ix = readIndex(), meta = { id: PROJ.id, name: PROJ.name, updatedAt: Date.now() }, e0 = ix.projects.find(q => q.id === PROJ.id);
+  if (e0) Object.assign(e0, meta); else ix.projects.push(meta); ix.current = PROJ.id; writeIndex(ix);
+} catch (e) { if (!quotaWarned) { quotaWarned = true; toast("瀏覽器暫存空間不足（底圖圖片較大），請記得用「儲存檔案」存檔"); } } }
 
 /* ============================================================
    座標轉換、縮放平移
@@ -641,8 +689,9 @@ function applyView() { vp.setAttribute("transform", `translate(${view.x} ${view.
 function toWorld(cx, cy) { const r = svg.getBoundingClientRect(); return { x: (cx - r.left - view.x) / view.s, y: (cy - r.top - view.y) / view.s }; }
 function fit() {
   if (!BASE) return; const r = svg.getBoundingClientRect(), b = BASE.bounds, pad = 30;
-  view.s = Math.min((r.width - pad * 2) / b.w, (r.height - pad * 2) / b.h);
-  view.x = (r.width - b.w * view.s) / 2 - b.x * view.s; view.y = (r.height - b.h * view.s) / 2 - b.y * view.s; applyView();
+  const H = r.height - 40;   // 扣掉下方分頁列
+  view.s = Math.min((r.width - pad * 2) / b.w, (H - pad * 2) / b.h);
+  view.x = (r.width - b.w * view.s) / 2 - b.x * view.s; view.y = (H - b.h * view.s) / 2 - b.y * view.s; applyView();
 }
 svg.addEventListener("wheel", e => {
   e.preventDefault(); const p = toWorld(e.clientX, e.clientY), k = Math.exp(-e.deltaY * 0.0015);
@@ -768,6 +817,7 @@ function renderItems() {
     }
   }
   renderSelection();
+  if (PROJ) renderSheets();
 }
 function renderSelection() {
   uiLayer.innerHTML = ""; drawMeasure(); drawCalib(); if (mode === "base") { drawBaseEditUI(); return; } const it = cur(); if (!it) return;
@@ -926,8 +976,8 @@ function renderProps(light) {
   if (!it) {
     P.innerHTML = `<h2>屬性</h2><div class="empty">點選圖上的物件即可設定尺寸、角度與名稱。<br><br>
       <b>操作方式</b><br>・從左側把元件拖到圖上（或點一下元件直接加入）<br>・拖曳物件移動；拖曳藍色方塊調整寬深；拖曳上方圓點旋轉（每 15°，按住 Shift 自由旋轉）<br>
-      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br>・✏️「編輯底圖」可畫牆、加門窗、柱子、房間名稱與固定設備<br><br>
-      <b>存檔</b><br>「儲存檔案」會下載 .json 專案檔（含底圖），下次用「開啟檔案」匯入即可；瀏覽器也會自動暫存目前進度。資料不會上傳到任何伺服器。</div>` + listHTML();
+      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br>・✏️「編輯底圖」可畫牆、加門窗、柱子、房間名稱與固定設備<br>・下方分頁像 Excel 工作表：一頁一個方案，雙擊改名、右鍵複製／刪除／排序；「疊圖」「並排比較」可比較方案<br><br>
+      <b>存檔</b><br>「儲存檔案」會把整個專案（底圖＋所有方案分頁＋疊圖設定）存成一個 .json 檔，下次用「開啟檔案」開啟；瀏覽器也會自動暫存目前進度。資料不會上傳到任何伺服器。</div>` + listHTML();
     $("props").insertAdjacentHTML("beforeend", renderBaseSection()); bindBaseSection();
     bindList(); return;
   }
@@ -987,6 +1037,7 @@ function setMode(m) {
   if (m === mode) return;
   mode = m; wallDraw = null; rectDraw = null; bsel = null; state.sel = null;
   svg.classList.toggle("basemode", mode === "base"); $("basebar").classList.toggle("show", mode === "base"); $("btnBaseEdit").classList.toggle("on", mode === "base");
+  $("sheets").style.display = mode === "base" ? "none" : "";
   if (mode === "base") setTool("select"); else { svg.style.cursor = ""; BASE.bounds = computeBounds(BASE); drawGrid(); drawBase(); }
   renderItems(); renderProps(); toast(mode === "base" ? "底圖編輯模式：家具暫時鎖定" : "回到設計模式");
 }
@@ -999,8 +1050,7 @@ document.querySelectorAll("#basebar button[data-tool]").forEach(b => b.onclick =
 $("bDone").onclick = () => setMode("design");
 $("btnBaseEdit").onclick = () => setMode(mode === "base" ? "design" : "base");
 $("gateDraw").onclick = () => {
-  const name = prompt("房屋名稱", "我的房屋"); if (name === null) return;
-  setBase({ name, walls: [] }, true); setMode("base"); setTool("wall");
+  if (!applyGateBase({ name: "", walls: [] }, "我的新家")) return; setMode("base"); setTool("wall");
   toast("從空白開始：點擊畫牆，Esc 或雙擊結束一段");
 };
 function commitBase() { BASE.bounds = computeBounds(BASE); drawBase(); commit(); renderSelection(); renderProps(); }
@@ -1224,12 +1274,17 @@ let arrowT;
 /* ============================================================
    檔案：儲存、開啟、匯出
    ============================================================ */
-function projectData() { return { app: "house-layout", version: 2, savedAt: new Date().toISOString(), base: BASE, items: state.items, nextId: state.nextId }; }
+function projectData() {
+  syncDesign();
+  return { app: "house-layout", version: 3, savedAt: new Date().toISOString(), name: PROJ ? PROJ.name : (BASE && BASE.name) || "", base: BASE,
+    designs: PROJ ? PROJ.designs.map(d => ({ id: d.id, name: d.name, items: d.items, nextId: d.nextId })) : [{ id: "d1", name: "方案 A", items: state.items, nextId: state.nextId }],
+    cur: PROJ ? PROJ.cur : 0, ghost: ghostId || null };
+}
 function baseData() { const { bounds, ...b } = BASE; return { ...b, app: "house-layout-base", version: 1, unit: "cm" }; }
 const safeName = () => (BASE && BASE.name ? BASE.name : "平面設計").replace(/[\\/:*?"<>|]/g, "_");
 function download(name, blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
 function stamp() { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; }
-function saveFile() { if (!BASE) return; download(`${safeName()}-平面設計-${stamp()}.json`, new Blob([JSON.stringify(projectData(), null, 2)], { type: "application/json" })); toast("已下載專案檔，下次用「開啟檔案」匯入"); }
+function saveFile() { if (!BASE) return; download(`${safeName()}-專案-${stamp()}.json`, new Blob([JSON.stringify(projectData(), null, 1)], { type: "application/json" })); toast(`已存成一個專案檔（底圖＋${PROJ ? PROJ.designs.length : 1} 個方案分頁）`); }
 function validBase(b) {
   if (!b || typeof b !== "object") return false;
   const okWalls = Array.isArray(b.walls) && b.walls.every(w => Array.isArray(w) && w.length >= 5 && w.slice(0, 5).every(isFinite));
@@ -1297,56 +1352,59 @@ function setBase(b, keepItems = true) {
   if (!keepItems) { state.items = []; state.nextId = 1; }
   state.sel = null; if (typeof bsel !== "undefined") bsel = null; hideGate(); drawGrid(); drawBase(); fit(); renderItems(); renderProps(); autosave(); updateButtons();
 }
-function loadData(o) {
+function loadData(o, fname) {
   if (!o || typeof o !== "object") throw new Error("檔案格式不正確");
-  if (!Array.isArray(o.items)) {   // 純底圖檔
-    if (state.items.length && BASE && !confirm("要更換底圖嗎？目前的家具會保留在原座標。")) return;
-    setBase(o, true); return;
+  const isProject = Array.isArray(o.items) || Array.isArray(o.designs);
+  if (!isProject) {   // 純底圖檔
+    if (!validBase(o)) throw new Error("底圖格式不正確（需要 walls 牆面資料或 image 圖片）");
+    applyGateBase(o, o.name || fname); return;
   }
-  if (o.base && typeof o.base === "object") setBase(o.base, true);
-  else if (!BASE) throw new Error("這個專案檔沒有包含底圖，請先匯入底圖，再開啟專案檔");
-  const items = o.items.filter(i => i && typeof i.type === "string" && isFinite(i.x) && isFinite(i.y) && isFinite(i.w) && isFinite(i.d))
-    .map(i => ({ ...i, rot: +i.rot || 0, label: i.label != null ? String(i.label) : "" }));
-  undoStack.push(lastSnap); redoStack = [];
-  state.items = items; state.nextId = Math.max(o.nextId || 1, ...items.map(i => (i.id || 0) + 1), 1); state.sel = null;
-  lastSnap = snapshot(); renderItems(); renderProps(); autosave(); updateButtons();
+  const designs = parseDesigns(o);
+  if (!o.base || !validBase(o.base)) {   // 舊版沒有底圖的專案檔：加到目前專案成為新分頁
+    if (!BASE || !PROJ) throw new Error("這個檔案沒有包含底圖，請先建立專案並匯入底圖");
+    syncDesign(); designs.forEach(d => PROJ.designs.push(d)); switchDesign(PROJ.designs.length - 1);
+    toast(`已把 ${designs.length} 個方案加入目前專案`); return;
+  }
+  const name = askName(o.name || o.base.name || fname); if (name === null) return;
+  newProject(name, o.base, designs, o.cur || 0, o.ghost || null);
 }
 function openFile(file) {
   const rd = new FileReader();
-  rd.onload = () => { try { loadData(JSON.parse(rd.result)); toast(`已開啟「${file.name}」`); } catch (err) { alert("無法開啟：" + err.message); } };
+  rd.onload = () => { try { loadData(JSON.parse(rd.result), file.name.replace(/\.json$/i, "")); } catch (err) { alert("無法開啟：" + err.message); } };
   rd.readAsText(file);
 }
-$("fileIn").addEventListener("change", e => { if (e.target.files[0]) openFile(e.target.files[0]); e.target.value = ""; });
+$("fileIn").addEventListener("change", e => { gateIntent = "new"; if (e.target.files[0]) openFile(e.target.files[0]); e.target.value = ""; });
 document.addEventListener("dragover", e => { if ([...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
-document.addEventListener("drop", e => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f && /\.json$/i.test(f.name)) { e.preventDefault(); openFile(f); } });
+document.addEventListener("drop", e => { const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f && /\.json$/i.test(f.name)) { e.preventDefault(); gateIntent = "new"; openFile(f); } });
 
-function exportSVGString(scale = 1) {
+function exportSVGString(scale = 1, label = PROJ ? curDesign().name : "") {
   if (!BASE) return ""; const b = BASE.bounds, clone = svg.cloneNode(true);
-  clone.querySelector("#uiLayer").innerHTML = ""; clone.querySelector("#viewport").removeAttribute("transform");
+  clone.querySelector("#uiLayer").innerHTML = ""; clone.querySelector("#ghostLayer").innerHTML = ""; clone.querySelector("#viewport").removeAttribute("transform");
   if (!opt.grid) clone.querySelector("#gridLayer").innerHTML = "";
   clone.setAttribute("viewBox", `${b.x} ${b.y - 40} ${b.w} ${b.h + 40}`); clone.setAttribute("width", b.w * scale); clone.setAttribute("height", (b.h + 40) * scale);
   const style = document.createElementNS(NS, "style"); style.textContent = [...document.styleSheets[0].cssRules].filter(r => /^\.(wall|win|door|base|hatch|oos|room|dim|item|gridline)/.test(r.selectorText || "") || /^\.item/.test(r.selectorText || "")).map(r => r.cssText).join("\n").replace(/var\(--line\)/g, "#222").replace(/var\(--danger\)/g, "#d1242f") + "\ntext{font-family:-apple-system,'PingFang TC','Noto Sans TC','Microsoft JhengHei',sans-serif}";
   clone.insertBefore(style, clone.firstChild);
   const bg = document.createElementNS(NS, "rect"); bg.setAttribute("x", b.x); bg.setAttribute("y", b.y - 40); bg.setAttribute("width", b.w); bg.setAttribute("height", b.h + 40); bg.setAttribute("fill", "#fff");
   clone.insertBefore(bg, clone.querySelector("#viewport"));
-  const title = document.createElementNS(NS, "text"); title.setAttribute("x", b.x + 20); title.setAttribute("y", b.y - 10); title.setAttribute("font-size", "22"); title.setAttribute("font-weight", "600"); title.textContent = `${BASE.name}　平面配置圖（${new Date().toLocaleDateString("zh-TW")}）`;
+  const title = document.createElementNS(NS, "text"); title.setAttribute("x", b.x + 20); title.setAttribute("y", b.y - 10); title.setAttribute("font-size", "22"); title.setAttribute("font-weight", "600"); title.textContent = `${BASE.name}${label ? "｜" + label : ""}　平面配置圖（${new Date().toLocaleDateString("zh-TW")}）`;
   clone.appendChild(title);
   return new XMLSerializer().serializeToString(clone);
 }
 $("btnSVG").onclick = () => {
   if (!BASE) return; const b = BASE.bounds; let s = exportSVGString();
   s = s.replace(/ width="[^"]*" height="[^"]*"/, ` width="${(b.w / 5).toFixed(1)}mm" height="${((b.h + 40) / 5).toFixed(1)}mm"`);   // 1:50
-  download(`${safeName()}-平面配置-1比50-${stamp()}.svg`, new Blob([s], { type: "image/svg+xml" }));
+  download(`${safeName()}-${dname()}-1比50-${stamp()}.svg`, new Blob([s], { type: "image/svg+xml" }));
   toast("SVG 為 1:50 實際尺寸，列印時選 100%");
 };
 $("btnPNG").onclick = () => {
   if (!BASE) return; const s = exportSVGString(2), img = new Image(), b = BASE.bounds;
-  img.onload = () => { const c = document.createElement("canvas"); c.width = b.w * 2; c.height = (b.h + 40) * 2; const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0); c.toBlob(bl => download(`${safeName()}-平面配置-${stamp()}.png`, bl)); };
+  img.onload = () => { const c = document.createElement("canvas"); c.width = b.w * 2; c.height = (b.h + 40) * 2; const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0); c.toBlob(bl => download(`${safeName()}-${dname()}-${stamp()}.png`, bl)); };
   img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
 };
 $("btnPrint").onclick = () => { state.sel = null; renderSelection(); fit(); setTimeout(() => window.print(), 100); };
 $("btnSave").onclick = saveFile;
-$("btnNew").onclick = () => { if (state.items.length && !confirm("清空所有家具？（底圖保留；可用「復原」救回）")) return; undoStack.push(lastSnap); state.items = []; state.sel = null; lastSnap = snapshot(); renderItems(); renderProps(); autosave(); updateButtons(); };
+$("selExport").onchange = e => { const id = e.target.value; e.target.value = ""; if (id) $(id).click(); };
+$("btnNew").onclick = () => showGate("new");
 $("btnMeasure").onclick = () => setMeasure(!measureMode);
 $("btnUndo").onclick = undo; $("btnRedo").onclick = redo; $("btnFit").onclick = fit;
 $("chkSnap").onchange = e => opt.snap = e.target.checked;
@@ -1360,7 +1418,10 @@ function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add
 /* ============================================================
    匯入畫面與底圖設定
    ============================================================ */
-function showGate() { $("gate").classList.remove("hidden"); $("gateClose").style.display = BASE ? "" : "none"; }
+function showGate(intent = "new") {
+  gateIntent = intent; $("gate").classList.remove("hidden"); $("gateClose").style.display = BASE ? "" : "none";
+  $("gate").querySelector("h2").textContent = intent === "replace" ? `更換「${PROJ ? PROJ.name : ""}」的底圖` : (BASE ? "建立新專案：匯入房屋底圖" : "開始之前：匯入你的房屋底圖");
+}
 function hideGate() { $("gate").classList.add("hidden"); }
 $("gateCancel").onclick = e => { e.preventDefault(); if (BASE) hideGate(); };
 $("gateJson").addEventListener("change", e => { const f = e.target.files[0]; if (f) openFile(f); e.target.value = ""; });
@@ -1374,7 +1435,7 @@ $("gateImg").addEventListener("change", e => {
       const c = document.createElement("canvas"); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
       const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
       const src = c.toDataURL("image/jpeg", 0.85);
-      try { setBase({ name: f.name.replace(/\.[^.]+$/, ""), walls: [], image: { src, x: 0, y: 0, w: c.width, h: c.height, opacity: 0.6 } }, true); }
+      try { if (!applyGateBase({ name: "", walls: [], image: { src, x: 0, y: 0, w: c.width, h: c.height, opacity: 0.6 } }, f.name.replace(/\.[^.]+$/, ""))) return; }
       catch (err) { alert(err.message); return; }
       startCalib();
     };
@@ -1384,11 +1445,10 @@ $("gateImg").addEventListener("change", e => {
   rd.readAsDataURL(f);
 });
 $("gateRect").onclick = () => {
-  const name = prompt("房屋名稱（例如：我的新家）", "我的新家"); if (name === null) return;
-  const w = parseFloat(prompt("外框寬度（cm，牆中心線）", "800")), d = parseFloat(prompt("外框深度（cm，牆中心線）", "900"));
-  if (!(w > 50) || !(d > 50)) { alert("請輸入正確的尺寸"); return; }
+  const w = parseFloat(prompt("外框寬度（cm，牆中心線）", "800")); if (!(w > 50)) return;
+  const d = parseFloat(prompt("外框深度（cm，牆中心線）", "900")); if (!(d > 50)) { alert("請輸入正確的尺寸"); return; }
   const t = parseFloat(prompt("外牆厚度（cm）", "20")) || 20;
-  setBase({ name, walls: [[0, 0, w, 0, t, []], [w, 0, w, d, t, []], [0, d, w, d, t, []], [0, 0, 0, d, t, []]] }, true);
+  if (!applyGateBase({ name: "", walls: [[0, 0, w, 0, t, []], [w, 0, w, d, t, []], [0, d, w, d, t, []], [0, 0, 0, d, t, []]] }, "我的新家")) return;
   toast("已建立外牆。用左側「隔間牆」「門」「柱子」元件畫出格局");
 };
 $("calCancel").onclick = endCalib;
@@ -1404,9 +1464,7 @@ $("aiApply").onclick = () => {
   const msg = $("aiMsg"); msg.style.color = "";
   try {
     const { base, warn } = normalizeBase(extractJSON($("aiText").value));
-    if (BASE && state.items.length && !confirm("要用 AI 產生的底圖取代目前的底圖嗎？（家具保留在原座標，可用「復原」還原）")) return;
-    if (BASE) undoStack.push(lastSnap);
-    setBase(base, true); lastSnap = snapshot(); updateButtons();
+    if (!applyGateBase(base, base.name)) return; updateButtons();
     $("aiModal").classList.remove("show"); $("aiText").value = "";
     toast(`已套用「${base.name}」：${base.walls.length} 面牆` + (warn.length ? `，${warn.length} 則提醒（見右側）` : ""));
     lastAIWarn = warn; renderProps();
@@ -1417,37 +1475,220 @@ function renderBaseSection() {
   if (!BASE) return "";
   const im = BASE.image;
   return `<div class="list"><b>底圖</b>
-    <div class="row" style="display:grid"><span>名稱</span><input id="bName" type="text" value="${esc(BASE.name || "")}"></div>
+    <div class="row" style="display:grid"><span>專案名稱</span><input id="bName" type="text" value="${esc(BASE.name || "")}"></div>
     ${im ? `<div class="row" style="display:grid"><span>透明度</span><input id="bOp" type="range" min="0.1" max="1" step="0.05" value="${im.opacity ?? 0.6}"></div>` : ""}
     <div class="actions">${im ? `<button id="bCal">重新校正比例</button>` : ""}<button id="bExp">匯出底圖檔</button><button id="bChg">更換底圖</button><button id="bAI">🤖 AI 產生底圖</button></div>
     ${lastAIWarn.length ? `<div class="warn" style="color:#9a3412">AI 底圖提醒：<br>${lastAIWarn.slice(0, 8).map(w => "・" + esc(w)).join("<br>")}${lastAIWarn.length > 8 ? `<br>…等 ${lastAIWarn.length} 則` : ""}</div>` : ""}</div>`;
 }
 function bindBaseSection() {
   if (!$("bName")) return;
-  $("bName").onchange = e => { BASE.name = e.target.value; autosave(); };
+  $("bName").onchange = e => { BASE.name = e.target.value; if (PROJ) PROJ.name = e.target.value; autosave(); renderProjSelect(); };
   if ($("bOp")) $("bOp").oninput = e => { BASE.image.opacity = +e.target.value; drawBase(); autosave(); };
   if ($("bCal")) $("bCal").onclick = startCalib;
   $("bExp").onclick = () => download(`${safeName()}-底圖.json`, new Blob([JSON.stringify(baseData(), null, 1)], { type: "application/json" }));
-  $("bChg").onclick = showGate;
-  if ($("bAI")) $("bAI").onclick = openAI;
+  $("bChg").onclick = () => showGate("replace");
+  if ($("bAI")) $("bAI").onclick = () => { gateIntent = "replace"; openAI(); };
 }
 $("btnBase").onclick = () => { state.sel = null; renderSelection(); renderProps(); if (!BASE) showGate(); };
+
+/* ============================================================
+   專案、方案分頁（Excel 工作表式）、疊圖與並排比較
+   ============================================================ */
+var PROJ = null, gateIntent = "new", ghostId = null;
+var IDX_KEY = "house-layout-index-v2";
+function PKEY(id) { return "hl-p-" + id; }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function curDesign() { return PROJ.designs[PROJ.cur]; }
+function dname() { return PROJ ? curDesign().name.replace(/[\\/:*?"<>|]/g, "_") : "方案"; }
+function syncDesign() { if (!PROJ) return; const d = curDesign(); d.items = state.items; d.nextId = state.nextId; }
+function readIndex() { try { return JSON.parse(localStorage.getItem(IDX_KEY) || "null") || { projects: [], current: null }; } catch (e) { return { projects: [], current: null }; } }
+function writeIndex(ix) { try { localStorage.setItem(IDX_KEY, JSON.stringify(ix)); } catch (e) {} }
+function cleanItems(items) { return (items || []).filter(i => i && typeof i.type === "string" && [i.x, i.y, i.w, i.d].every(v => isFinite(v))).map(i => ({ ...i, rot: +i.rot || 0, label: i.label != null ? String(i.label) : "" })); }
+function parseDesigns(o) {
+  const src = Array.isArray(o.designs) && o.designs.length ? o.designs : [{ name: "方案 A", items: o.items }];
+  return src.map((d, k) => { const items = cleanItems(d.items); return { id: d.id || uid(), name: String(d.name || `方案 ${String.fromCharCode(65 + k)}`), items, nextId: Math.max(d.nextId || 1, 1, ...items.map(i => (i.id || 0) + 1)) }; });
+}
+function askName(def) { const n = prompt("專案名稱", def || "我的新家"); return n === null ? null : (n.trim() || def || "未命名專案"); }
+function openProject(pj) {
+  if (PROJ) { syncDesign(); autosave(); }
+  if (typeof mode !== "undefined" && mode === "base") setMode("design");
+  PROJ = { id: pj.id, name: pj.name, designs: pj.designs, cur: Math.min(Math.max(0, pj.cur || 0), pj.designs.length - 1) };
+  ghostId = pj.designs.some(d => d.id === pj.ghost) ? pj.ghost : null; lastAIWarn = [];
+  const d = curDesign(); state.items = d.items; state.nextId = d.nextId; state.sel = null;
+  BASE = null; setBase({ ...pj.base, name: pj.name }, true);
+  undoStack = []; redoStack = []; lastSnap = snapshot(); updateButtons(); renderGhost(); renderSheets(); renderProjSelect();
+}
+function newProject(name, base, designs, cur = 0, ghost = null) {
+  if (!validBase(base)) throw new Error("底圖格式不正確");
+  openProject({ id: uid(), name, base, designs: designs || [{ id: uid(), name: "方案 A", items: [], nextId: 1 }], cur, ghost });
+  autosave(); renderProjSelect(); toast(`已建立專案「${name}」（${PROJ.designs.length} 個方案分頁）`);
+}
+function applyGateBase(b, suggested) {
+  if (!validBase(b)) throw new Error("底圖格式不正確（需要 walls 牆面資料或 image 圖片）");
+  if (gateIntent === "replace" && BASE) {
+    if ((state.items.length || (BASE.walls || []).length) && !confirm(`更換「${PROJ.name}」的底圖？所有方案的家具保留在原座標，可用「復原」還原。`)) return false;
+    undoStack.push(lastSnap); redoStack = []; setBase({ ...b, name: BASE.name }, true); lastSnap = snapshot(); updateButtons(); return true;
+  }
+  const name = askName(suggested); if (name === null) return false;
+  newProject(name, b); return true;
+}
+function switchProject(id) {
+  if (PROJ && id === PROJ.id) return;
+  let pj = null; try { pj = JSON.parse(localStorage.getItem(PKEY(id)) || "null"); } catch (e) {}
+  if (!pj || !validBase(pj.base)) { alert("無法讀取這個專案"); renderProjSelect(); return; }
+  openProject({ id, name: pj.name || pj.base.name || "未命名專案", base: pj.base, designs: parseDesigns(pj), cur: pj.cur || 0, ghost: pj.ghost });
+  autosave(); toast(`已開啟專案「${PROJ.name}」`);
+}
+function renderProjSelect() {
+  const ix = readIndex(), S = $("selProj");
+  S.innerHTML = ix.projects.length ? ix.projects.map(q => `<option value="${q.id}" ${PROJ && q.id === PROJ.id ? "selected" : ""}>📁 ${esc(q.name)}</option>`).join("") : `<option value="">（尚無專案）</option>`;
+}
+$("selProj").onchange = e => { if (e.target.value) switchProject(e.target.value); };
+
+/* --- 方案分頁 --- */
+function switchDesign(k) {
+  if (!PROJ || k < 0 || k >= PROJ.designs.length) return;
+  if (k !== PROJ.cur) { syncDesign(); PROJ.cur = k; }
+  const d = curDesign(); state.items = d.items; state.nextId = d.nextId; state.sel = null;
+  if (ghostId === d.id) ghostId = null;
+  undoStack = []; redoStack = []; lastSnap = snapshot();
+  renderItems(); renderGhost(); renderProps(); updateButtons(); autosave();
+}
+function nextName() { const used = new Set(PROJ.designs.map(d => d.name)); for (let i = 0; i < 52; i++) { const n = `方案 ${i < 26 ? String.fromCharCode(65 + i) : String.fromCharCode(65 + i - 26) + "2"}`; if (!used.has(n)) return n; } return `方案 ${PROJ.designs.length + 1}`; }
+function addDesign(copyIdx) {
+  syncDesign();
+  const src = copyIdx != null ? PROJ.designs[copyIdx] : null;
+  const name = prompt("新方案名稱", src ? `${src.name} 複本` : nextName()); if (name === null) return;
+  const d = { id: uid(), name: name.trim() || nextName(), items: src ? JSON.parse(JSON.stringify(src.items)) : [], nextId: src ? src.nextId : 1 };
+  PROJ.designs.splice(copyIdx != null ? copyIdx + 1 : PROJ.designs.length, 0, d);
+  switchDesign(PROJ.designs.indexOf(d)); toast(src ? `已複製成「${d.name}」` : `已新增「${d.name}」`);
+}
+function renameDesign(k) { const d = PROJ.designs[k], n = prompt("方案名稱", d.name); if (n === null || !n.trim()) return; d.name = n.trim(); renderSheets(); autosave(); }
+function deleteDesign(k) {
+  if (PROJ.designs.length <= 1) { toast("至少要保留一個方案"); return; }
+  const d = PROJ.designs[k]; if (!confirm(`刪除方案「${d.name}」（${(k === PROJ.cur ? state.items : d.items).length} 個物件）？`)) return;
+  syncDesign(); PROJ.designs.splice(k, 1); if (ghostId === d.id) ghostId = null;
+  const nk = k < PROJ.cur ? PROJ.cur - 1 : Math.min(PROJ.cur, PROJ.designs.length - 1); PROJ.cur = -1; PROJ.cur = nk;
+  const nd = curDesign(); state.items = nd.items; state.nextId = nd.nextId; switchDesign(nk);
+}
+function moveDesign(k, dir) {
+  const j = k + dir; if (j < 0 || j >= PROJ.designs.length) return; syncDesign();
+  const cid = curDesign().id; [PROJ.designs[k], PROJ.designs[j]] = [PROJ.designs[j], PROJ.designs[k]];
+  PROJ.cur = PROJ.designs.findIndex(d => d.id === cid); renderSheets(); autosave();
+}
+function renderSheets() {
+  const T = $("sheets"); if (!PROJ) { T.innerHTML = ""; return; }
+  T.innerHTML = PROJ.designs.map((d, k) => `<button class="sh${k === PROJ.cur ? " on" : ""}${d.id === ghostId ? " ghost" : ""}" data-k="${k}" title="點選切換｜雙擊重新命名｜右鍵更多">${esc(d.name)} <small>${(k === PROJ.cur ? state.items : d.items).length}</small></button>`).join("")
+    + `<button class="sh add" id="shAdd" title="新增空白方案">＋</button><span class="grow"></span>
+    <span class="ctl">疊圖<select id="selGhost" title="把另一個方案以紅色半透明疊在目前畫布上"><option value="">（無）</option>${PROJ.designs.map((d, k) => k === PROJ.cur ? "" : `<option value="${d.id}" ${d.id === ghostId ? "selected" : ""}>${esc(d.name)}</option>`).join("")}</select>
+    <button id="shCmp" title="並排比較所有方案">並排比較</button></span>`;
+  T.querySelectorAll(".sh[data-k]").forEach(b => {
+    const k = +b.dataset.k;
+    b.onclick = () => switchDesign(k); b.ondblclick = () => renameDesign(k);
+    b.oncontextmenu = e => { e.preventDefault(); sheetMenu(k, e.clientX, e.clientY); };
+  });
+  $("shAdd").onclick = () => addDesign(null);
+  $("selGhost").onchange = e => { ghostId = e.target.value || null; renderGhost(); renderSheets(); autosave(); };
+  $("shCmp").onclick = openCompare;
+}
+function sheetMenu(k, x, y) {
+  const M = $("sheetMenu"), n = PROJ.designs.length;
+  M.innerHTML = `<div data-a="ren">重新命名</div><div data-a="dup">複製方案</div><div data-a="new">新增空白方案</div><hr>
+    <div data-a="left" ${k === 0 ? 'style="opacity:.4"' : ""}>往左移</div><div data-a="right" ${k === n - 1 ? 'style="opacity:.4"' : ""}>往右移</div>
+    <div data-a="ghost">${PROJ.designs[k].id === ghostId ? "取消疊圖" : "疊在目前畫布上比較"}</div><hr><div data-a="del" class="danger">刪除方案</div>`;
+  M.style.left = x + "px"; M.style.top = Math.max(8, y - 250) + "px"; M.classList.add("show");
+  M.querySelectorAll("div[data-a]").forEach(it => it.onclick = () => {
+    M.classList.remove("show"); const a = it.dataset.a;
+    if (a === "ren") renameDesign(k); if (a === "dup") addDesign(k); if (a === "new") addDesign(null);
+    if (a === "left") moveDesign(k, -1); if (a === "right") moveDesign(k, 1); if (a === "del") deleteDesign(k);
+    if (a === "ghost") { if (k === PROJ.cur) { toast("不能疊目前的方案"); return; } ghostId = PROJ.designs[k].id === ghostId ? null : PROJ.designs[k].id; renderGhost(); renderSheets(); autosave(); }
+  });
+}
+document.addEventListener("pointerdown", e => { if (!e.target.closest || !e.target.closest("#sheetMenu")) $("sheetMenu").classList.remove("show"); });
+
+/* --- 疊圖（另一個方案以紅色半透明顯示） --- */
+function renderGhost() {
+  const Lg = $("ghostLayer"); Lg.innerHTML = ""; if (!PROJ || !ghostId) return;
+  const d = PROJ.designs.find(x => x.id === ghostId); if (!d || d === curDesign()) { ghostId = null; return; }
+  for (const it of d.items) {
+    const g = el("g", { class: "item", transform: `translate(${it.x} ${it.y}) rotate(${it.rot} ${it.w / 2} ${it.d / 2})` + (it.flip ? ` translate(${it.w} 0) scale(-1 1)` : "") }, Lg);
+    (DRAW[it.type] || DRAW.cabinet)(g, it.w, it.d, it);
+  }
+}
+
+/* --- 並排比較 --- */
+function designSVG(d) {
+  const keep = state.items, sel = state.sel, g0 = ghostId;
+  state.items = d.items; state.sel = null; ghostId = null; renderItems(); renderGhost();
+  const out = exportSVGString(1, d.name);
+  state.items = keep; state.sel = sel; ghostId = g0; renderItems(); renderGhost();
+  return out;
+}
+function openCompare() {
+  syncDesign(); const G = $("cmpGrid"); G.innerHTML = "";
+  PROJ.designs.forEach((d, k) => {
+    const counts = {}; d.items.forEach(i => { const n = i.label || (DEFAULTS[i.type] || {}).name || i.type; counts[n] = (counts[n] || 0) + 1; });
+    const card = document.createElement("div"); card.className = "cmpCard";
+    card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>${esc(d.name)}${k === PROJ.cur ? '　<span class="muted">（目前）</span>' : ""}</b><button>切換到此方案</button></div>
+      <img alt="${esc(d.name)}" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSVG(d))}">
+      <div class="muted" style="font-size:12px;line-height:1.6">${d.items.length} 個物件：${Object.entries(counts).map(([n, c]) => esc(n) + (c > 1 ? " ×" + c : "")).join("、") || "（空白）"}</div>`;
+    card.querySelector("button").onclick = () => { $("cmpModal").classList.remove("show"); switchDesign(k); };
+    G.appendChild(card);
+  });
+  $("cmpModal").classList.add("show");
+}
+$("cmpClose").onclick = () => $("cmpModal").classList.remove("show");
+
+/* --- 專案管理 --- */
+function openProjMgr() {
+  const ix = readIndex(), Lp = $("projList");
+  Lp.innerHTML = ix.projects.slice().sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).map(q => `<div class="projRow"><div><b>📁 ${esc(q.name)}</b>${PROJ && q.id === PROJ.id ? ' <span class="muted">（目前）</span>' : ""}<br><small class="muted">最後修改：${q.updatedAt ? new Date(q.updatedAt).toLocaleString("zh-TW") : "-"}</small></div>
+    <div class="actions" style="margin:0"><button data-a="open" data-id="${q.id}">開啟</button><button data-a="ren" data-id="${q.id}">重新命名</button><button data-a="del" data-id="${q.id}" style="color:#d1242f">刪除</button></div></div>`).join("") || '<p class="muted">尚無專案</p>';
+  Lp.querySelectorAll("button[data-a]").forEach(b => b.onclick = () => projAction(b.dataset.a, b.dataset.id));
+  $("projModal").classList.add("show");
+}
+function projAction(a, id) {
+  const ix = readIndex(), m = ix.projects.find(q => q.id === id); if (!m) return;
+  if (a === "open") { $("projModal").classList.remove("show"); switchProject(id); return; }
+  if (a === "ren") {
+    const n = prompt("專案名稱", m.name); if (n === null || !n.trim()) return; m.name = n.trim(); writeIndex(ix);
+    if (PROJ && PROJ.id === id) { PROJ.name = m.name; BASE.name = m.name; autosave(); renderProps(); }
+    else { try { const pj = JSON.parse(localStorage.getItem(PKEY(id))); pj.name = m.name; if (pj.base) pj.base.name = m.name; localStorage.setItem(PKEY(id), JSON.stringify(pj)); } catch (e) {} }
+  }
+  if (a === "del") {
+    if (!confirm(`刪除專案「${m.name}」？會從這個瀏覽器移除（建議先「儲存檔案」備份）。`)) return;
+    localStorage.removeItem(PKEY(id)); ix.projects = ix.projects.filter(q => q.id !== id);
+    if (PROJ && PROJ.id === id) {
+      PROJ = null; ix.current = null; writeIndex(ix);
+      if (ix.projects.length) switchProject(ix.projects[0].id);
+      else { BASE = null; state.items = []; state.sel = null; ghostId = null; drawGrid(); drawBase(); renderItems(); renderGhost(); renderSheets(); renderProps(); $("projModal").classList.remove("show"); renderProjSelect(); showGate("new"); return; }
+    } else writeIndex(ix);
+  }
+  renderProjSelect(); openProjMgr();
+}
+$("btnProj").onclick = openProjMgr;
+$("projClose").onclick = () => $("projModal").classList.remove("show");
+$("projNew").onclick = () => { $("projModal").classList.remove("show"); showGate("new"); };
 
 /* ============================================================
    啟動
    ============================================================ */
 buildPalette();
-try {
-  const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
-  if (saved && saved.base && validBase(saved.base)) {
-    setBase(saved.base, false); state.items = saved.items || []; state.nextId = saved.nextId || 1; lastSnap = snapshot();
-    toast(`已還原上次的進度（${state.items.length} 個物件）`);
+(function boot() {
+  let ix = readIndex();
+  if (!ix.projects.length) {   // 舊版暫存（單一設計）轉成專案
+    try { const old = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+      if (old && old.base && validBase(old.base)) { const id = uid(), name = old.base.name || "我的專案";
+        localStorage.setItem(PKEY(id), JSON.stringify({ ...old, name, designs: parseDesigns(old), cur: 0 })); ix = { projects: [{ id, name, updatedAt: Date.now() }], current: id }; writeIndex(ix); } } catch (e) {}
   }
-} catch (e) {}
-if (!BASE) showGate();
+  const id = ix.projects.some(q => q.id === ix.current) ? ix.current : (ix.projects[0] || {}).id;
+  if (id) switchProject(id);
+})();
+renderProjSelect();
+if (!BASE) showGate("new");
 renderItems(); renderProps(); updateButtons();
 window.addEventListener("resize", () => { if (BASE) fit(); });
-window.__fp = { state, addItem, DEFAULTS, loadData, projectData, exportSVGString, setBase, get base() { return BASE; } };
+window.__fp = { state, addItem, DEFAULTS, loadData, projectData, exportSVGString, setBase, switchDesign, addDesign, switchProject, get base() { return BASE; }, get proj() { return PROJ; } };
 </script>
 </body>
 </html>
