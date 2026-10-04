@@ -86,6 +86,13 @@
   .gopt { display:block; text-align:left; border:1px solid #d0d7de; border-radius:10px; padding:12px 14px; cursor:pointer; background:#fff; font:inherit; }
   .gopt:hover { border-color:var(--accent); background:#f6f9ff; }
   .gopt b { display:block; font-size:15px; margin-bottom:3px; } .gopt span { font-size:12.5px; color:#6b7280; }
+  #basebar { position:fixed; top:52px; left:244px; right:276px; background:#fff; border:1px solid #93c5fd; box-shadow:0 4px 14px rgba(31,111,235,.15); border-radius:10px; padding:6px 10px; display:none; gap:6px; align-items:center; flex-wrap:wrap; z-index:14; font-size:13px; }
+  #basebar.show { display:flex; }
+  #basebar button { padding:4px 9px; }
+  #basebar button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  #basebar input { width:52px; font:inherit; font-size:13px; padding:2px 4px; border:1px solid #d0d7de; border-radius:5px; }
+  #svg.basemode #itemLayer { opacity:.22; pointer-events:none; }
+  #btnBaseEdit.on { background:#fff7ed; border-color:#fdba74; }
   #calbar { position:fixed; top:56px; left:50%; transform:translateX(-50%); background:#fff7ed; border:1px solid #fdba74; color:#7c2d12; padding:8px 12px; border-radius:8px; font-size:13px; display:none; gap:10px; align-items:center; z-index:15; }
   #calbar.show { display:flex; }
   @media print { header, #palette, #props, #hint, #zoomInfo { display:none !important; } #app { display:block; } #stage { height:100vh; } }
@@ -96,6 +103,7 @@
   <header>
     <h1>🏠 House Layout</h1>
     <button id="btnBase" title="底圖設定：名稱、透明度、重新校正、匯出或更換底圖">底圖</button>
+    <button id="btnBaseEdit" title="編輯底圖：畫牆、加門窗、柱子、房間名稱、固定設備">✏️ 編輯底圖</button>
     <button id="btnNew" title="清空所有家具（保留底圖）">新設計</button>
     <label class="btn" title="匯入先前儲存的 .json 專案檔">開啟檔案<input id="fileIn" type="file" accept=".json,application/json" hidden></label>
     <button id="btnSave" class="primary" title="下載 .json 專案檔，下次可匯入">儲存檔案</button>
@@ -142,11 +150,27 @@
   <div class="gopts">
     <label class="gopt"><b>① 匯入底圖或專案檔</b><span>本工具輸出的 .json（底圖檔或含底圖的專案檔）</span><input id="gateJson" type="file" accept=".json,application/json" hidden></label>
     <label class="gopt"><b>② 上傳平面圖圖片</b><span>PNG／JPG。上傳後在圖上點兩個已知距離的端點，輸入實際公分數即可校正比例</span><input id="gateImg" type="file" accept="image/*" hidden></label>
-    <button class="gopt" id="gateRect" type="button"><b>③ 輸入外框尺寸</b><span>建立矩形外牆，再用「隔間牆」「門」「柱子」等元件自己畫格局</span></button>
+    <button class="gopt" id="gateRect" type="button"><b>③ 輸入外框尺寸</b><span>建立矩形外牆，再用「編輯底圖」加隔間、門窗、柱子</span></button>
+    <button class="gopt" id="gateDraw" type="button"><b>④ 從空白開始畫底圖</b><span>直接進入底圖編輯模式，用「畫牆」一面一面畫出格局</span></button>
   </div>
   <p class="muted" style="font-size:12px">PDF 平面圖請先截圖或轉成 PNG。建議圖片中有一段標示尺寸的牆，方便校正。</p>
   <p id="gateClose" class="muted" style="font-size:12px;display:none"><a href="#" id="gateCancel">取消，回到目前的底圖</a></p>
 </div></div>
+<div id="basebar">
+  <b>✏️ 底圖編輯</b>
+  <button data-tool="select" title="選取、移動（V）">選取</button>
+  <button data-tool="wall" title="連續點擊畫牆，Esc／Enter／雙擊結束（W）">畫牆</button>
+  <button data-tool="win" title="點在牆上加窗">＋窗</button>
+  <button data-tool="door" title="點在牆上加門">＋門</button>
+  <button data-tool="open" title="點在牆上加開口（無門）">＋開口</button>
+  <button data-tool="column" title="拖拉畫柱子">柱子</button>
+  <button data-tool="canopy" title="拖拉畫雨遮">雨遮</button>
+  <button data-tool="oos" title="拖拉框出不在設計範圍的區域（衛浴、陽台…）">不在範圍</button>
+  <button data-tool="room" title="點一下放房間名稱">房間名稱</button>
+  <label>牆厚 <input id="bThick" type="number" min="3" max="60" value="12"> cm</label>
+  <span class="muted" style="font-size:12px">左側元件會成為固定設備 ｜ Alt：斜牆</span>
+  <button id="bDone" class="primary">完成編輯</button>
+</div>
 <div id="calbar"><span>📐 校正比例：在圖上依序點選<b>兩個已知距離的端點</b>（例如一面牆的兩端）。</span><button id="calCancel">取消</button></div>
 
 <script>
@@ -484,10 +508,15 @@ const $ = id => document.getElementById(id);
 const opt = { snap: true, step: 1, grid: true, size: true, dims: false };
 const STORE_KEY = "house-layout-v1";
 
-function snapshot() { return JSON.stringify({ items: state.items, nextId: state.nextId }); }
+function baseForSnap() {
+  if (!BASE) return null; const { bounds, ...b } = BASE;
+  return b.image ? { ...b, image: { ...b.image, src: "@img" } } : b;
+}
+function snapshot() { return JSON.stringify({ items: state.items, nextId: state.nextId, base: baseForSnap() }); }
 function commit() { undoStack.push(lastSnap); if (undoStack.length > 200) undoStack.shift(); redoStack = []; lastSnap = snapshot(); autosave(); updateButtons(); }
 let lastSnap = snapshot();
-function restore(snap) { const o = JSON.parse(snap); state.items = o.items; state.nextId = o.nextId; if (!state.items.find(i => i.id === state.sel)) state.sel = null; lastSnap = snap; renderItems(); renderProps(); autosave(); updateButtons(); }
+function restore(snap) { const o = JSON.parse(snap); state.items = o.items; state.nextId = o.nextId;
+  if (o.base) { const src = BASE && BASE.image && BASE.image.src; if (o.base.image && o.base.image.src === "@img") o.base.image.src = src; BASE = o.base; BASE.bounds = computeBounds(BASE); bsel = null; drawGrid(); drawBase(); } if (!state.items.find(i => i.id === state.sel)) state.sel = null; lastSnap = snap; renderItems(); renderProps(); autosave(); updateButtons(); }
 function undo() { if (!undoStack.length) return; redoStack.push(lastSnap); restore(undoStack.pop()); }
 function redo() { if (!redoStack.length) return; undoStack.push(lastSnap); restore(redoStack.pop()); }
 function updateButtons() { $("btnUndo").disabled = !undoStack.length; $("btnRedo").disabled = !redoStack.length; }
@@ -552,9 +581,16 @@ function drawBase() {
     const a0 = Math.min(hz ? x1 : y1, hz ? x2 : y2) - h, a1 = Math.max(hz ? x1 : y1, hz ? x2 : y2) + h;
     const seg = (a, b, cls) => b > a && (hz ? R(baseLayer, a, y1 - h, b - a, th, cls) : R(baseLayer, x1 - h, a, th, b - a, cls));
     let cur = a0;
-    for (const [a, b, k] of ops.slice().sort((p, q) => p[0] - q[0])) {
+    for (const [a, b, k, o] of ops.slice().sort((p, q) => p[0] - q[0])) {
       seg(cur, a, "wall");
       if (k === "win") { seg(a, b, "win"); if (hz) L(baseLayer, a, y1, b, y1, "winline"); else L(baseLayer, x1, a, x1, b, "winline"); }
+      if (k === "door" && o) {   // 門：鉸鏈端與開向
+        const len = b - a, hA = o.hinge === "b" ? b : a, oA = o.hinge === "b" ? a : b, sd = o.side || 1;
+        const H = hz ? [hA, y1] : [x1, hA], O = hz ? [hA, y1 + sd * len] : [x1 + sd * len, hA], Cc = hz ? [oA, y1] : [x1, oA];
+        L(baseLayer, H[0], H[1], O[0], O[1], "door-leaf");
+        const sweep = ((O[0] - H[0]) * (Cc[1] - H[1]) - (O[1] - H[1]) * (Cc[0] - H[0])) > 0 ? 1 : 0;
+        PATH(baseLayer, `M${O[0]} ${O[1]} A ${len} ${len} 0 0 ${sweep} ${Cc[0]} ${Cc[1]}`, "door-arc");
+      }
       cur = b;
     }
     seg(cur, a1, "wall");
@@ -624,7 +660,7 @@ function renderItems() {
   renderSelection();
 }
 function renderSelection() {
-  uiLayer.innerHTML = ""; drawMeasure(); drawCalib(); const it = cur(); if (!it) return;
+  uiLayer.innerHTML = ""; drawMeasure(); drawCalib(); if (mode === "base") { drawBaseEditUI(); return; } const it = cur(); if (!it) return;
   const g = el("g", { transform: `translate(${it.x} ${it.y}) rotate(${it.rot} ${it.w / 2} ${it.d / 2})` }, uiLayer);
   const k = 1 / view.s;
   el("rect", { x: -3 * k, y: -3 * k, width: it.w + 6 * k, height: it.d + 6 * k, class: "selbox", "stroke-width": 1.4 * k }, g);
@@ -670,6 +706,7 @@ svg.addEventListener("pointerdown", e => {
   if (calib && e.button === 0) { calib.pts.push(toWorld(e.clientX, e.clientY)); renderSelection(); if (calib.pts.length === 2) setTimeout(applyCalib, 30); return; }
   if (e.button === 1 || e.button === 2) { startPan(e); return; }
   if (measureMode) { let p = toWorld(e.clientX, e.clientY); if (opt.snap) p = { x: snapV(p.x), y: snapV(p.y) }; measure = { a: p, b: p }; drag = { kind: "measure" }; svg.setPointerCapture(e.pointerId); renderSelection(); return; }
+  if (mode === "base") { basePointerDown(e); return; }
   const h = e.target.getAttribute && e.target.getAttribute("data-h");
   const p = toWorld(e.clientX, e.clientY);
   if (h && cur()) {
@@ -686,6 +723,7 @@ svg.addEventListener("pointerdown", e => {
 function startPan(e) { drag = { kind: "pan", sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y }; svg.classList.add("panning"); svg.setPointerCapture(e.pointerId); }
 svg.addEventListener("contextmenu", e => e.preventDefault());
 svg.addEventListener("pointermove", e => {
+  if (mode === "base" && basePointerMove(e)) return;
   if (!drag) return;
   if (drag.kind === "pan") { view.x = drag.vx + e.clientX - drag.sx; view.y = drag.vy + e.clientY - drag.sy; applyView(); renderSelection(); return; }
   if (drag.kind === "measure") { let p = toWorld(e.clientX, e.clientY); if (opt.snap) p = { x: snapV(p.x), y: snapV(p.y) };
@@ -716,6 +754,7 @@ svg.addEventListener("pointermove", e => {
   renderItems(); renderProps(true);
 });
 svg.addEventListener("pointerup", e => {
+  if (mode === "base" && basePointerUp(e)) return;
   if (!drag) return; svg.classList.remove("panning");
   if (drag.kind !== "pan" && drag.kind !== "measure") { const it = state.items.find(i => i.id === drag.id); if (it && JSON.stringify(it) !== JSON.stringify(drag.orig)) commit(); }
   drag = null;
@@ -724,6 +763,7 @@ svg.addEventListener("pointerup", e => {
 /* ---------- 新增、刪除、複製 ---------- */
 function addItem(def, x, y) {
   if (!BASE) { showGate(); return null; }
+  if (mode === "base") return addFixture(def, x, y);
   const it = { id: state.nextId++, type: def.type, label: def.name, x: 0, y: 0, w: def.w, d: def.d, rot: 0, z: state.nextId };
   if (def.seats) it.seats = def.seats; if (def.thick) it.thick = def.thick; if (def.chairs != null) it.chairs = def.chairs;
   if (def.type === "text") { it.label = "文字"; it.fontSize = 16; }
@@ -770,12 +810,13 @@ svg.addEventListener("drop", e => {
    屬性面板
    ============================================================ */
 function renderProps(light) {
+  if (mode === "base") { if (!(light && document.activeElement && $("props").contains(document.activeElement))) renderBaseProps(); return; }
   const P = $("props"), it = cur();
   if (light && it && document.activeElement && P.contains(document.activeElement)) return;
   if (!it) {
     P.innerHTML = `<h2>屬性</h2><div class="empty">點選圖上的物件即可設定尺寸、角度與名稱。<br><br>
       <b>操作方式</b><br>・從左側把元件拖到圖上（或點一下元件直接加入）<br>・拖曳物件移動；拖曳藍色方塊調整寬深；拖曳上方圓點旋轉（每 15°，按住 Shift 自由旋轉）<br>
-      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br><br>
+      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br>・✏️「編輯底圖」可畫牆、加門窗、柱子、房間名稱與固定設備<br><br>
       <b>存檔</b><br>「儲存檔案」會下載 .json 專案檔（含底圖），下次用「開啟檔案」匯入即可；瀏覽器也會自動暫存目前進度。資料不會上傳到任何伺服器。</div>` + listHTML();
     $("props").insertAdjacentHTML("beforeend", renderBaseSection()); bindBaseSection();
     bindList(); return;
@@ -827,10 +868,228 @@ function rotSel(deg) { const it = cur(); if (!it || it.locked) return; it.rot = 
 function flipSel() { const it = cur(); if (!it || it.locked) return; it.flip = !it.flip; renderItems(); commit(); }
 
 /* ============================================================
+   底圖編輯模式
+   ============================================================ */
+let mode = "design", btool = "select", bsel = null, wallDraw = null, rectDraw = null, hoverPt = null;
+const BTOOLS = { select: "選取", wall: "畫牆", win: "＋窗", door: "＋門", open: "＋開口", column: "柱子", canopy: "雨遮", oos: "不在範圍", room: "房間名稱" };
+function setMode(m) {
+  if (m === "base" && !BASE) { showGate(); return; }
+  if (m === mode) return;
+  mode = m; wallDraw = null; rectDraw = null; bsel = null; state.sel = null;
+  svg.classList.toggle("basemode", mode === "base"); $("basebar").classList.toggle("show", mode === "base"); $("btnBaseEdit").classList.toggle("on", mode === "base");
+  if (mode === "base") setTool("select"); else { svg.style.cursor = ""; BASE.bounds = computeBounds(BASE); drawGrid(); drawBase(); }
+  renderItems(); renderProps(); toast(mode === "base" ? "底圖編輯模式：家具暫時鎖定" : "回到設計模式");
+}
+function setTool(t) {
+  btool = t; wallDraw = null; rectDraw = null;
+  document.querySelectorAll("#basebar button[data-tool]").forEach(b => b.classList.toggle("on", b.dataset.tool === t));
+  svg.style.cursor = t === "select" ? "" : "crosshair"; renderSelection(); renderProps();
+}
+document.querySelectorAll("#basebar button[data-tool]").forEach(b => b.onclick = () => setTool(b.dataset.tool));
+$("bDone").onclick = () => setMode("design");
+$("btnBaseEdit").onclick = () => setMode(mode === "base" ? "design" : "base");
+$("gateDraw").onclick = () => {
+  const name = prompt("房屋名稱", "我的房屋"); if (name === null) return;
+  setBase({ name, walls: [] }, true); setMode("base"); setTool("wall");
+  toast("從空白開始：點擊畫牆，Esc 或雙擊結束一段");
+};
+function commitBase() { BASE.bounds = computeBounds(BASE); drawBase(); commit(); renderSelection(); renderProps(); }
+const wallTh = () => Math.max(3, parseFloat($("bThick").value) || 12);
+function isAxis(w) { return Math.abs(w[0] - w[2]) < 0.01 || Math.abs(w[1] - w[3]) < 0.01; }
+function wallHz(w) { return Math.abs(w[1] - w[3]) < Math.abs(w[0] - w[2]); }
+function distSeg(p, x1, y1, x2, y2) { const dx = x2 - x1, dy = y2 - y1, l = dx * dx + dy * dy; let t = l ? ((p.x - x1) * dx + (p.y - y1) * dy) / l : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(p.x - x1 - t * dx, p.y - y1 - t * dy); }
+function inRect(p, r) { const [x1, y1, x2, y2] = r; return p.x >= Math.min(x1, x2) && p.x <= Math.max(x1, x2) && p.y >= Math.min(y1, y2) && p.y <= Math.max(y1, y2); }
+function inFixture(p, f) { const a = -(f.rot || 0) * Math.PI / 180, cx = f.x + f.w / 2, cy = f.y + f.d / 2, dx = p.x - cx, dy = p.y - cy; const lx = dx * Math.cos(a) - dy * Math.sin(a), ly = dx * Math.sin(a) + dy * Math.cos(a); return Math.abs(lx) <= f.w / 2 && Math.abs(ly) <= f.d / 2; }
+function snapPt(p, from, free) {
+  let q = { x: snapV(p.x), y: snapV(p.y) }; const tol = 10 / view.s;
+  for (const w of BASE.walls || []) for (const [x, y] of [[w[0], w[1]], [w[2], w[3]]]) if (Math.hypot(p.x - x, p.y - y) < tol) return { x, y };
+  if (from && !free) { if (Math.abs(q.x - from.x) > Math.abs(q.y - from.y)) q.y = from.y; else q.x = from.x; }
+  return q;
+}
+function hitBase(p) {
+  const B = BASE, tol = 8 / view.s;
+  if (bsel && bsel.k === "wall") { const w = B.walls[bsel.i]; if (w) { if (Math.hypot(p.x - w[0], p.y - w[1]) < tol * 1.4) return { k: "wall", i: bsel.i, part: "p1" }; if (Math.hypot(p.x - w[2], p.y - w[3]) < tol * 1.4) return { k: "wall", i: bsel.i, part: "p2" }; } }
+  for (let i = (B.fixtures || []).length - 1; i >= 0; i--) if (inFixture(p, B.fixtures[i])) return { k: "fixture", i };
+  for (let i = 0; i < (B.rooms || []).length; i++) { const r = B.rooms[i]; if (Math.abs(p.x - r.x) < 45 && p.y > r.y - 18 && p.y < r.y + 26) return { k: "room", i }; }
+  for (let i = 0; i < (B.columns || []).length; i++) if (inRect(p, B.columns[i])) return { k: "column", i };
+  for (let i = 0; i < (B.walls || []).length; i++) { const w = B.walls[i]; if (distSeg(p, w[0], w[1], w[2], w[3]) <= w[4] / 2 + tol) return { k: "wall", i }; }
+  for (let i = 0; i < (B.doors || []).length; i++) { const d = B.doors[i]; if (distSeg(p, d.h[0], d.h[1], d.o[0], d.o[1]) < tol || Math.hypot(p.x - d.h[0], p.y - d.h[1]) < Math.hypot(d.o[0] - d.h[0], d.o[1] - d.h[1])) { const mx = (d.o[0] + d.c[0]) / 2, my = (d.o[1] + d.c[1]) / 2; if (Math.hypot(p.x - mx, p.y - my) < Math.hypot(d.o[0] - d.c[0], d.o[1] - d.c[1]) * 0.6) return { k: "door", i }; } }
+  for (let i = 0; i < (B.outOfScope || []).length; i++) if (inRect(p, B.outOfScope[i].r)) return { k: "oos", i };
+  for (let i = 0; i < (B.canopies || []).length; i++) if (inRect(p, B.canopies[i])) return { k: "canopy", i };
+  if (B.image && inRect(p, [B.image.x, B.image.y, B.image.x + B.image.w, B.image.y + B.image.h])) return { k: "image" };
+  return null;
+}
+function addOpening(p, kind) {
+  const tol = 10 / view.s; let best = null;
+  (BASE.walls || []).forEach((w, i) => { const d = distSeg(p, w[0], w[1], w[2], w[3]); if (d <= w[4] / 2 + tol && (!best || d < best.d)) best = { i, d }; });
+  if (!best) { toast("請點在牆上"); return; }
+  const w = BASE.walls[best.i]; if (!isAxis(w)) { toast("斜牆目前不支援門窗開口"); return; }
+  const hz = wallHz(w), lo = Math.min(hz ? w[0] : w[1], hz ? w[2] : w[3]), hi = Math.max(hz ? w[0] : w[1], hz ? w[2] : w[3]);
+  const width = kind === "win" ? 120 : kind === "door" ? 80 : 90;
+  let c = snapV(hz ? p.x : p.y), a = Math.max(lo, c - width / 2), b = Math.min(hi, a + width); a = Math.max(lo, b - width);
+  w[5] = w[5] || []; w[5].push(kind === "door" ? [a, b, "door", { hinge: "a", side: 1 }] : [a, b, kind]);
+  bsel = { k: "wall", i: best.i }; commitBase();
+}
+function basePointerDown(e) {
+  const raw = toWorld(e.clientX, e.clientY);
+  if (btool === "wall") {
+    const last = wallDraw && wallDraw.pts[wallDraw.pts.length - 1], q = snapPt(raw, last, e.altKey);
+    if (!wallDraw) { wallDraw = { pts: [q] }; }
+    else if (Math.hypot(q.x - last.x, q.y - last.y) > 1) { BASE.walls.push([last.x, last.y, q.x, q.y, wallTh(), []]); wallDraw.pts.push(q); commitBase(); }
+    renderSelection(); return;
+  }
+  if (["win", "door", "open"].includes(btool)) { addOpening(raw, btool); return; }
+  if (["column", "canopy", "oos"].includes(btool)) { const q = { x: snapV(raw.x), y: snapV(raw.y) }; rectDraw = { a: q, b: q }; drag = { kind: "brect" }; svg.setPointerCapture(e.pointerId); return; }
+  if (btool === "room") { const n = prompt("房間名稱", "客廳"); if (!n) return; (BASE.rooms = BASE.rooms || []).push({ n, s: "", x: snapV(raw.x), y: snapV(raw.y) }); bsel = { k: "room", i: BASE.rooms.length - 1 }; commitBase(); return; }
+  const h = hitBase(raw); bsel = h ? { k: h.k, i: h.i } : null; renderSelection(); renderProps();
+  if (!h) { startPan(e); return; }
+  drag = { kind: "bmove", part: h.part, start: raw, orig: JSON.parse(JSON.stringify(baseTarget(h))) }; svg.setPointerCapture(e.pointerId);
+}
+function baseTarget(h) { const B = BASE; return { wall: () => B.walls[h.i], column: () => B.columns[h.i], canopy: () => B.canopies[h.i], oos: () => B.outOfScope[h.i], room: () => B.rooms[h.i], fixture: () => B.fixtures[h.i], door: () => B.doors[h.i], image: () => B.image }[h.k](); }
+function basePointerMove(e) {
+  if (drag && (drag.kind === "pan" || drag.kind === "measure")) return false;
+  const raw = toWorld(e.clientX, e.clientY);
+  if (!drag) { if (btool === "wall" && wallDraw) { hoverPt = snapPt(raw, wallDraw.pts[wallDraw.pts.length - 1], e.altKey); renderSelection(); } return true; }
+  if (drag.kind === "brect") { rectDraw.b = { x: snapV(raw.x), y: snapV(raw.y) }; renderSelection(); return true; }
+  if (drag.kind !== "bmove" || !bsel) return true;
+  const o = drag.orig, dx = snapV(raw.x - drag.start.x), dy = snapV(raw.y - drag.start.y), t = baseTarget(bsel);
+  if (bsel.k === "wall") {
+    if (drag.part) { const fix = drag.part === "p1" ? [o[2], o[3]] : [o[0], o[1]], q = snapPt(raw, { x: fix[0], y: fix[1] }, e.altKey); if (drag.part === "p1") { t[0] = q.x; t[1] = q.y; } else { t[2] = q.x; t[3] = q.y; } }
+    else { const hz = wallHz(o); t[0] = o[0] + dx; t[1] = o[1] + dy; t[2] = o[2] + dx; t[3] = o[3] + dy; t[5] = (o[5] || []).map(op => [op[0] + (hz ? dx : dy), op[1] + (hz ? dx : dy), ...op.slice(2)]); }
+  } else if (["column", "canopy"].includes(bsel.k)) { t[0] = o[0] + dx; t[1] = o[1] + dy; t[2] = o[2] + dx; t[3] = o[3] + dy; }
+  else if (bsel.k === "oos") { t.r = [o.r[0] + dx, o.r[1] + dy, o.r[2] + dx, o.r[3] + dy]; }
+  else if (["room", "fixture", "image"].includes(bsel.k)) { t.x = o.x + dx; t.y = o.y + dy; }
+  else if (bsel.k === "door") { for (const k of ["h", "o", "c"]) t[k] = [o[k][0] + dx, o[k][1] + dy]; }
+  drawBase(); renderSelection(); renderProps(true); return true;
+}
+function basePointerUp(e) {
+  if (!drag || drag.kind === "pan" || drag.kind === "measure") return false;
+  if (drag.kind === "brect") {
+    const { a, b } = rectDraw, r = [Math.min(a.x, b.x), Math.min(a.y, b.y), Math.max(a.x, b.x), Math.max(a.y, b.y)]; rectDraw = null; drag = null;
+    if (r[2] - r[0] < 3 || r[3] - r[1] < 3) { renderSelection(); return true; }
+    if (btool === "column") { (BASE.columns = BASE.columns || []).push(r); bsel = { k: "column", i: BASE.columns.length - 1 }; }
+    if (btool === "canopy") { (BASE.canopies = BASE.canopies || []).push(r); if (!BASE.canopyLabel) BASE.canopyLabel = "雨遮"; bsel = { k: "canopy", i: BASE.canopies.length - 1 }; }
+    if (btool === "oos") { const n = prompt("區域名稱（例如：衛浴、陽台）", "衛浴") || ""; (BASE.outOfScope = BASE.outOfScope || []).push({ name: n, r }); bsel = { k: "oos", i: BASE.outOfScope.length - 1 }; }
+    commitBase(); return true;
+  }
+  const changed = bsel && JSON.stringify(baseTarget(bsel)) !== JSON.stringify(drag.orig); drag = null;
+  if (changed) commitBase(); return true;
+}
+svg.addEventListener("dblclick", () => { if (mode === "base" && btool === "wall") { wallDraw = null; hoverPt = null; renderSelection(); } });
+function addFixture(def, x, y) {
+  const f = { type: def.type, x: snapV(x - def.w / 2), y: snapV(y - def.d / 2), w: def.w, d: def.d, rot: 0, label: def.name };
+  if (def.seats) f.seats = def.seats; if (def.chairs != null) f.chairs = def.chairs; if (def.thick) f.thick = def.thick;
+  (BASE.fixtures = BASE.fixtures || []).push(f); bsel = { k: "fixture", i: BASE.fixtures.length - 1 }; setTool("select"); commitBase();
+  toast(`已加入固定設備「${def.name}」（離開編輯模式後鎖定）`); return null;
+}
+function delBaseSel() {
+  if (!bsel) return; const B = BASE, k = bsel.k, i = bsel.i;
+  if (k === "wall") B.walls.splice(i, 1); if (k === "column") B.columns.splice(i, 1); if (k === "canopy") B.canopies.splice(i, 1);
+  if (k === "oos") B.outOfScope.splice(i, 1); if (k === "room") B.rooms.splice(i, 1); if (k === "fixture") B.fixtures.splice(i, 1); if (k === "door") B.doors.splice(i, 1);
+  if (k === "image") { if (!confirm("移除底圖圖片？（牆與其他元素保留）")) return; delete B.image; }
+  bsel = null; commitBase();
+}
+function baseKey(e) {
+  if (e.key === "Escape" || e.key === "Enter") { if (wallDraw) { wallDraw = null; hoverPt = null; } else bsel = null; renderSelection(); renderProps(); return; }
+  if ((e.key === "Delete" || e.key === "Backspace") && bsel) { e.preventDefault(); delBaseSel(); return; }
+  if (e.key === "v" || e.key === "V") setTool("select"); if (e.key === "w" || e.key === "W") setTool("wall");
+}
+function drawBaseEditUI() {
+  const k = 1 / view.s, B = BASE, ui = uiLayer, blue = "#1f6feb";
+  (B.walls || []).forEach(w => { for (const [x, y] of [[w[0], w[1]], [w[2], w[3]]]) el("circle", { cx: x, cy: y, r: 3 * k, fill: "#fff", stroke: "#94a3b8", "stroke-width": k }, ui); });
+  if (bsel) {
+    const t = baseTarget(bsel); let r = null;
+    if (bsel.k === "wall") { el("line", { x1: t[0], y1: t[1], x2: t[2], y2: t[3], stroke: blue, "stroke-width": t[4] + 6 * k, "stroke-opacity": .25 }, ui); for (const [x, y] of [[t[0], t[1]], [t[2], t[3]]]) el("circle", { cx: x, cy: y, r: 6 * k, class: "handle", "stroke-width": 1.5 * k }, ui);
+      const len = Math.round(Math.hypot(t[2] - t[0], t[3] - t[1])); const lb = TXT(ui, (t[0] + t[2]) / 2, (t[1] + t[3]) / 2 - t[4] / 2 - 10 * k, `${len} cm`, "dimtext"); lb.setAttribute("font-size", 13 * k); }
+    else if (["column", "canopy"].includes(bsel.k)) r = t; else if (bsel.k === "oos") r = t.r;
+    else if (bsel.k === "image") r = [t.x, t.y, t.x + t.w, t.y + t.h];
+    else if (bsel.k === "room") r = [t.x - 45, t.y - 18, t.x + 45, t.y + 26];
+    else if (bsel.k === "door") { const xs = [t.h[0], t.o[0], t.c[0]], ys = [t.h[1], t.o[1], t.c[1]]; r = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; }
+    else if (bsel.k === "fixture") { const g = el("g", { transform: `translate(${t.x} ${t.y}) rotate(${t.rot || 0} ${t.w / 2} ${t.d / 2})` }, ui); el("rect", { x: -3 * k, y: -3 * k, width: t.w + 6 * k, height: t.d + 6 * k, class: "selbox", "stroke-width": 1.4 * k }, g); }
+    if (r) el("rect", { x: r[0] - 3 * k, y: r[1] - 3 * k, width: r[2] - r[0] + 6 * k, height: r[3] - r[1] + 6 * k, class: "selbox", "stroke-width": 1.4 * k }, ui);
+  }
+  if (wallDraw) {
+    const pts = wallDraw.pts, last = pts[pts.length - 1];
+    el("circle", { cx: last.x, cy: last.y, r: 5 * k, fill: blue }, ui);
+    if (hoverPt) { el("line", { x1: last.x, y1: last.y, x2: hoverPt.x, y2: hoverPt.y, stroke: blue, "stroke-width": wallTh(), "stroke-opacity": .35 }, ui);
+      const t = TXT(ui, (last.x + hoverPt.x) / 2, (last.y + hoverPt.y) / 2 - wallTh() / 2 - 10 * k, `${Math.round(Math.hypot(hoverPt.x - last.x, hoverPt.y - last.y))} cm`, "dimtext"); t.setAttribute("font-size", 14 * k); }
+  }
+  if (rectDraw) { const { a, b } = rectDraw; el("rect", { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), width: Math.abs(b.x - a.x), height: Math.abs(b.y - a.y), fill: "rgba(31,111,235,.12)", stroke: blue, "stroke-width": 1.4 * k, "stroke-dasharray": `${6 * k} ${4 * k}` }, ui);
+    const t = TXT(ui, (a.x + b.x) / 2, Math.min(a.y, b.y) - 8 * k, `${Math.round(Math.abs(b.x - a.x))}×${Math.round(Math.abs(b.y - a.y))}`, "dimtext"); t.setAttribute("font-size", 13 * k); }
+}
+function renderBaseProps() {
+  const P = $("props"), B = BASE;
+  const help = { select: "點選底圖元素即可編輯；拖曳移動，拖曳牆端點調整長度。Delete 刪除。", wall: "點一下起點，再點下一點完成一面牆，可連續畫。預設鎖水平／垂直，Alt 可畫斜牆；會吸附既有牆端點。Esc、Enter 或雙擊結束。",
+    win: "點在牆上加一扇窗（預設 120 cm），再到右側調整位置與寬度。", door: "點在牆上加一扇門（預設 80 cm），可在右側設定鉸鏈端與開向。", open: "點在牆上加一個沒有門的開口（預設 90 cm）。",
+    column: "在圖上拖拉出柱子範圍。", canopy: "拖拉出雨遮範圍（斜線表示）。", oos: "拖拉框出不在設計範圍的區域（例如衛浴、陽台），家具放進去會紅框提示。", room: "點一下放房間名稱。" }[btool];
+  let html = `<h2>✏️ 底圖編輯｜${BTOOLS[btool]}</h2><div class="empty">${help}</div>`;
+  const num = (id, label, v, step = 1) => `<div class="row"><span>${label}</span><input id="${id}" type="number" step="${step}" value="${Math.round(v * 10) / 10}"></div>`;
+  if (bsel) {
+    const t = baseTarget(bsel);
+    if (bsel.k === "wall") {
+      const hz = wallHz(t), ax = isAxis(t), lo = Math.min(hz ? t[0] : t[1], hz ? t[2] : t[3]);
+      html += `<h2 style="margin-top:14px">牆（長 ${Math.round(Math.hypot(t[2] - t[0], t[3] - t[1]))} cm）</h2>
+        <div class="row2"><label>起點 X<input id="w0" type="number" value="${t[0]}"></label><label>起點 Y<input id="w1" type="number" value="${t[1]}"></label></div>
+        <div class="row2"><label>終點 X<input id="w2" type="number" value="${t[2]}"></label><label>終點 Y<input id="w3" type="number" value="${t[3]}"></label></div>
+        ${num("w4", "厚度", t[4])}`;
+      if (ax) {
+        html += `<b style="display:block;margin-top:10px">門窗開口（距牆起點 cm）</b>`;
+        (t[5] || []).forEach((op, j) => {
+          html += `<div style="border:1px solid #e5e7eb;border-radius:6px;padding:6px;margin:6px 0">
+            <div class="row2"><select data-op="${j}" data-f="k"><option value="win" ${op[2] === "win" ? "selected" : ""}>窗</option><option value="door" ${op[2] === "door" ? "selected" : ""}>門</option><option value="open" ${!["win", "door"].includes(op[2]) ? "selected" : ""}>開口</option></select>
+            <button data-op="${j}" data-f="del" style="color:#d1242f">刪除</button></div>
+            <div class="row2"><label>起點<input data-op="${j}" data-f="a" type="number" value="${Math.round((op[0] - lo) * 10) / 10}"></label><label>寬度<input data-op="${j}" data-f="w" type="number" value="${Math.round((op[1] - op[0]) * 10) / 10}"></label></div>
+            ${op[2] === "door" ? `<div class="row2"><select data-op="${j}" data-f="hinge"><option value="a" ${(op[3] || {}).hinge !== "b" ? "selected" : ""}>鉸鏈：靠起點</option><option value="b" ${(op[3] || {}).hinge === "b" ? "selected" : ""}>鉸鏈：靠終點</option></select>
+              <button data-op="${j}" data-f="side">翻轉開向</button></div>` : ""}</div>`;
+        });
+        html += `<div class="actions"><button data-add="win">＋窗</button><button data-add="door">＋門</button><button data-add="open">＋開口</button></div>`;
+      } else html += `<div class="muted" style="font-size:12px;margin-top:6px">斜牆目前不支援門窗開口。</div>`;
+    }
+    else if (["column", "canopy"].includes(bsel.k)) html += `<h2 style="margin-top:14px">${bsel.k === "column" ? "柱子" : "雨遮"}</h2>${num("r0", "X", t[0])}${num("r1", "Y", t[1])}${num("rw", "寬", t[2] - t[0])}${num("rh", "深", t[3] - t[1])}`;
+    else if (bsel.k === "oos") html += `<h2 style="margin-top:14px">不在設計範圍</h2><div class="row"><span>名稱</span><input id="oName" type="text" value="${esc(t.name || "")}"></div>${num("r0", "X", t.r[0])}${num("r1", "Y", t.r[1])}${num("rw", "寬", t.r[2] - t.r[0])}${num("rh", "深", t.r[3] - t.r[1])}`;
+    else if (bsel.k === "room") html += `<h2 style="margin-top:14px">房間名稱</h2><div class="row"><span>名稱</span><input id="rmN" type="text" value="${esc(t.n || "")}"></div><div class="row"><span>副標</span><input id="rmS" type="text" value="${esc(t.s || "")}" placeholder="例如：約 3 坪"></div>${num("fx", "X", t.x)}${num("fy", "Y", t.y)}`;
+    else if (bsel.k === "fixture") html += `<h2 style="margin-top:14px">固定設備</h2><div class="row"><span>名稱</span><input id="fxL" type="text" value="${esc(t.label || "")}"></div>${num("fw", "寬", t.w)}${num("fd", "深", t.d)}${num("fr", "旋轉", t.rot || 0, 15)}${num("fx", "X", t.x)}${num("fy", "Y", t.y)}<div class="actions"><button id="fxRot">旋轉 90°</button><button id="fxFlip">左右鏡像</button></div>`;
+    else if (bsel.k === "door") html += `<h2 style="margin-top:14px">門（舊格式）</h2><div class="muted" style="font-size:12px">可拖曳移動或刪除；新增的門建議用牆上的「＋門」。</div>`;
+    else if (bsel.k === "image") html += `<h2 style="margin-top:14px">底圖圖片</h2>${num("fx", "X", t.x)}${num("fy", "Y", t.y)}<div class="row"><span>透明度</span><input id="imOp" type="range" min="0.1" max="1" step="0.05" value="${t.opacity ?? 0.6}"></div><div class="actions"><button id="imCal">重新校正比例</button></div>`;
+    html += `<div class="actions"><button id="bDel" style="color:#d1242f">刪除${bsel.k === "image" ? "圖片" : ""}</button></div>`;
+  } else {
+    html += `<div class="list"><b>底圖內容</b><div>牆 ${(B.walls || []).length} 面</div><div>柱子 ${(B.columns || []).length}・雨遮 ${(B.canopies || []).length}・不在範圍 ${(B.outOfScope || []).length}</div><div>房間名稱 ${(B.rooms || []).length}・固定設備 ${(B.fixtures || []).length}</div></div>` + renderBaseSection();
+  }
+  P.innerHTML = html;
+  if (!bsel) { bindBaseSection(); return; }
+  const t = baseTarget(bsel), ch = (id, fn) => { const x = $(id); if (x) x.onchange = () => { const v = x.type === "number" ? parseFloat(x.value) : x.value; if (x.type === "number" && isNaN(v)) return; fn(v); commitBase(); }; };
+  if (bsel.k === "wall") {
+    const hz = wallHz(t), lo = Math.min(hz ? t[0] : t[1], hz ? t[2] : t[3]);
+    ["w0", "w1", "w2", "w3"].forEach((id, j) => ch(id, v => t[j] = v)); ch("w4", v => t[4] = Math.max(3, v));
+    P.querySelectorAll("[data-op]").forEach(x => {
+      const j = +x.dataset.op, f = x.dataset.f, op = t[5][j];
+      if (f === "del") x.onclick = () => { t[5].splice(j, 1); commitBase(); };
+      else if (f === "side") x.onclick = () => { op[3] = { ...(op[3] || { hinge: "a" }), side: -((op[3] || {}).side || 1) }; commitBase(); };
+      else x.onchange = () => {
+        if (f === "k") { op[2] = x.value; if (x.value === "door") op[3] = op[3] || { hinge: "a", side: 1 }; else op.length = 3; }
+        if (f === "hinge") op[3] = { ...(op[3] || { side: 1 }), hinge: x.value };
+        if (f === "a") { const w = op[1] - op[0]; op[0] = lo + (+x.value || 0); op[1] = op[0] + w; }
+        if (f === "w") op[1] = op[0] + Math.max(10, +x.value || 10);
+        commitBase();
+      };
+    });
+    P.querySelectorAll("[data-add]").forEach(x => x.onclick = () => { const len = Math.hypot(t[2] - t[0], t[3] - t[1]), w = x.dataset.add === "win" ? 120 : x.dataset.add === "door" ? 80 : 90, a = lo + Math.max(0, (len - w) / 2);
+      (t[5] = t[5] || []).push(x.dataset.add === "door" ? [a, a + w, "door", { hinge: "a", side: 1 }] : [a, a + w, x.dataset.add]); commitBase(); });
+  }
+  if (["column", "canopy"].includes(bsel.k)) { ch("r0", v => { const w = t[2] - t[0]; t[0] = v; t[2] = v + w; }); ch("r1", v => { const h = t[3] - t[1]; t[1] = v; t[3] = v + h; }); ch("rw", v => t[2] = t[0] + Math.max(1, v)); ch("rh", v => t[3] = t[1] + Math.max(1, v)); }
+  if (bsel.k === "oos") { ch("oName", v => t.name = v); const r = t.r; ch("r0", v => { const w = r[2] - r[0]; r[0] = v; r[2] = v + w; }); ch("r1", v => { const h = r[3] - r[1]; r[1] = v; r[3] = v + h; }); ch("rw", v => r[2] = r[0] + Math.max(1, v)); ch("rh", v => r[3] = r[1] + Math.max(1, v)); }
+  if (bsel.k === "room") { ch("rmN", v => t.n = v); ch("rmS", v => t.s = v); ch("fx", v => t.x = v); ch("fy", v => t.y = v); }
+  if (bsel.k === "fixture") { ch("fxL", v => t.label = v); ch("fw", v => t.w = Math.max(5, v)); ch("fd", v => t.d = Math.max(3, v)); ch("fr", v => t.rot = ((v % 360) + 360) % 360); ch("fx", v => t.x = v); ch("fy", v => t.y = v);
+    $("fxRot").onclick = () => { t.rot = ((t.rot || 0) + 90) % 360; commitBase(); }; $("fxFlip").onclick = () => { t.flip = !t.flip; commitBase(); }; }
+  if (bsel.k === "image") { ch("fx", v => t.x = v); ch("fy", v => t.y = v); $("imOp").oninput = e => { t.opacity = +e.target.value; drawBase(); autosave(); }; $("imCal").onclick = startCalib; }
+  $("bDel").onclick = delBaseSel;
+}
+
+/* ============================================================
    鍵盤
    ============================================================ */
 document.addEventListener("keydown", e => {
-  if (e.target.matches("input, textarea, select")) return;
+  if (e.target && e.target.matches && e.target.matches("input, textarea, select")) return;
   const mod = e.metaKey || e.ctrlKey;
   if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
   if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); return; }
@@ -838,6 +1097,7 @@ document.addEventListener("keydown", e => {
   if (mod && e.key.toLowerCase() === "s") { e.preventDefault(); saveFile(); return; }
   if (!mod && (e.key === "m" || e.key === "M")) { setMeasure(!measureMode); return; }
   if (e.key === "Escape" && measureMode) { setMeasure(false); return; }
+  if (mode === "base") { baseKey(e); return; }
   const it = cur(); if (!it) return;
   if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); delSel(); }
   else if (e.key === "r" || e.key === "R") rotSel(e.shiftKey ? -90 : 90);
@@ -871,7 +1131,7 @@ function setBase(b, keepItems = true) {
   const { app, version, unit, savedAt, ...rest } = b;
   BASE = { walls: [], ...rest }; BASE.bounds = computeBounds(BASE);
   if (!keepItems) { state.items = []; state.nextId = 1; }
-  state.sel = null; hideGate(); drawGrid(); drawBase(); fit(); renderItems(); renderProps(); autosave(); updateButtons();
+  state.sel = null; if (typeof bsel !== "undefined") bsel = null; hideGate(); drawGrid(); drawBase(); fit(); renderItems(); renderProps(); autosave(); updateButtons();
 }
 function loadData(o) {
   if (!o || typeof o !== "object") throw new Error("檔案格式不正確");
