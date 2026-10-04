@@ -48,7 +48,10 @@ PROMPT.md             AI 產生底圖的提示詞（網頁執行時讀取）
 
 ## 開發
 
+需要 Node.js 26（見 `.nvmrc`，可用 `nvm use`）。
+
 ```bash
+nvm use
 npm install
 npm run test:install   # 第一次：下載測試用的 Chromium
 npm run dev            # http://127.0.0.1:8000/
