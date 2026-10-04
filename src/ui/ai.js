@@ -53,6 +53,7 @@ export function init() {
         `已套用「${base.name}」：${base.walls.length} 面牆` + (warn.length ? `，${warn.length} 則提醒（見右側）` : ""),
       );
       S.lastAIWarn = warn;
+      S.propTab = "base";
       renderProps();
     } catch (err) {
       msg.style.color = "#d1242f";

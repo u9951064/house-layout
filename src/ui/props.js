@@ -10,7 +10,7 @@ import { startCalib } from "../tools/calibrate.js";
 import { copySel } from "../edit/clipboard.js";
 import { delSel, dupSel, flipSel, rotSel } from "../edit/actions.js";
 import { alignSel } from "../edit/align.js";
-import { renderBaseProps } from "../base-edit/base-edit.js";
+import { renderBaseProps, setMode } from "../base-edit/base-edit.js";
 import { autosave, renderProjSelect } from "../project/project.js";
 import { baseData, download, safeName } from "../io/file.js";
 import { showGate } from "./gate.js";
@@ -21,29 +21,36 @@ export function renderProps(light) {
     if (!(light && document.activeElement && $("props").contains(document.activeElement))) renderBaseProps();
     return;
   }
-  const P = $("props"),
-    it = cur();
-  if (light && it && document.activeElement && P.contains(document.activeElement)) return;
+  const it = cur();
+  if (light && document.activeElement && $("props").contains(document.activeElement)) return;
+  // 在畫布上選到物件時，若停在「底圖」頁就切回「屬性」
+  const selKey = selIds().join(",");
+  if (selKey && selKey !== S.lastSelKey && S.propTab === "base") S.propTab = "props";
+  S.lastSelKey = selKey;
+  renderTabs();
+  const P = $("propBody");
+  if (S.propTab === "list") {
+    P.innerHTML = listHTML() || `<div class="empty">這個方案還沒有物件。從左側元件庫拖拉到圖上即可加入。</div>`;
+    bindList();
+    return;
+  }
+  if (S.propTab === "base") {
+    P.innerHTML = baseTabHTML();
+    bindBaseSection();
+    if ($("bEdit")) $("bEdit").onclick = () => setMode("base");
+    return;
+  }
   if (selIds().length > 1) {
     renderMultiProps();
     return;
   }
   if (!it) {
-    P.innerHTML =
-      `<h2>屬性</h2><div class="empty">點選圖上的物件即可設定尺寸、角度與名稱。<br><br>
-      <b>操作方式</b><br>・從左側把元件拖到圖上（或點一下元件直接加入）<br>・拖曳物件移動；拖曳藍色方塊調整寬深；拖曳上方圓點旋轉（每 15°，按住 Shift 自由旋轉）<br>
-      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・多選：Shift 或 ⌘ 點選、Shift 拖曳空白處框選、<kbd>⌘A</kbd> 全選；可對齊、平均分布、邊緣貼合<br>・拖曳時自動貼齊附近家具與牆面的邊（橘色線），按住 Alt 暫時關閉<br>・右鍵選單；<kbd>⌘C</kbd> 複製、<kbd>⌘X</kbd> 剪下、<kbd>⌘V</kbd> 貼上到游標位置（可跨方案分頁）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br>・✏️「編輯底圖」可畫牆、加門窗、柱子、房間名稱與固定設備<br>・下方分頁像 Excel 工作表：一頁一個方案，雙擊改名、拖曳排序、按住 ⌥／Ctrl 拖曳複製、右鍵更多；「疊圖」「並排比較」可比較方案<br><br>
-      <b>存檔</b><br>「儲存檔案」會把整個專案（底圖＋所有方案分頁＋疊圖設定）存成一個 .json 檔，下次用「開啟檔案」開啟；瀏覽器也會自動暫存目前進度。資料不會上傳到任何伺服器。</div>` +
-      listHTML();
-    $("props").insertAdjacentHTML("beforeend", renderBaseSection());
-    bindBaseSection();
-    bindList();
+    P.innerHTML = `<div class="empty">點選圖上的物件，即可設定尺寸、角度與名稱；Shift 點選或框選可多選並對齊。<br><br>操作提示在畫布左下角的 <b>!</b>。</div>`;
     return;
   }
   const def = DEFAULTS[it.type] || {};
   const bad = inOutOfScope(it);
-  P.innerHTML =
-    `<h2>${def.name || it.type}</h2>
+  P.innerHTML = `<h2>${def.name || it.type}</h2>
     <div class="row"><span>名稱</span><input id="pLabel" type="text" value="${esc(it.label || "")}"></div>
     ${it.type === "text" ? `<div class="row"><span>字級</span><input id="pFont" type="number" min="8" max="60" value="${it.fontSize || 16}"></div>` : ""}
     <div class="row"><span>寬 (cm)</span><input id="pW" type="number" min="5" step="1" value="${Math.round(it.w * 10) / 10}"></div>
@@ -60,7 +67,7 @@ export function renderProps(light) {
     <div class="actions">
       <button id="aRot">旋轉 90°</button><button id="aFlip">左右鏡像</button><button id="aDup">複製</button>
       <button id="aFront">移到上層</button><button id="aBack">移到下層</button><button id="aDel" style="color:#d1242f">刪除</button>
-    </div>` + listHTML();
+    </div>`;
   const num = (id, fn) => {
     const e = $(id);
     if (e)
@@ -120,15 +127,13 @@ export function renderProps(light) {
     renderItems();
     commit();
   };
-  bindList();
 }
 export function renderMultiProps() {
   const its = selItems(),
     n = its.length,
-    P = $("props"),
+    P = $("propBody"),
     btn = (a, t, tip) => `<button data-al="${a}" title="${tip || t}">${t}</button>`;
-  P.innerHTML =
-    `<h2>已選取 ${n} 個物件</h2>
+  P.innerHTML = `<h2>已選取 ${n} 個物件</h2>
     <div class="muted" style="font-size:12px">Shift／${KEY.replace("+", "")} 點選加減選取；Shift 拖曳空白處框選；${KEY}A 全選。拖曳任一個會一起移動。</div>
     <b style="display:block;margin-top:12px">對齊</b>
     <div class="actions" style="margin-top:6px">${btn("left", "⇤ 靠左")}${btn("hcenter", "↔ 水平置中")}${btn("right", "靠右 ⇥")}${btn("top", "⤒ 靠上")}${btn("vcenter", "↕ 垂直置中")}${btn("bottom", "靠下 ⤓")}</div>
@@ -139,15 +144,48 @@ export function renderMultiProps() {
     <div class="actions" style="margin-top:6px">${btn("packh", "→ 水平貼合", "由左而右依序相接（保留上下位置）")}${btn("packv", "↓ 垂直貼合", "由上而下依序相接（保留左右位置）")}${btn("packhA", "→ 貼合並靠上", "相接並對齊上緣")}${btn("packvA", "↓ 貼合並靠左", "相接並對齊左緣")}</div>
     <b style="display:block;margin-top:12px">尺寸</b>
     <div class="actions" style="margin-top:6px">${btn("samew", "同寬", "寬度統一為最後選取的物件")}${btn("samed", "同深", "深度統一為最後選取的物件")}</div>
-    <div class="actions" style="margin-top:14px"><button id="mRot">旋轉 90°</button><button id="mDup">再製</button><button id="mCopy">複製</button><button id="mDel" style="color:#d1242f">刪除</button></div>` +
-    listHTML();
+    <div class="actions" style="margin-top:14px"><button id="mRot">旋轉 90°</button><button id="mDup">再製</button><button id="mCopy">複製</button><button id="mDel" style="color:#d1242f">刪除</button></div>`;
   $("mGap").onchange = e => (opt.gap = Math.max(0, +e.target.value || 0));
   P.querySelectorAll("[data-al]").forEach(b => (b.onclick = () => alignSel(b.dataset.al)));
   $("mRot").onclick = () => rotSel(90);
   $("mDup").onclick = dupSel;
   $("mCopy").onclick = () => copySel(false);
   $("mDel").onclick = delSel;
-  bindList();
+}
+const PTABS = [
+  ["props", "屬性"],
+  ["list", "物件"],
+  ["base", "底圖"],
+];
+function renderTabs() {
+  const count = { list: state.items.length, props: selIds().length || "" };
+  $("props").innerHTML =
+    `<div class="ptabs" role="tablist">` +
+    PTABS.map(
+      ([k, t]) =>
+        `<button role="tab" data-ptab="${k}" class="${S.propTab === k ? "on" : ""}" aria-selected="${S.propTab === k}">${t}${count[k] ? ` <small>${count[k]}</small>` : ""}</button>`,
+    ).join("") +
+    `</div><div id="propBody"></div>`;
+  $("props")
+    .querySelectorAll("[data-ptab]")
+    .forEach(
+      b =>
+        (b.onclick = () => {
+          S.propTab = b.dataset.ptab;
+          renderProps();
+        }),
+    );
+}
+function baseTabHTML() {
+  if (!S.BASE) return `<div class="empty">尚未匯入底圖。</div>`;
+  const B = S.BASE,
+    n = k => (B[k] || []).length;
+  return (
+    `<div class="list" style="border-top:none;margin-top:0;padding-top:0"><b>${esc(B.name || "底圖")}</b>
+      <div>牆 ${n("walls")} 面・柱子 ${n("columns")}・雨遮 ${n("canopies")}</div>
+      <div>不在範圍 ${n("outOfScope")}・房間名稱 ${n("rooms")}・固定設備 ${n("fixtures")}</div>${B.image ? "<div>含底圖圖片</div>" : ""}</div>
+    <button id="bEdit" class="primary" style="width:100%;margin:10px 0 0">✏️ 編輯底圖</button>` + renderBaseSection()
+  );
 }
 export function listHTML() {
   if (!state.items.length) return "";

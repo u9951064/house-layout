@@ -31,6 +31,8 @@ export const S = {
   ghostId: null,
   sheetDrag: null,
   menuOpen: null,
+  propTab: "props",
+  lastSelKey: "",
 };
 export const state = { items: [], sel: null, nextId: 1 };
 export const view = { x: 0, y: 0, s: 1 };
