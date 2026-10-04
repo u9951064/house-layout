@@ -6,7 +6,17 @@ import { setBase, validBase } from "./model/base.js";
 import { fit } from "./canvas/view.js";
 import { renderItems } from "./canvas/items.js";
 import { addItem } from "./edit/actions.js";
-import { PKEY, STORE_KEY, parseDesigns, projectData, readIndex, renderProjSelect, switchProject, uid, writeIndex } from "./project/project.js";
+import {
+  PKEY,
+  STORE_KEY,
+  parseDesigns,
+  projectData,
+  readIndex,
+  renderProjSelect,
+  switchProject,
+  uid,
+  writeIndex,
+} from "./project/project.js";
 import { addDesign, switchDesign } from "./project/sheets.js";
 import { loadData } from "./io/file.js";
 import { exportSVGString } from "./io/export.js";
@@ -31,9 +41,8 @@ import { init as init_project_manager } from "./project/manager.js";
 import { init as init_ui_menubar } from "./ui/menubar.js";
 import { init as init_ui_zoombar } from "./ui/zoombar.js";
 
-
 S.lastSnap = snapshot();
-buildPalette();   // 先建好元件庫，收合狀態（palette init）才套得上
+buildPalette(); // 先建好元件庫，收合狀態（palette init）才套得上
 
 // 初始化各模組（綁定事件）
 init_project_project();
@@ -56,10 +65,18 @@ init_ui_zoombar();
 
 (function boot() {
   let ix = readIndex();
-  if (!ix.projects.length) {   // 舊版暫存（單一設計）轉成專案
-    try { const old = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
-      if (old && old.base && validBase(old.base)) { const id = uid(), name = old.base.name || "我的專案";
-        localStorage.setItem(PKEY(id), JSON.stringify({ ...old, name, designs: parseDesigns(old), cur: 0 })); ix = { projects: [{ id, name, updatedAt: Date.now() }], current: id }; writeIndex(ix); } } catch (e) {}
+  if (!ix.projects.length) {
+    // 舊版暫存（單一設計）轉成專案
+    try {
+      const old = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+      if (old && old.base && validBase(old.base)) {
+        const id = uid(),
+          name = old.base.name || "我的專案";
+        localStorage.setItem(PKEY(id), JSON.stringify({ ...old, name, designs: parseDesigns(old), cur: 0 }));
+        ix = { projects: [{ id, name, updatedAt: Date.now() }], current: id };
+        writeIndex(ix);
+      }
+    } catch (e) {}
   }
   const id = ix.projects.some(q => q.id === ix.current) ? ix.current : (ix.projects[0] || {}).id;
   if (id) switchProject(id);
@@ -69,6 +86,25 @@ if (!S.BASE) showGate("new");
 renderItems();
 renderProps();
 updateButtons();
-window.addEventListener("resize", () => { if (S.BASE) fit(); });
+window.addEventListener("resize", () => {
+  if (S.BASE) fit();
+});
 // 測試用掛勾（e2e 測試會使用）
-window.__fp = { state, addItem, DEFAULTS, loadData, projectData, exportSVGString, setBase, switchDesign, addDesign, switchProject, get base() { return S.BASE; }, get proj() { return S.PROJ; } };
+window.__fp = {
+  state,
+  addItem,
+  DEFAULTS,
+  loadData,
+  projectData,
+  exportSVGString,
+  setBase,
+  switchDesign,
+  addDesign,
+  switchProject,
+  get base() {
+    return S.BASE;
+  },
+  get proj() {
+    return S.PROJ;
+  },
+};

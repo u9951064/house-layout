@@ -39,6 +39,8 @@ src/
   ui/                 palette、props、menubar、toolbar、zoombar、gate、ai、keyboard、context-menu
 scripts/serve.mjs     開發用靜態伺服器（零相依）
 tests/e2e.test.mjs    端對端測試（Playwright）
+eslint.config.js      ESLint 設定（flat config＋eslint-config-prettier）
+.prettierrc.json      Prettier 設定（printWidth 120）
 PROMPT.md             AI 產生底圖的提示詞（網頁執行時讀取）
 ```
 
@@ -51,6 +53,9 @@ npm install
 npm run test:install   # 第一次：下載測試用的 Chromium
 npm run dev            # http://127.0.0.1:8000/
 npm test               # 端對端測試
+npm run lint           # ESLint
+npm run format         # Prettier 格式化（JS／CSS）
+npm run check          # lint + 格式檢查 + 測試（CI 同步執行）
 ```
 
 ES Modules 不能用 `file://` 直接開啟，請用 `npm run dev`。

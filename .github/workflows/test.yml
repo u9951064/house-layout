@@ -1,4 +1,4 @@
-name: e2e tests
+name: lint & e2e tests
 on:
   push:
     branches: [main]
@@ -13,5 +13,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
       - run: npx playwright install --with-deps chromium-headless-shell
       - run: npm test
