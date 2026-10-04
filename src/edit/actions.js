@@ -1,4 +1,5 @@
 // 新增、刪除、再製、旋轉、鏡像
+import { CURVE_KEYS } from "../shapes/curve.js";
 import { S, state } from "../core/store.js";
 import { commit } from "../core/history.js";
 import { snapV } from "../core/geometry.js";
@@ -26,6 +27,7 @@ export function addItem(def, x, y) {
     z: state.nextId,
   };
   if (def.seats) it.seats = def.seats;
+  for (const k of CURVE_KEYS) if (def[k] != null) it[k] = def[k];
   if (def.thick) it.thick = def.thick;
   if (def.chairs != null) it.chairs = def.chairs;
   if (def.type === "text") {

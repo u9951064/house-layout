@@ -1,4 +1,5 @@
 // 元件庫定義（分類、預設尺寸）
+import { CURVE_TYPES, applyCurve } from "./curve.js";
 
 export const LIB = [
   {
@@ -112,9 +113,12 @@ export const LIB = [
       { type: "pocketDoor", name: "推入式拉門", w: 90, d: 12 },
       { type: "foldDoor", name: "折門", w: 120, d: 30 },
       { type: "slideDoorArc", name: "弧形拉門", w: 120, d: 120 },
+      { type: "curveSlide", name: "直線＋弧形拉門", a: 100, r: 60, ang: 90, turn: -1, b: 0, t: 12 },
       { type: "wall", name: "隔間牆", w: 120, d: 12 },
       { type: "wallArc", name: "弧形牆", w: 100, d: 100, thick: 12 },
+      { type: "curveWall", name: "直線＋弧形牆", a: 100, r: 60, ang: 90, turn: -1, b: 0, t: 12 },
       { type: "glassWall", name: "玻璃隔間", w: 120, d: 8 },
+      { type: "curveGlass", name: "直線＋弧形玻璃", a: 100, r: 60, ang: 90, turn: -1, b: 0, t: 8 },
       { type: "halfWall", name: "半高牆", w: 120, d: 12 },
       { type: "column", name: "柱子", w: 40, d: 40 },
       { type: "dimension", name: "尺寸標註線", w: 100, d: 10 },
@@ -122,6 +126,8 @@ export const LIB = [
     ],
   },
 ];
+// 組合曲線元件的寬深依參數計算
+LIB.forEach(c => c.items.forEach(it => CURVE_TYPES.has(it.type) && applyCurve(it)));
 export const DEFAULTS = {};
 
 LIB.forEach(c =>

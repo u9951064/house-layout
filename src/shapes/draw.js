@@ -1,4 +1,5 @@
 // 各元件的平面圖例繪製（建商平面圖風格）
+import { curveGeom, subPath, toPath } from "./curve.js";
 import { C, L, PATH, R, TXT, el } from "../core/dom.js";
 
 export const DRAW = {
@@ -493,6 +494,49 @@ export const DRAW = {
     let p = "M0 0";
     for (let i = 1; i <= n; i++) p += ` L${i * pw} ${i % 2 ? -d : 0}`;
     el("path", { d: p, fill: "none", stroke: "#222", "stroke-width": 2 }, g);
+  },
+  curveWall(g, w, d, it) {
+    const c = curveGeom(it);
+    el(
+      "path",
+      { d: toPath(c.pts), fill: "none", stroke: "#262626", "stroke-width": c.t, "stroke-linejoin": "round" },
+      g,
+    );
+  },
+  curveGlass(g, w, d, it) {
+    const c = curveGeom(it);
+    el("path", { d: toPath(c.pts), fill: "none", stroke: "#222", "stroke-width": c.t, "stroke-linejoin": "round" }, g);
+    el(
+      "path",
+      {
+        d: toPath(c.pts),
+        fill: "none",
+        stroke: "#e7f1f8",
+        "stroke-width": Math.max(0.5, c.t - 2),
+        "stroke-linejoin": "round",
+      },
+      g,
+    );
+    el("path", { d: toPath(c.pts), fill: "none", stroke: "#222", "stroke-width": 0.8 }, g);
+  },
+  curveSlide(g, w, d, it) {
+    const c = curveGeom(it),
+      o = c.t * 0.22,
+      L = c.len;
+    el("path", { d: toPath(c.pts), fill: "none", stroke: "#222", "stroke-width": c.t, "stroke-linejoin": "round" }, g);
+    el(
+      "path",
+      {
+        d: toPath(c.pts),
+        fill: "none",
+        stroke: "#fff",
+        "stroke-width": Math.max(0.5, c.t - 1.6),
+        "stroke-linejoin": "round",
+      },
+      g,
+    );
+    el("path", { d: toPath(subPath(c.pts, 0, L * 0.56, o)), fill: "none", stroke: "#222", "stroke-width": 3.2 }, g);
+    el("path", { d: toPath(subPath(c.pts, L * 0.44, L, -o)), fill: "none", stroke: "#222", "stroke-width": 3.2 }, g);
   },
   glassWall(g, w, d) {
     el("rect", { x: 0, y: 0, width: w, height: d, fill: "#e7f1f8", stroke: "#222", "stroke-width": 1 }, g);

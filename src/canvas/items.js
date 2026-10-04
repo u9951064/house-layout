@@ -1,4 +1,5 @@
 // 家具繪製與選取框
+import { CURVE_TYPES } from "../shapes/curve.js";
 import { S, opt, state, view } from "../core/store.js";
 import { TXT, el, itemLayer, uiLayer } from "../core/dom.js";
 import { itemBox, unionBox } from "../core/geometry.js";
@@ -17,6 +18,9 @@ export function inOutOfScope(it) {
       "wallArc",
       "slideDoor",
       "slideDoorArc",
+      "curveSlide",
+      "curveWall",
+      "curveGlass",
       "swingDoor",
       "doubleDoor",
       "pocketDoor",
@@ -52,6 +56,9 @@ export function renderItems() {
     column: 5,
     slideDoor: 6,
     slideDoorArc: 6,
+    curveSlide: 6,
+    curveWall: 5,
+    curveGlass: 5,
     swingDoor: 6,
     doubleDoor: 6,
     pocketDoor: 6,
@@ -81,7 +88,10 @@ export function renderItems() {
     el("rect", { x: 0, y: 0, width: it.w, height: it.d, fill: "transparent", stroke: "none" }, g); // 點擊範圍
     (DRAW[it.type] || DRAW.cabinet)(g, it.w, it.d, it);
     const showName = it.showName !== false,
-      showSize = opt.size && !["text", "wall", "wallArc", "column", "dimension", "curtain", "tvwall"].includes(it.type);
+      showSize =
+        opt.size &&
+        !["text", "wall", "wallArc", "column", "dimension", "curtain", "tvwall"].includes(it.type) &&
+        !CURVE_TYPES.has(it.type);
     if (showName || showSize || it.type === "text") {
       const tg = el(
         "g",
@@ -223,13 +233,15 @@ export function renderSelection() {
   );
   if (it.locked) return;
   const hs = 9 * k;
-  for (const [hx, hy, kind] of [
-    [it.w, it.d / 2, "e"],
-    [it.w / 2, it.d, "s"],
-    [it.w, it.d, "se"],
-    [0, it.d / 2, "w"],
-    [it.w / 2, 0, "n"],
-  ]) {
+  for (const [hx, hy, kind] of CURVE_TYPES.has(it.type)
+    ? []
+    : [
+        [it.w, it.d / 2, "e"],
+        [it.w / 2, it.d, "s"],
+        [it.w, it.d, "se"],
+        [0, it.d / 2, "w"],
+        [it.w / 2, 0, "n"],
+      ]) {
     el(
       "rect",
       {

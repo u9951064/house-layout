@@ -1,4 +1,5 @@
 // 右側屬性面板
+import { CURVE_TYPES, applyCurve } from "../shapes/curve.js";
 import { S, opt, state } from "../core/store.js";
 import { $, KEY, esc } from "../core/dom.js";
 import { commit } from "../core/history.js";
@@ -53,8 +54,18 @@ export function renderProps(light) {
   P.innerHTML = `<h2>${def.name || it.type}</h2>
     <div class="row"><span>名稱</span><input id="pLabel" type="text" value="${esc(it.label || "")}"></div>
     ${it.type === "text" ? `<div class="row"><span>字級</span><input id="pFont" type="number" min="8" max="60" value="${it.fontSize || 16}"></div>` : ""}
-    <div class="row"><span>寬 (cm)</span><input id="pW" type="number" min="5" step="1" value="${Math.round(it.w * 10) / 10}"></div>
-    <div class="row"><span>深 (cm)</span><input id="pD" type="number" min="3" step="1" value="${Math.round(it.d * 10) / 10}"></div>
+    ${
+      CURVE_TYPES.has(it.type)
+        ? `<div class="row"><span>直線 A</span><input id="cA" type="number" min="0" step="1" value="${it.a ?? 0}"></div>
+    <div class="row"><span>弧半徑</span><input id="cR" type="number" min="0" step="1" value="${it.r ?? 0}"></div>
+    <div class="row"><span>弧角度</span><input id="cAng" type="number" min="0" max="180" step="5" value="${it.ang ?? 90}"></div>
+    <div class="row"><span>彎向</span><select id="cTurn"><option value="-1" ${it.turn !== 1 ? "selected" : ""}>往上彎</option><option value="1" ${it.turn === 1 ? "selected" : ""}>往下彎</option></select></div>
+    <div class="row"><span>直線 B</span><input id="cB" type="number" min="0" step="1" value="${it.b ?? 0}"></div>
+    <div class="row"><span>厚度</span><input id="cT" type="number" min="1" max="60" step="1" value="${it.t ?? 12}"></div>
+    <div class="muted" style="font-size:12px">單位 cm。一個元件 = 直線 A → 弧形 → 直線 B；長度設 0 即省略該段。外框 ${Math.round(it.w)}×${Math.round(it.d)}。</div>`
+        : `<div class="row"><span>寬 (cm)</span><input id="pW" type="number" min="5" step="1" value="${Math.round(it.w * 10) / 10}"></div>
+    <div class="row"><span>深 (cm)</span><input id="pD" type="number" min="3" step="1" value="${Math.round(it.d * 10) / 10}"></div>`
+    }
     <div class="row"><span>旋轉 (°)</span><input id="pRot" type="number" step="15" value="${it.rot}"></div>
     <div class="row2"><label>X (cm)<input id="pX" type="number" step="5" value="${Math.round(it.x)}"></label><label>Y (cm)<input id="pY" type="number" step="5" value="${Math.round(it.y)}"></label></div>
     ${it.type === "wallArc" ? `<div class="row"><span>牆厚 (cm)</span><input id="pThick" type="number" min="3" max="40" value="${it.thick || 12}"></div>` : ""}
@@ -101,6 +112,29 @@ export function renderProps(light) {
   num("pX", v => (it.x = v));
   num("pY", v => (it.y = v));
   num("pThick", v => (it.thick = Math.max(3, v)));
+  // 組合曲線：改參數後重算外框，維持中心位置
+  const curveNum = (id, key, fn) =>
+    num(id, v => {
+      const cx = it.x + it.w / 2,
+        cy = it.y + it.d / 2;
+      it[key] = fn(v);
+      applyCurve(it);
+      it.x = Math.round((cx - it.w / 2) * 10) / 10;
+      it.y = Math.round((cy - it.d / 2) * 10) / 10;
+    });
+  curveNum("cA", "a", v => Math.max(0, v));
+  curveNum("cR", "r", v => Math.max(0, v));
+  curveNum("cAng", "ang", v => Math.max(0, Math.min(180, v)));
+  curveNum("cB", "b", v => Math.max(0, v));
+  curveNum("cT", "t", v => Math.max(1, v));
+  if ($("cTurn"))
+    $("cTurn").onchange = e => {
+      it.turn = +e.target.value;
+      applyCurve(it);
+      renderItems();
+      commit();
+      renderProps();
+    };
   num("pSeats", v => (it.seats = Math.max(1, Math.round(v))));
   num("pChairs", v => (it.chairs = Math.max(0, Math.round(v))));
   $("pShow").addEventListener("change", e => {
