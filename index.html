@@ -79,6 +79,8 @@
   .gridline.major { stroke:#d1d5db; }
   #gate { position:fixed; inset:0; background:rgba(17,24,39,.55); display:flex; align-items:center; justify-content:center; z-index:20; }
   #gate.hidden { display:none; }
+  #aiModal { position:fixed; inset:0; background:rgba(17,24,39,.55); display:none; align-items:center; justify-content:center; z-index:22; }
+  #aiModal.show { display:flex; }
   .gcard { background:#fff; border-radius:14px; padding:26px 28px; width:min(620px, 92vw); box-shadow:0 20px 50px rgba(0,0,0,.25); }
   .gcard h2 { margin:0 0 8px; font-size:20px; }
   .gcard p { font-size:14px; line-height:1.6; color:#374151; }
@@ -152,6 +154,7 @@
     <label class="gopt"><b>② 上傳平面圖圖片</b><span>PNG／JPG。上傳後在圖上點兩個已知距離的端點，輸入實際公分數即可校正比例</span><input id="gateImg" type="file" accept="image/*" hidden></label>
     <button class="gopt" id="gateRect" type="button"><b>③ 輸入外框尺寸</b><span>建立矩形外牆，再用「編輯底圖」加隔間、門窗、柱子</span></button>
     <button class="gopt" id="gateDraw" type="button"><b>④ 從空白開始畫底圖</b><span>直接進入底圖編輯模式，用「畫牆」一面一面畫出格局</span></button>
+    <button class="gopt" id="gateAI" type="button"><b>⑤ 貼上 AI 產生的底圖</b><span>複製提示詞給 ChatGPT／Claude／Gemini，連同平面尺寸圖或不動產說明書一起送出，再把回覆貼回來</span></button>
   </div>
   <p class="muted" style="font-size:12px">PDF 平面圖請先截圖或轉成 PNG。建議圖片中有一段標示尺寸的牆，方便校正。</p>
   <p id="gateClose" class="muted" style="font-size:12px;display:none"><a href="#" id="gateCancel">取消，回到目前的底圖</a></p>
@@ -171,6 +174,113 @@
   <span class="muted" style="font-size:12px">左側元件會成為固定設備 ｜ Alt：斜牆</span>
   <button id="bDone" class="primary">完成編輯</button>
 </div>
+<div id="aiModal"><div class="gcard" style="width:min(760px,94vw)">
+  <h2>🤖 用 AI 產生底圖</h2>
+  <ol style="font-size:14px;line-height:1.7;padding-left:20px;margin:6px 0 10px">
+    <li>按「複製提示詞」，貼到可以讀圖片或 PDF 的 AI（ChatGPT、Claude、Gemini…）。</li>
+    <li>連同<b>平面尺寸圖</b>或<b>不動產說明書</b>（建物測量成果圖、隔間圖）一起送出。</li>
+    <li>把 AI 的整段回覆貼到下面，按「套用到畫面」。之後可再用「✏️ 編輯底圖」微調。</li>
+  </ol>
+  <div class="actions" style="margin:0 0 8px"><button id="aiCopy">📋 複製提示詞</button><a class="btn" href="PROMPT.md" target="_blank" rel="noopener">查看提示詞全文</a></div>
+  <textarea id="aiText" placeholder="把 AI 的回覆整段貼在這裡（含 ```json 區塊也可以）" style="width:100%;height:200px;font:12px/1.5 ui-monospace,Menlo,monospace;padding:8px;border:1px solid #d0d7de;border-radius:8px"></textarea>
+  <div id="aiMsg" style="font-size:13px;margin:8px 0;white-space:pre-wrap"></div>
+  <div class="actions" style="justify-content:flex-end"><button id="aiCancel">取消</button><button id="aiApply" class="primary">套用到畫面</button></div>
+  <p class="muted" style="font-size:12px;margin:6px 0 0">資料只在你的瀏覽器與你選用的 AI 之間傳遞，本網站沒有伺服器、不會收到任何內容。</p>
+</div></div>
+<script type="text/plain" id="aiPrompt">你是室內平面圖的轉換工具。我會提供房屋的平面尺寸圖，或不動產說明書（含「建物測量成果圖」「室內隔間圖」或格局圖）。請讀出牆、門、窗、柱子與尺寸，轉換成下面規格的 JSON 底圖，給 House Layout 網頁工具使用。
+
+## 輸出規則
+
+1. 只輸出一個 ```json 程式碼區塊，裡面是單一 JSON 物件；程式碼區塊之後，用條列寫出「假設與不確定處」。
+2. 單位一律是公分（cm），數字用十進位，最多一位小數。
+3. 座標系：原點 (0,0) 在平面圖左上方附近；x 向右增加、y 向下增加。請讓整個房屋落在正座標內，最左上角的牆中心線大約放在 (0,0)。
+4. 方位跟原圖相同（圖的上方就是 y 小的一側），不要旋轉或鏡像。
+
+## JSON 規格
+
+```json
+{
+  "app": "house-layout-base",
+  "version": 1,
+  "unit": "cm",
+  "name": "房屋名稱（例如：XX 社區 8 樓之 2）",
+  "walls": [
+    [x1, y1, x2, y2, 厚度, [[a, b, "win"], [a, b, "door", {"hinge": "a", "side": 1}], [a, b, "open"]]]
+  ],
+  "columns": [[x1, y1, x2, y2]],
+  "canopies": [[x1, y1, x2, y2]],
+  "canopyLabel": "雨遮（不可外推）",
+  "outOfScope": [{"name": "衛浴", "r": [x1, y1, x2, y2]}],
+  "rooms": [{"n": "客廳", "s": "約 5.5 坪", "x": 330, "y": 650}],
+  "fixtures": [{"type": "counter", "x": 0, "y": 0, "w": 200, "d": 60, "rot": 0, "flip": false, "label": "既有流理台"}],
+  "dims": [[x1, y1, x2, y2]]
+}
+```
+
+### walls（牆，必填）
+
+- 每面牆是一段直線：`[x1, y1, x2, y2, 厚度, 開口清單]`，座標是**牆中心線**的兩端。
+- 盡量只用水平（y1 = y2）或垂直（x1 = x2）的牆；斜牆可以畫，但斜牆不能有門窗開口。
+- 厚度：外牆約 20、RC 分戶牆約 15–20、輕隔間或磚隔間約 10–12；圖上有標示就用標示值。
+- 一面長牆被門窗分段時，仍寫成**一面牆**，門窗寫在開口清單裡。牆與牆在轉角處端點要相接（共用同一個座標）。
+- 開口清單 `[a, b, 類型, 選項]`：
+  - 水平牆的 a、b 是開口兩端的 **x 座標**；垂直牆的 a、b 是開口兩端的 **y 座標**（絕對座標，不是距離）。a &lt; b，且必須落在該牆的兩端點之間。
+  - 類型：`"win"` 窗、`"door"` 門、`"open"` 沒有門的開口。
+  - 門要加選項 `{"hinge": "a" 或 "b", "side": 1 或 -1}`：
+    - `hinge`：鉸鏈在 a 端或 b 端。
+    - `side`：門板打開時倒向哪一側。水平牆：1 表示往 y 增加的一側（圖的下方），-1 表示往上方。垂直牆：1 表示往 x 增加的一側（圖的右方），-1 表示往左方。
+  - 一般尺寸參考：房門 80–90、大門 90–100、浴室門 70–80、落地窗或陽台門 75–180。
+
+### 其他欄位（沒有就給空陣列或省略）
+
+- `columns`：柱子，實心矩形 `[左, 上, 右, 下]`。
+- `canopies`：雨遮、花台等不可使用的外部區域，以斜線表示。
+- `outOfScope`：不在設計範圍的室內區域（例如衛浴、陽台），`r` 為 `[左, 上, 右, 下]`。
+- `rooms`：房間名稱標籤，`x, y` 是文字中心位置（放在房間中央），`s` 可寫坪數。
+- `fixtures`：不會更動的既有設備（例如沿用的流理台）。`type` 只能用：counter（流理台）、fridge（冰箱）、cabinet（高櫃）、shoe（鞋櫃）、wardrobe（衣櫃）、bookshelf（書櫃）、column（柱）。`x, y` 是**未旋轉時**的左上角，`w` 寬、`d` 深；元件的正面朝 +y（下方），`rot` 為順時針旋轉角度（0、90、180、270），`flip` 為左右鏡像。旋轉是繞元件中心。
+- `dims`：想顯示的尺寸標註線（兩端點），網頁會自動標上長度。
+
+## 怎麼從不動產說明書讀尺寸
+
+1. **建物測量成果圖**（地政事務所）：標示主建物各段的**牆中心線**尺寸（通常以公尺標示，例如 5.925），以及陽台、雨遮的尺寸與面積算式。以它為外框與主要牆位的依據，公尺 × 100 換成公分。
+2. 用面積算式核對：例如「(5.425*2.775)+(5.925*4.45)…=45.57」，把每個矩形拼回去，確認拼出的外框與各段尺寸一致。
+3. **室內隔間圖／格局圖**（仲介或建商提供）通常**未依比例**，只用來判斷隔間位置、房間配置、門窗與開門方向；位置以相對比例推估，並在「不確定處」說明。
+4. 平面尺寸圖若有標示尺寸（例如 360、280），以標示值為準；若只有比例尺，依比例尺換算。
+5. 窗戶通常在外牆（雨遮那一側常是大面窗）；沒有資訊時寧可少畫，並在不確定處註明。
+
+## 輸出前自我檢查（請逐項確認後再輸出）
+
+- [ ] 外牆形成封閉的外框；轉角端點座標相同，沒有縫隙或重疊。
+- [ ] 每一段標示尺寸加總後，等於圖上的總長（例如各段相加 = 總寬）。
+- [ ] 每個開口的 a、b 都在所屬牆的範圍內，且同一面牆的開口彼此不重疊。
+- [ ] 水平牆的 y1 = y2、垂直牆的 x1 = x2（不要有 0.5 cm 的歪斜）。
+- [ ] 門的 hinge、side 與原圖的開門弧線方向一致。
+- [ ] 所有座標都是數字，JSON 可以被正常解析（不要有註解、不要有結尾逗號）。
+
+## 範例（矩形 600 × 500 的一房，示意格式）
+
+```json
+{
+  "app": "house-layout-base", "version": 1, "unit": "cm", "name": "範例小套房",
+  "walls": [
+    [0, 0, 600, 0, 20, [[90, 210, "win"], [390, 510, "win"]]],
+    [600, 0, 600, 500, 20, []],
+    [600, 500, 0, 500, 20, [[460, 555, "door", {"hinge": "b", "side": -1}]]],
+    [0, 500, 0, 0, 20, []],
+    [300, 0, 300, 300, 12, [[200, 280, "door", {"hinge": "a", "side": 1}]]],
+    [300, 300, 600, 300, 12, [[340, 415, "door", {"hinge": "a", "side": 1}]]]
+  ],
+  "columns": [[560, 460, 600, 500]],
+  "canopies": [],
+  "outOfScope": [{"name": "衛浴", "r": [306, 306, 450, 494]}],
+  "rooms": [{"n": "客廳", "s": "", "x": 150, "y": 260}, {"n": "臥室", "s": "", "x": 450, "y": 150}],
+  "fixtures": [{"type": "counter", "x": 30, "y": 430, "w": 180, "d": 60, "rot": 180, "flip": false, "label": "流理台"}],
+  "dims": [[0, 540, 600, 540]]
+}
+```
+
+假設與不確定處（範例）：
+- 隔間圖未依比例，臥室門位置依相對比例推估，誤差約 ±20 cm。</script>
 <div id="calbar"><span>📐 校正比例：在圖上依序點選<b>兩個已知距離的端點</b>（例如一面牆的兩端）。</span><button id="calCancel">取消</button></div>
 
 <script>
@@ -1126,6 +1236,60 @@ function validBase(b) {
   const okImg = b.image && typeof b.image.src === "string" && /^data:image\//.test(b.image.src) && [b.image.x, b.image.y, b.image.w, b.image.h].every(isFinite);
   return okWalls || okImg;
 }
+function extractJSON(text) {
+  let t = String(text || "").trim();
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i); if (fence) t = fence[1].trim();
+  const i = t.indexOf("{"), j = t.lastIndexOf("}"); if (i < 0 || j <= i) throw new Error("找不到 JSON（請貼上包含 { … } 的內容）");
+  t = t.slice(i, j + 1).replace(/,\s*([}\]])/g, "$1");   // 容忍結尾逗號
+  try { return JSON.parse(t); } catch (e) { throw new Error("JSON 格式錯誤：" + e.message); }
+}
+function normalizeBase(o) {
+  const warn = [], N = v => typeof v === "string" ? parseFloat(v) : v, fin = v => typeof v === "number" && isFinite(v);
+  if (o && o.base && typeof o.base === "object" && !o.walls) o = o.base;
+  if (!o || typeof o !== "object") throw new Error("內容不是 JSON 物件");
+  if (!Array.isArray(o.walls) || !o.walls.length) throw new Error("缺少 walls（牆）資料");
+  const rect4 = (r, what) => { if (!Array.isArray(r) || r.length < 4) { warn.push(`略過格式不正確的${what}`); return null; } const v = r.slice(0, 4).map(N); if (!v.every(fin)) { warn.push(`略過格式不正確的${what}`); return null; } return [Math.min(v[0], v[2]), Math.min(v[1], v[3]), Math.max(v[0], v[2]), Math.max(v[1], v[3])]; };
+  const typeMap = { win: "win", window: "win", "窗": "win", door: "door", "門": "door", open: "open", opening: "open", "開口": "open" };
+  const walls = [];
+  o.walls.forEach((w, i) => {
+    if (!Array.isArray(w) || w.length < 4) { warn.push(`第 ${i + 1} 面牆格式不正確，已略過`); return; }
+    let [x1, y1, x2, y2, th] = w.slice(0, 5).map(N);
+    if (![x1, y1, x2, y2].every(fin)) { warn.push(`第 ${i + 1} 面牆座標不是數字，已略過`); return; }
+    if (!fin(th) || th <= 0) { th = 12; warn.push(`第 ${i + 1} 面牆沒有厚度，預設 12 cm`); }
+    if (Math.hypot(x2 - x1, y2 - y1) < 1) { warn.push(`第 ${i + 1} 面牆長度為 0，已略過`); return; }
+    if (Math.abs(y1 - y2) > 0 && Math.abs(y1 - y2) <= 2 && Math.abs(x2 - x1) > 20) { y2 = y1; warn.push(`第 ${i + 1} 面牆稍微歪斜，已拉成水平`); }
+    if (Math.abs(x1 - x2) > 0 && Math.abs(x1 - x2) <= 2 && Math.abs(y2 - y1) > 20) { x2 = x1; warn.push(`第 ${i + 1} 面牆稍微歪斜，已拉成垂直`); }
+    const hz = Math.abs(y1 - y2) < 0.01, vt = Math.abs(x1 - x2) < 0.01, lo = hz ? Math.min(x1, x2) : Math.min(y1, y2), hi = hz ? Math.max(x1, x2) : Math.max(y1, y2);
+    const ops = [];
+    (Array.isArray(w[5]) ? w[5] : []).forEach((op, j) => {
+      if (!(hz || vt)) { warn.push(`第 ${i + 1} 面牆是斜牆，開口已略過`); return; }
+      if (!Array.isArray(op) || op.length < 2) return;
+      let a = N(op[0]), b = N(op[1]); if (!fin(a) || !fin(b)) return; if (a > b) [a, b] = [b, a];
+      if (a < lo - 0.5 || b > hi + 0.5) { warn.push(`第 ${i + 1} 面牆的開口 ${j + 1} 超出牆的範圍，已裁切`); a = Math.max(lo, a); b = Math.min(hi, b); }
+      if (b - a < 5) return;
+      const k = typeMap[String(op[2] || "open").toLowerCase()] || typeMap[op[2]] || "open";
+      if (k === "door") { const ov = op[3] && typeof op[3] === "object" ? op[3] : {}; ops.push([a, b, "door", { hinge: ov.hinge === "b" ? "b" : "a", side: N(ov.side) < 0 ? -1 : 1 }]); }
+      else ops.push([a, b, k]);
+    });
+    ops.sort((p, q) => p[0] - q[0]);
+    for (let j = 1; j < ops.length; j++) if (ops[j][0] < ops[j - 1][1]) warn.push(`第 ${i + 1} 面牆的開口互相重疊，請用「編輯底圖」檢查`);
+    walls.push([x1, y1, x2, y2, th, ops]);
+  });
+  if (!walls.length) throw new Error("沒有可用的牆");
+  const out = { name: String(o.name || "AI 產生的底圖"), walls };
+  out.columns = (o.columns || []).map(r => rect4(r, "柱子")).filter(Boolean);
+  out.canopies = (o.canopies || []).map(r => rect4(r, "雨遮")).filter(Boolean);
+  if (out.canopies.length) out.canopyLabel = String(o.canopyLabel || "雨遮");
+  out.outOfScope = (o.outOfScope || []).map(z => { const r = rect4(z && z.r, "不在範圍區"); return r ? { name: String(z.name || ""), r } : null; }).filter(Boolean);
+  out.rooms = (o.rooms || []).filter(r => r && fin(N(r.x)) && fin(N(r.y))).map(r => ({ n: String(r.n || r.name || ""), s: String(r.s || ""), x: N(r.x), y: N(r.y) }));
+  out.fixtures = (o.fixtures || []).filter(f => { const ok = f && DRAW[f.type] && [f.x, f.y, f.w, f.d].map(N).every(fin); if (!ok) warn.push(`略過無法辨識的固定設備：${f && f.type}`); return ok; })
+    .map(f => ({ type: f.type, x: N(f.x), y: N(f.y), w: N(f.w), d: N(f.d), rot: N(f.rot) || 0, flip: !!f.flip, label: String(f.label || "") }));
+  out.dims = (o.dims || []).filter(d => Array.isArray(d) && d.slice(0, 4).map(N).every(fin)).map(d => d.slice(0, 4).map(N));
+  // 外牆是否封閉：每個端點至少與另一面牆相接
+  const ends = walls.flatMap(w => [[w[0], w[1]], [w[2], w[3]]]); const loose = ends.filter(([x, y]) => walls.filter(w => Math.hypot(w[0] - x, w[1] - y) < 1.5 || Math.hypot(w[2] - x, w[3] - y) < 1.5 || distSeg({ x, y }, w[0], w[1], w[2], w[3]) < w[4] / 2 + 1).length < 2);
+  if (loose.length) warn.push(`有 ${loose.length} 個牆端點沒有接到其他牆（可能是缺口或 T 字牆），請目視檢查`);
+  return { base: out, warn };
+}
 function setBase(b, keepItems = true) {
   if (!validBase(b)) throw new Error("底圖格式不正確（需要 walls 牆面資料或 image 圖片）");
   const { app, version, unit, savedAt, ...rest } = b;
@@ -1228,13 +1392,35 @@ $("gateRect").onclick = () => {
   toast("已建立外牆。用左側「隔間牆」「門」「柱子」元件畫出格局");
 };
 $("calCancel").onclick = endCalib;
+function openAI() { $("aiMsg").textContent = ""; $("aiModal").classList.add("show"); setTimeout(() => $("aiText").focus(), 50); }
+$("gateAI").onclick = openAI;
+$("aiCancel").onclick = () => $("aiModal").classList.remove("show");
+$("aiCopy").onclick = async () => {
+  const txt = $("aiPrompt").textContent;
+  try { await navigator.clipboard.writeText(txt); toast("已複製提示詞，貼給 AI 並附上平面圖"); }
+  catch (e) { $("aiText").value = txt; $("aiText").select(); toast("無法自動複製，已放進下方文字框，請手動複製"); }
+};
+$("aiApply").onclick = () => {
+  const msg = $("aiMsg"); msg.style.color = "";
+  try {
+    const { base, warn } = normalizeBase(extractJSON($("aiText").value));
+    if (BASE && state.items.length && !confirm("要用 AI 產生的底圖取代目前的底圖嗎？（家具保留在原座標，可用「復原」還原）")) return;
+    if (BASE) undoStack.push(lastSnap);
+    setBase(base, true); lastSnap = snapshot(); updateButtons();
+    $("aiModal").classList.remove("show"); $("aiText").value = "";
+    toast(`已套用「${base.name}」：${base.walls.length} 面牆` + (warn.length ? `，${warn.length} 則提醒（見右側）` : ""));
+    lastAIWarn = warn; renderProps();
+  } catch (err) { msg.style.color = "#d1242f"; msg.textContent = "無法套用：" + err.message; }
+};
+let lastAIWarn = [];
 function renderBaseSection() {
   if (!BASE) return "";
   const im = BASE.image;
   return `<div class="list"><b>底圖</b>
     <div class="row" style="display:grid"><span>名稱</span><input id="bName" type="text" value="${esc(BASE.name || "")}"></div>
     ${im ? `<div class="row" style="display:grid"><span>透明度</span><input id="bOp" type="range" min="0.1" max="1" step="0.05" value="${im.opacity ?? 0.6}"></div>` : ""}
-    <div class="actions">${im ? `<button id="bCal">重新校正比例</button>` : ""}<button id="bExp">匯出底圖檔</button><button id="bChg">更換底圖</button></div></div>`;
+    <div class="actions">${im ? `<button id="bCal">重新校正比例</button>` : ""}<button id="bExp">匯出底圖檔</button><button id="bChg">更換底圖</button><button id="bAI">🤖 AI 產生底圖</button></div>
+    ${lastAIWarn.length ? `<div class="warn" style="color:#9a3412">AI 底圖提醒：<br>${lastAIWarn.slice(0, 8).map(w => "・" + esc(w)).join("<br>")}${lastAIWarn.length > 8 ? `<br>…等 ${lastAIWarn.length} 則` : ""}</div>` : ""}</div>`;
 }
 function bindBaseSection() {
   if (!$("bName")) return;
@@ -1243,6 +1429,7 @@ function bindBaseSection() {
   if ($("bCal")) $("bCal").onclick = startCalib;
   $("bExp").onclick = () => download(`${safeName()}-底圖.json`, new Blob([JSON.stringify(baseData(), null, 1)], { type: "application/json" }));
   $("bChg").onclick = showGate;
+  if ($("bAI")) $("bAI").onclick = openAI;
 }
 $("btnBase").onclick = () => { state.sel = null; renderSelection(); renderProps(); if (!BASE) showGate(); };
 
