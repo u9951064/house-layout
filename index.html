@@ -44,6 +44,31 @@
   button.primary:hover { background:#1a5fd0; }
   button:disabled { opacity:.45; cursor:default; }
   label.toggle { font-size:13px; display:flex; align-items:center; gap:4px; color:#374151; white-space:nowrap; }
+  #palette { grid-column:1; grid-row:3; }
+  #stage { grid-column:2; grid-row:3; }
+  #props { grid-column:3; grid-row:3; }
+  #basePal { grid-column:1; grid-row:3; display:none; background:#f8fbff; border-right:1px solid #bfdbfe; overflow-y:auto; padding:8px 10px 20px; }
+  #palette h3, #basePal h3 { cursor:pointer; user-select:none; display:flex; align-items:center; gap:4px; padding:4px 2px; border-radius:5px; }
+  #palette h3:hover, #basePal h3:hover { background:#eef2f7; }
+  #palette h3::before, #basePal h3::before { content:"▾"; font-size:10px; width:12px; color:#9ca3af; }
+  #palette h3.collapsed::before, #basePal h3.collapsed::before { content:"▸"; }
+  h3.collapsed + .grid, h3.collapsed + .thk, h3.collapsed + .thk + .muted, h3.collapsed + .grid + .muted { display:none !important; }
+  #palette.searching h3.collapsed + .grid { display:grid !important; }
+  .paltop { display:flex; gap:4px; margin:2px 0 6px; }
+  .paltop button { font-size:11.5px; padding:3px 6px; }
+  .paltop .paltog { font-weight:700; }
+  .palrail { display:none; writing-mode:vertical-rl; cursor:pointer; color:#374151; font-size:13px; padding:10px 0; letter-spacing:2px; margin:0 auto; }
+  #app.palcollapsed { grid-template-columns: 34px 1fr 268px; }
+  #app.palcollapsed #palette > *, #app.palcollapsed #basePal > * { display:none !important; }
+  #app.palcollapsed #palette > .palrail, #app.palcollapsed #basePal > .palrail { display:block !important; }
+  #app.palcollapsed #palette, #app.palcollapsed #basePal { padding:4px; overflow:hidden; }
+  #basePal h3 { font-size:12px; color:#1d4ed8; margin:12px 2px 6px; font-weight:600; }
+  #basePal .btool.on { border-color:var(--accent); background:#e0ecff; box-shadow:0 0 0 2px rgba(31,111,235,.18); }
+  #basePal .btool svg { height:44px; }
+  #basePal .thk { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  #basePal .thk button { font-size:12px; padding:5px 4px; }
+  #basePal .thk button.on { background:#e0ecff; border-color:#a8c7fa; color:#0b57d0; }
+  #basebar button[data-tool], #basebar .muted { display:none; }
   #palette { background:var(--panel); border-right:1px solid #e5e7eb; overflow-y:auto; padding:8px 10px 20px; }
   #palette h3 { font-size:12px; color:var(--muted); margin:12px 2px 6px; font-weight:600; letter-spacing:.05em; }
   .grid { display:grid; grid-template-columns: 1fr 1fr; gap:6px; }
@@ -224,6 +249,19 @@
 </div>
 <div id="menuPop"></div>
   <aside id="palette"></aside>
+  <aside id="basePal">
+    <div class="paltop"><button class="paltog" title="收起面板">«</button><button data-all="0" title="全部收合">全部收合</button><button data-all="1" title="全部展開">全部展開</button></div>
+    <div class="palrail" title="展開面板">» 底圖工具</div>
+    <h3 data-key="b:tools">底圖工具</h3>
+    <div class="grid"><div class="pal btool" data-tool="select" title="選取／移動（V）"><svg viewBox="0 0 64 60"><path d="M18 10 L18 46 L27 37 L33 50 L39 47 L33 34 L45 34 Z" fill="#222"/></svg><span>選取／移動</span></div><div class="pal btool" data-tool="wall" title="畫牆（W）"><svg viewBox="0 0 64 60"><rect x="8" y="26" width="48" height="10" fill="#262626"/></svg><span>畫牆</span></div><div class="pal btool" data-tool="win" title="窗"><svg viewBox="0 0 64 60"><rect x="8" y="26" width="48" height="10" fill="#fff" stroke="#262626" stroke-width="2"/><line x1="8" y1="31" x2="56" y2="31" stroke="#262626" stroke-width="1.5"/></svg><span>窗</span></div><div class="pal btool" data-tool="door" title="門"><svg viewBox="0 0 64 60"><rect x="4" y="40" width="12" height="8" fill="#262626"/><rect x="48" y="40" width="12" height="8" fill="#262626"/><line x1="16" y1="44" x2="16" y2="12" stroke="#262626" stroke-width="2.5"/><path d="M16 12 A32 32 0 0 1 48 44" fill="none" stroke="#262626" stroke-width="1.3" stroke-dasharray="4 3"/></svg><span>門</span></div><div class="pal btool" data-tool="open" title="開口"><svg viewBox="0 0 64 60"><rect x="4" y="26" width="18" height="10" fill="#262626"/><rect x="42" y="26" width="18" height="10" fill="#262626"/><line x1="24" y1="31" x2="40" y2="31" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="3 3"/></svg><span>開口</span></div><div class="pal btool" data-tool="column" title="柱子"><svg viewBox="0 0 64 60"><rect x="18" y="16" width="28" height="28" fill="#262626"/></svg><span>柱子</span></div><div class="pal btool" data-tool="canopy" title="雨遮"><svg viewBox="0 0 64 60"><rect x="8" y="16" width="48" height="28" fill="url(#hatch)" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="5 3"/></svg><span>雨遮</span></div><div class="pal btool" data-tool="oos" title="不在範圍"><svg viewBox="0 0 64 60"><rect x="8" y="14" width="48" height="32" fill="#e5e7eb" stroke="#9ca3af" stroke-width="1.5"/><text x="32" y="35" font-size="11" text-anchor="middle" fill="#6b7280">衛浴</text></svg><span>不在範圍</span></div><div class="pal btool" data-tool="room" title="房間名稱"><svg viewBox="0 0 64 60"><text x="32" y="38" font-size="18" font-weight="700" text-anchor="middle" fill="#9ca3af">客廳</text></svg><span>房間名稱</span></div></div>
+    <h3 data-key="b:thk">牆厚</h3>
+    <div class="thk"><button data-thk="20">外牆 20</button><button data-thk="15">RC 15</button><button data-thk="12">隔間 12</button><button data-thk="10">輕隔間 10</button></div>
+    <div class="muted" style="font-size:11.5px;margin:6px 2px">畫牆：連續點擊，Esc／Enter／雙擊結束；Alt 畫斜牆。窗、門、開口：點在牆上。柱子、雨遮、不在範圍：拖拉出範圍。</div>
+    <h3 data-key="b:fix">固定設備</h3>
+    <div class="grid" id="basePalFix"></div>
+    <div class="muted" style="font-size:11.5px;margin:6px 2px">拖拉或點選加入底圖，離開編輯後會鎖定，所有方案共用。</div>
+    <button class="primary" id="basePalDone" style="width:100%;margin-top:12px">完成底圖編輯</button>
+  </aside>
   <main id="stage">
     <svg id="svg" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -1120,10 +1158,11 @@ function buildPalette() {
   const pal = $("palette"); pal.innerHTML = "";
   const sw = document.createElement("input"); sw.type = "search"; sw.placeholder = "搜尋元件（例如：門、櫃、床）";
   sw.style.cssText = "width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;margin:4px 0 2px";
-  sw.oninput = () => { const q = sw.value.trim(); pal.querySelectorAll(".pal").forEach(c => c.style.display = !q || c.dataset.name.includes(q) ? "" : "none"); pal.querySelectorAll("h3").forEach(h => { const g = h.nextSibling; h.style.display = g.querySelector('.pal:not([style*="none"])') ? "" : "none"; }); };
+  sw.oninput = () => { const q = sw.value.trim(); pal.classList.toggle("searching", !!q); pal.querySelectorAll(".pal").forEach(c => c.style.display = !q || c.dataset.name.includes(q) ? "" : "none"); pal.querySelectorAll("h3").forEach(h => { const g = h.nextSibling; h.style.display = g.querySelector('.pal:not([style*="none"])') ? "" : "none"; }); };
+  pal.insertAdjacentHTML("beforeend", palTopHTML());
   pal.appendChild(sw);
   for (const cat of LIB) {
-    el("h3", {}, null); const h = document.createElement("h3"); h.textContent = cat.cat; pal.appendChild(h);
+    const h = document.createElement("h3"); h.textContent = cat.cat; h.dataset.key = "f:" + cat.cat; pal.appendChild(h);
     const grid = document.createElement("div"); grid.className = "grid"; pal.appendChild(grid);
     for (const def of cat.items) {
       const card = document.createElement("div"); card.className = "pal"; card.draggable = true; card.dataset.name = def.name + cat.cat; card.title = `拖拉到圖上（${def.w}×${def.d} cm）`;
@@ -1266,15 +1305,34 @@ function setMode(m) {
   mode = m; wallDraw = null; rectDraw = null; bsel = null; state.sel = null;
   svg.classList.toggle("basemode", mode === "base"); $("basebar").classList.toggle("show", mode === "base"); $("btnBaseEdit").classList.toggle("on", mode === "base");
   $("sheets").style.display = mode === "base" ? "none" : "";
+  $("palette").style.display = mode === "base" ? "none" : ""; $("basePal").style.display = mode === "base" ? "block" : "none";
   if (mode === "base") setTool("select"); else { svg.style.cursor = ""; BASE.bounds = computeBounds(BASE); drawGrid(); drawBase(); }
   renderItems(); renderProps(); toast(mode === "base" ? "底圖編輯模式：家具暫時鎖定" : "回到設計模式");
 }
 function setTool(t) {
   btool = t; wallDraw = null; rectDraw = null;
-  document.querySelectorAll("#basebar button[data-tool]").forEach(b => b.classList.toggle("on", b.dataset.tool === t));
+  document.querySelectorAll("#basebar button[data-tool], #basePal [data-tool]").forEach(b => b.classList.toggle("on", b.dataset.tool === t));
   svg.style.cursor = t === "select" ? "" : "crosshair"; renderSelection(); renderProps();
 }
-document.querySelectorAll("#basebar button[data-tool]").forEach(b => b.onclick = () => setTool(b.dataset.tool));
+document.querySelectorAll("#basebar button[data-tool], #basePal [data-tool]").forEach(b => b.onclick = () => setTool(b.dataset.tool));
+function syncThk() { document.querySelectorAll("#basePal [data-thk]").forEach(b => b.classList.toggle("on", +b.dataset.thk === +$("bThick").value)); }
+document.querySelectorAll("#basePal [data-thk]").forEach(b => b.onclick = () => { $("bThick").value = b.dataset.thk; syncThk(); if (btool !== "wall") setTool("wall"); toast(`牆厚 ${b.dataset.thk} cm`); });
+$("bThick").addEventListener("input", syncThk); syncThk();
+$("basePalDone").onclick = () => setMode("design");
+(function buildBaseFix() {
+  const F = $("basePalFix");
+  for (const t of ["counter", "fridge", "appliance", "cabinet", "shoe", "wardrobe", "wardrobeSlide", "bookshelf", "lowcab", "bench"]) {
+    const def = DEFAULTS[t]; if (!def) continue;
+    const card = document.createElement("div"); card.className = "pal"; card.draggable = true; card.title = `加入固定設備（${def.w}×${def.d} cm）`;
+    const ps = el("svg", {}); const pad = 14, m = Math.max(def.w, def.d) + pad * 2;
+    ps.setAttribute("viewBox", `${-pad - (def.w < def.d ? (def.d - def.w) / 2 : 0)} ${-pad - (def.d < def.w ? (def.w - def.d) / 2 : 0)} ${m} ${m}`);
+    DRAW[t](el("g", { class: "item" }, ps), def.w, def.d, def); card.appendChild(ps);
+    const sp = document.createElement("span"); sp.innerHTML = `${def.name}<br><small>${def.w}×${def.d}</small>`; card.appendChild(sp);
+    card.addEventListener("dragstart", e => { e.dataTransfer.setData("text/x-floorplan", JSON.stringify(def)); e.dataTransfer.effectAllowed = "copy"; });
+    card.addEventListener("click", () => { const r = svg.getBoundingClientRect(); const p = toWorld(r.left + r.width / 2, r.top + r.height / 2); addItem(def, p.x, p.y); });
+    F.appendChild(card);
+  }
+})();
 $("bDone").onclick = () => setMode("design");
 $("btnBaseEdit").onclick = () => setMode(mode === "base" ? "design" : "base");
 $("gateDraw").onclick = () => {
@@ -2016,6 +2074,23 @@ $("tbMeasure").onclick = () => { if (BASE) setMeasure(!measureMode); };
 $("tbFit").onclick = fit; $("tbZoomIn").onclick = () => zoomBy(1.25); $("tbZoomOut").onclick = () => zoomBy(0.8);
 ["chkEdge", "chkSnap", "chkGrid", "chkSize", "chkDims", "selSnap"].forEach(id => $(id).addEventListener("change", syncToolbar));
 syncToolbar();
+
+/* --- 圖案庫收合（Visio 式） --- */
+function palTopHTML() { return `<div class="paltop"><button class="paltog" title="收起面板">«</button><button data-all="0" title="全部收合">全部收合</button><button data-all="1" title="全部展開">全部展開</button></div><div class="palrail" title="展開面板">» 圖案庫</div>`; }
+var COLL_KEY = "hl-collapsed";
+function collSet() { try { return new Set(JSON.parse(localStorage.getItem(COLL_KEY) || "[]")); } catch (e) { return new Set(); } }
+function collSave(set) { try { localStorage.setItem(COLL_KEY, JSON.stringify([...set])); } catch (e) {} }
+function applyCollapse() { const set = collSet(); document.querySelectorAll("#palette h3[data-key], #basePal h3[data-key]").forEach(h => h.classList.toggle("collapsed", set.has(h.dataset.key))); document.getElementById("app").classList.toggle("palcollapsed", set.has("__panel")); }
+function setPanel(collapsed) { const set = collSet(); collapsed ? set.add("__panel") : set.delete("__panel"); collSave(set); applyCollapse(); setTimeout(() => { if (BASE) fit(); }, 30); }
+["palette", "basePal"].forEach(id => $(id).addEventListener("click", e => {
+  const h = e.target.closest("h3[data-key]");
+  if (h) { const set = collSet(); set.has(h.dataset.key) ? set.delete(h.dataset.key) : set.add(h.dataset.key); collSave(set); applyCollapse(); return; }
+  if (e.target.closest(".paltog")) { setPanel(true); return; }
+  if (e.target.closest(".palrail")) { setPanel(false); return; }
+  const all = e.target.closest("[data-all]");
+  if (all) { const set = collSet(); $(id).querySelectorAll("h3[data-key]").forEach(h3 => all.dataset.all === "0" ? set.add(h3.dataset.key) : set.delete(h3.dataset.key)); collSave(set); applyCollapse(); }
+}));
+applyCollapse();
 
 /* --- 右下角縮放列 --- */
 var ZMIN = 0.15, ZMAX = 6;
