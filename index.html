@@ -980,7 +980,7 @@ function renderProps(light) {
   if (!it) {
     P.innerHTML = `<h2>屬性</h2><div class="empty">點選圖上的物件即可設定尺寸、角度與名稱。<br><br>
       <b>操作方式</b><br>・從左側把元件拖到圖上（或點一下元件直接加入）<br>・拖曳物件移動；拖曳藍色方塊調整寬深；拖曳上方圓點旋轉（每 15°，按住 Shift 自由旋轉）<br>
-      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br>・✏️「編輯底圖」可畫牆、加門窗、柱子、房間名稱與固定設備<br>・下方分頁像 Excel 工作表：一頁一個方案，雙擊改名、拖曳排序、按住 ⌥／Ctrl 拖曳或按 ⧉ 複製、右鍵更多；「疊圖」「並排比較」可比較方案<br><br>
+      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br>・✏️「編輯底圖」可畫牆、加門窗、柱子、房間名稱與固定設備<br>・下方分頁像 Excel 工作表：一頁一個方案，雙擊改名、拖曳排序、按住 ⌥／Ctrl 拖曳複製、右鍵更多；「疊圖」「並排比較」可比較方案<br><br>
       <b>存檔</b><br>「儲存檔案」會把整個專案（底圖＋所有方案分頁＋疊圖設定）存成一個 .json 檔，下次用「開啟檔案」開啟；瀏覽器也會自動暫存目前進度。資料不會上傳到任何伺服器。</div>` + listHTML();
     $("props").insertAdjacentHTML("beforeend", renderBaseSection()); bindBaseSection();
     bindList(); return;
@@ -1596,7 +1596,7 @@ function copyDesignTo(from, to) {
 function renderSheets() {
   const T = $("sheets"); if (!PROJ) { T.innerHTML = ""; return; }
   T.innerHTML = PROJ.designs.map((d, k) => `<button class="sh${k === PROJ.cur ? " on" : ""}${d.id === ghostId ? " ghost" : ""}" data-k="${k}" draggable="true" title="點選切換｜雙擊重新命名｜拖曳排序（按住 ⌥／Ctrl 拖曳＝複製）｜右鍵更多">${esc(d.name)} <small>${(k === PROJ.cur ? state.items : d.items).length}</small></button>`).join("")
-    + `<button class="sh add" id="shAdd" title="新增空白方案">＋</button><button class="sh add" id="shDup" title="複製目前方案" style="font-size:15px">⧉</button><span class="grow"></span>
+    + `<button class="sh add" id="shAdd" title="新增空白方案">＋</button><span class="grow"></span>
     <span class="ctl">疊圖<select id="selGhost" title="把另一個方案以紅色半透明疊在目前畫布上"><option value="">（無）</option>${PROJ.designs.map((d, k) => k === PROJ.cur ? "" : `<option value="${d.id}" ${d.id === ghostId ? "selected" : ""}>${esc(d.name)}</option>`).join("")}</select>
     <button id="shCmp" title="並排比較所有方案">並排比較</button></span>`;
   T.querySelectorAll(".sh[data-k]").forEach(b => {
@@ -1605,7 +1605,6 @@ function renderSheets() {
     b.oncontextmenu = e => { e.preventDefault(); sheetMenu(k, e.clientX, e.clientY); };
   });
   $("shAdd").onclick = () => addDesign(null);
-  $("shDup").onclick = () => addDesign(PROJ.cur);
   const tabs = [...T.querySelectorAll(".sh[data-k]")], clear = () => tabs.forEach(t => t.classList.remove("dropL", "dropR"));
   tabs.forEach(b => {
     const k = +b.dataset.k;
