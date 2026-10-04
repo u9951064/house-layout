@@ -247,7 +247,7 @@ kbd {
   header,
   #palette,
   #props,
-  #hint,
+  #tipCard,
   #zoomInfo {
     display: none !important;
   }

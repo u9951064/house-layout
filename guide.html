@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <title>使用教學｜House Layout 室內平面設計工具</title>
+    <meta name="description" content="House Layout 完整使用教學：匯入底圖、擺放家具、對齊貼合、方案比較、底圖編輯、AI 產生底圖、存檔與匯出。" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/guide.css" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="./">🏠 House Layout</a>
+      <nav>
+        <a href="./" class="btn primary">開啟工具</a>
+        <a href="https://github.com/u9951064/house-layout" target="_blank" rel="noopener" class="btn">GitHub</a>
+      </nav>
+    </header>
+
+    <div class="layout">
+      <aside class="toc">
+        <b>目錄</b>
+        <a href="#intro">這是什麼</a>
+        <a href="#start">快速開始</a>
+        <a href="#ui">介面導覽</a>
+        <a href="#furniture">擺放家具</a>
+        <a href="#multi">多選、對齊與貼合</a>
+        <a href="#curve">弧形與組合元件</a>
+        <a href="#measure">量測與比例</a>
+        <a href="#sheets">方案分頁與比較</a>
+        <a href="#base">編輯底圖</a>
+        <a href="#ai">用 AI 產生底圖</a>
+        <a href="#file">專案、存檔與匯出</a>
+        <a href="#keys">快捷鍵一覽</a>
+        <a href="#privacy">隱私</a>
+        <a href="#dev">開發者</a>
+      </aside>
+
+      <main>
+        <section id="intro">
+          <h1>House Layout 使用教學</h1>
+          <p class="lead">
+            House Layout 是在瀏覽器裡畫室內平面配置圖的工具：匯入自己的房屋底圖，從元件庫拖拉床、沙發、衣櫃、書桌等家具，用實際公分評估空間感，再用分頁做出多個方案互相比較。
+          </p>
+          <ul class="features">
+            <li><b>同一比例</b>：家具、牆面都以公分繪製，有比例尺、量測工具與 1 cm 吸附。</li>
+            <li><b>建商平面圖風格</b>：約 80 種元件，含弧形牆、弧形拉門與直線＋弧形的組合元件。</li>
+            <li><b>多方案比較</b>：像 Excel 工作表的分頁，可疊圖或並排比較。</li>
+            <li><b>資料只在你的電腦</b>：沒有後端，不需要註冊。</li>
+          </ul>
+          <figure>
+            <img src="docs/img/overview.png" alt="House Layout 整體介面（範例兩房）" />
+            <figcaption>整體介面（教學中的圖都使用「範例兩房」示意格局）</figcaption>
+          </figure>
+        </section>
+
+        <section id="start">
+          <h2>快速開始</h2>
+          <p>第一次打開網站會出現匯入畫面，必須先有一張底圖（牆面與尺寸）才能開始設計。有五種方式：</p>
+          <div class="cols">
+            <figure class="narrow"><img src="docs/img/gate.png" alt="匯入底圖畫面" /></figure>
+            <ol>
+              <li><b>匯入底圖或專案檔</b>：本工具輸出的 <code>.json</code>。</li>
+              <li>
+                <b>上傳平面圖圖片</b>：PNG／JPG。上傳後在圖上點<b>兩個已知距離的端點</b>（例如一面標有 360 的牆），輸入實際公分數，圖片就會依比例縮放，之後可描牆。
+              </li>
+              <li><b>輸入外框尺寸</b>：建立矩形外牆，再用「編輯底圖」加隔間與門窗。</li>
+              <li><b>從空白開始畫底圖</b>：直接進入底圖編輯，用「畫牆」一面一面畫。</li>
+              <li><b>貼上 AI 產生的底圖</b>：把平面圖或不動產說明書交給 AI，貼回結果即可（見 <a href="#ai">用 AI 產生底圖</a>）。</li>
+            </ol>
+          </div>
+          <p class="tip">
+            還沒有平面圖？在匯入畫面點「<b>先開啟範例專案試用</b>」，會載入本教學使用的範例兩房（含兩個方案）。每次建立或開啟都會先請你為專案命名，並開成一個新專案，不會覆蓋原本的專案。
+          </p>
+        </section>
+
+        <section id="ui">
+          <h2>介面導覽</h2>
+          <table>
+            <tr><th>位置</th><th>內容</th></tr>
+            <tr><td>上方選單列</td><td><b>檔案</b>（新專案、開啟、儲存、切換專案、匯出、列印）、<b>編輯</b>（復原、剪下、複製、貼上…）、<b>檢視</b>、<b>底圖</b>、<b>說明</b>；右側為專案切換、復原／重做與儲存。</td></tr>
+            <tr><td>工具列</td><td>📏 量測、🧲 貼邊、⌗ 吸附與精度（1／5／10 cm）、格線、家具尺寸、牆面尺寸。</td></tr>
+            <tr><td>左側元件庫</td><td>依分類收合（像 Visio），可搜尋；« 可把整個面板收起來。</td></tr>
+            <tr><td>右側面板</td><td>三個分頁：<b>屬性</b>（選取物件的設定或多選對齊）、<b>物件</b>（清單）、<b>底圖</b>（底圖資訊與操作）。</td></tr>
+            <tr><td>下方分頁列</td><td>每個分頁是一個設計方案；右側有疊圖與並排比較。</td></tr>
+            <tr><td>右下角縮放列</td><td>滑桿、＋／－、可輸入百分比，▾ 有 20%～100% 與全圖顯示。</td></tr>
+          </table>
+          <div class="grid2">
+            <figure><img src="docs/img/menu.png" alt="檔案選單" /><figcaption>選單列（檔案）</figcaption></figure>
+            <figure><img src="docs/img/palette.png" alt="元件庫" /><figcaption>元件庫：分類可收合、可搜尋</figcaption></figure>
+          </div>
+        </section>
+
+        <section id="furniture">
+          <h2>擺放家具</h2>
+          <ul>
+            <li>從左側<b>拖拉</b>元件到圖上，或<b>點一下</b>元件加到畫面中央。</li>
+            <li>拖曳物件移動；拖曳藍色方塊調整寬深；拖曳上方圓點旋轉（每 15°，按住 Shift 自由旋轉）。</li>
+            <li>右側「屬性」頁可直接輸入寬、深、角度、位置與名稱；沙發可設座位數、餐桌可設椅子數。</li>
+            <li>放進「不在設計範圍」（例如衛浴、陽台）的家具會以紅框提醒。</li>
+            <li>在物件上按<b>右鍵</b>：複製、剪下、貼上、再製、旋轉、鏡像、上下層、鎖定、刪除。</li>
+          </ul>
+          <div class="grid2">
+            <figure><img src="docs/img/props.png" alt="屬性面板" /><figcaption>屬性頁：尺寸、角度、名稱</figcaption></figure>
+            <figure><img src="docs/img/context.png" alt="右鍵選單" /><figcaption>右鍵選單</figcaption></figure>
+          </div>
+        </section>
+
+        <section id="multi">
+          <h2>多選、對齊與貼合</h2>
+          <div class="cols">
+            <figure class="narrow"><img src="docs/img/multi.png" alt="多選對齊面板" /></figure>
+            <div>
+              <ul>
+                <li><b>多選</b>：Shift 或 ⌘ 點選、Shift 拖曳空白處框選、⌘A 全選。拖曳任一個會一起移動。</li>
+                <li><b>對齊</b>：靠左、水平置中、靠右、靠上、垂直置中、靠下。</li>
+                <li><b>平均分布</b>：3 個以上物件的間距相同。</li>
+                <li><b>邊緣貼合</b>：依序緊貼排列，可設定間距（例如冰箱、電器櫃、高櫃排成一排）。</li>
+                <li><b>同寬／同深</b>：以最後選取的物件為準。</li>
+                <li><b>拖曳貼邊</b>：拖曳時邊緣靠近其他家具或牆面會自動吸附並顯示橘色線；按住 Alt 暫時關閉，或在工具列關掉「貼邊」。</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="curve">
+          <h2>弧形與組合元件</h2>
+          <p>
+            「門・牆・標示」分類裡有<b>直線＋弧形拉門</b>、<b>直線＋弧形牆</b>、<b>直線＋弧形玻璃</b>，它們是<b>一個元件</b>：由「直線 A → 弧形 → 直線 B」組成，在屬性頁設定直線長度、弧半徑、弧角度、彎向與厚度，外框會自動計算。適合轉角的弧形拉門、圓弧隔間或玻璃。
+          </p>
+          <figure><img src="docs/img/curve.png" alt="直線加弧形拉門的設定" /><figcaption>直線＋弧形拉門：一個元件、參數化設定</figcaption></figure>
+          <p>另有純弧形的「弧形拉門」「弧形牆」「轉角弧形化妝台」「轉角弧形櫃」：寬＝水平半徑、深＝垂直半徑，用旋轉或鏡像調整朝向。</p>
+        </section>
+
+        <section id="measure">
+          <h2>量測與比例</h2>
+          <ul>
+            <li>所有元件與牆面使用同一比例（公分），左下有 0～3 m 比例尺。</li>
+            <li>按工具列 <b>📏 量測</b> 或 <kbd>M</kbd>，在圖上拖曳拉線即可看距離；Shift 鎖水平／垂直。</li>
+            <li>吸附精度可選 1／5／10 cm；放大到 250% 以上會顯示 1 cm 細格。</li>
+            <li>「牆尺寸」會顯示底圖檔附帶的牆面尺寸標註。</li>
+          </ul>
+        </section>
+
+        <section id="sheets">
+          <h2>方案分頁與比較</h2>
+          <figure><img src="docs/img/sheets.png" alt="分頁列與縮放列" /><figcaption>下方分頁列（左）與縮放列（右）</figcaption></figure>
+          <ul>
+            <li>一個專案（一間房子）可以有多個方案，畫面下方像 Excel 工作表：點選切換、<b>雙擊改名</b>、<b>拖曳排序</b>、按住 ⌥（Windows：Ctrl）拖曳<b>複製</b>、右鍵有更多操作。</li>
+            <li>所有方案共用同一張底圖；在「編輯底圖」修改牆面，每個方案都會更新。</li>
+            <li><b>疊圖</b>：把另一個方案以紅色半透明疊在目前畫布上，直接看差異。</li>
+            <li><b>並排比較</b>：所有方案並排顯示，附物件數量與清單，可直接切換。</li>
+            <li>⌘C／⌘V 可以跨方案複製家具。</li>
+          </ul>
+          <div class="grid2">
+            <figure><img src="docs/img/ghost.png" alt="疊圖比較" /><figcaption>疊圖：紅色為另一個方案</figcaption></figure>
+            <figure><img src="docs/img/compare.png" alt="並排比較" /><figcaption>並排比較</figcaption></figure>
+          </div>
+        </section>
+
+        <section id="base">
+          <h2>編輯底圖</h2>
+          <p>從「底圖 → 編輯底圖」（或右側「底圖」頁的按鈕）進入。家具會變淡並鎖定，左側換成底圖工具：</p>
+          <figure><img src="docs/img/base-edit.png" alt="底圖編輯模式" /><figcaption>底圖編輯：左側為底圖工具、牆厚與固定設備</figcaption></figure>
+          <table>
+            <tr><th>工具</th><th>用法</th></tr>
+            <tr><td>畫牆</td><td>連續點擊畫牆，預設鎖水平／垂直（Alt 斜牆），會吸附既有牆端點；Esc、Enter 或雙擊結束。牆厚可快選：外牆 20、RC 15、隔間 12、輕隔間 10。</td></tr>
+            <tr><td>窗／門／開口</td><td>點在牆上加入，再到右側調整位置與寬度；門可設定鉸鏈端與開向。</td></tr>
+            <tr><td>柱子／雨遮／不在範圍</td><td>拖拉出範圍。「不在範圍」可命名（衛浴、陽台…），家具放進去會紅框提醒。</td></tr>
+            <tr><td>房間名稱</td><td>點一下放置，可加副標（例如坪數）。</td></tr>
+            <tr><td>固定設備</td><td>流理台、冰箱、高櫃等，成為底圖的一部分，離開編輯後鎖定、所有方案共用。</td></tr>
+            <tr><td>選取</td><td>拖曳移動、拖牆端點調長度，Delete 刪除；⌘Z 可復原。</td></tr>
+          </table>
+        </section>
+
+        <section id="ai">
+          <h2>用 AI 產生底圖</h2>
+          <div class="cols">
+            <figure class="narrow"><img src="docs/img/ai.png" alt="AI 產生底圖對話框" /></figure>
+            <ol>
+              <li>選「底圖 → AI 產生底圖」或匯入畫面的第 ⑤ 項，按「複製提示詞」。</li>
+              <li>貼到可讀圖片或 PDF 的 AI（ChatGPT、Claude、Gemini…），附上<b>平面尺寸圖</b>或<b>不動產說明書</b>（建物測量成果圖、隔間圖）。</li>
+              <li>把 AI 的整段回覆貼回來，按「套用到畫面」。</li>
+              <li>工具會自動抓出 JSON、修正小誤差（例如歪 2 cm 內的牆），提醒會列在右側「底圖」頁；再用「編輯底圖」微調。</li>
+            </ol>
+          </div>
+          <p class="tip">提示詞全文：<a href="PROMPT.md" target="_blank" rel="noopener">PROMPT.md</a>。測量成果圖有明確尺寸，通常最準；隔間圖未依比例，位置請再量測核對。</p>
+        </section>
+
+        <section id="file">
+          <h2>專案、存檔與匯出</h2>
+          <ul>
+            <li><b>一個檔案就是一整個專案</b>：「儲存檔案」（⌘S）把底圖、所有方案分頁與疊圖設定存成一個 <code>.json</code>；「開啟檔案」（⌘O）或把檔案拖進視窗，會命名後開成新專案。</li>
+            <li>瀏覽器會自動暫存所有專案，可從右上角 📁 切換；「檔案 → 專案管理」可重新命名或刪除。換電腦或備份請用「儲存檔案」。</li>
+            <li><b>匯出</b>：PNG 圖片、SVG（1:50 實際比例，列印選 100%）、列印。</li>
+            <li>底圖可單獨匯出成底圖檔，給別人用同一張底圖做不同設計。</li>
+          </ul>
+        </section>
+
+        <section id="keys">
+          <h2>快捷鍵一覽</h2>
+          <table class="keys">
+            <tr><td><kbd>⌘Z</kbd> ／ <kbd>⇧⌘Z</kbd></td><td>復原／重做</td><td><kbd>⌘S</kbd> ／ <kbd>⌘O</kbd></td><td>儲存／開啟</td></tr>
+            <tr><td><kbd>⌘C</kbd> <kbd>⌘X</kbd> <kbd>⌘V</kbd></td><td>複製、剪下、貼上</td><td><kbd>⌘D</kbd></td><td>再製</td></tr>
+            <tr><td><kbd>⌘A</kbd></td><td>全選</td><td><kbd>Delete</kbd></td><td>刪除</td></tr>
+            <tr><td><kbd>R</kbd> ／ <kbd>⇧R</kbd></td><td>旋轉 90°（反向）</td><td><kbd>F</kbd></td><td>左右鏡像</td></tr>
+            <tr><td>方向鍵（Shift ×10）</td><td>微調位置</td><td><kbd>M</kbd></td><td>量測</td></tr>
+            <tr><td>Shift／⌘ 點選</td><td>加減選取</td><td>Shift 拖曳空白處</td><td>框選</td></tr>
+            <tr><td>拖曳時按 Alt</td><td>暫停貼邊</td><td><kbd>Esc</kbd></td><td>取消選取／關閉選單</td></tr>
+            <tr><td colspan="4" class="muted">底圖編輯中：<kbd>V</kbd> 選取、<kbd>W</kbd> 畫牆、<kbd>Esc</kbd>／<kbd>Enter</kbd> 結束畫牆。Windows 請把 ⌘ 換成 Ctrl。</td></tr>
+          </table>
+        </section>
+
+        <section id="privacy">
+          <h2>隱私</h2>
+          <p>
+            House Layout 是單一靜態網頁，沒有後端、沒有追蹤程式。你的底圖與設計稿只存在瀏覽器（localStorage）與你下載的檔案中，不會上傳到任何伺服器。使用 AI 產生底圖時，資料只在你與你選擇的 AI 服務之間傳遞。
+          </p>
+        </section>
+
+        <section id="dev">
+          <h2>開發者</h2>
+          <p>
+            Josh Tsai（<a href="https://github.com/u9951064" target="_blank" rel="noopener">@u9951064</a>）・原始碼與問題回報：<a href="https://github.com/u9951064/house-layout" target="_blank" rel="noopener">github.com/u9951064/house-layout</a>・<a href="LICENSE" target="_blank" rel="noopener">MIT License</a>
+          </p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

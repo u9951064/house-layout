@@ -295,6 +295,53 @@ test("匯出 SVG 字串可被瀏覽器繪製", async () => {
   assert.equal(ok, true);
 });
 
+test("組合曲線元件：一個元件、改參數重算外框、無拉伸把手", async () => {
+  const r = await ev(() => {
+    const f = window.__fp,
+      it = f.addItem(f.DEFAULTS.curveSlide, 300, 300),
+      w0 = it.w;
+    const a = document.getElementById("cA");
+    a.value = 40;
+    a.dispatchEvent(new Event("change"));
+    const now = f.state.items.find(i => i.id === it.id);
+    return { w0, w1: now.w, handles: document.querySelectorAll("#uiLayer .handle").length, type: now.type };
+  });
+  assert.equal(r.type, "curveSlide");
+  assert.equal(r.w0 - r.w1, 60);
+  assert.equal(r.handles, 0);
+});
+
+test("範例專案可從匯入畫面開啟", async () => {
+  await ev(() => {
+    window.__fp.loadData;
+    document.getElementById("gate").classList.remove("hidden");
+    document.getElementById("gateSample").click();
+  });
+  await page.waitForFunction(() => window.__fp.proj && window.__fp.proj.name === "範例兩房");
+  const r = await ev(() => ({ designs: window.__fp.proj.designs.length, items: window.__fp.state.items.length }));
+  assert.equal(r.designs, 2);
+  assert.ok(r.items > 5);
+});
+
+test("提示卡：第一次顯示、關閉後重新整理不再出現", async () => {
+  await ev(() => localStorage.removeItem("hl-tip-off"));
+  await page.reload();
+  const shown = await ev(() => !document.getElementById("tipCard").hidden);
+  await page.click("#tipClose");
+  await page.reload();
+  const after = await ev(() => document.getElementById("tipCard").hidden);
+  assert.equal(shown, true);
+  assert.equal(after, true);
+});
+
+test("使用教學頁與範例檔可存取，且圖片都存在", async () => {
+  const html = await (await fetch(URL.replace("index.html", "guide.html"))).text();
+  const imgs = [...html.matchAll(/src="(docs\/img\/[^"]+)"/g)].map(m => m[1]);
+  assert.ok(imgs.length >= 10);
+  for (const src of imgs) assert.equal((await fetch(URL.replace("index.html", src))).status, 200, src);
+  assert.equal((await fetch(URL.replace("index.html", "examples/sample-project.json"))).status, 200);
+});
+
 test("整個流程沒有任何頁面錯誤", () => {
   assert.deepEqual(errors, []);
 });

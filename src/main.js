@@ -87,18 +87,12 @@ if (!S.BASE) showGate("new");
 renderItems();
 renderProps();
 updateButtons();
-// 左下角操作提示：滑鼠移上去或點一下展開，點其他地方收起
-$("hintBtn").onclick = e => {
-  e.stopPropagation();
-  const open = $("hint").classList.toggle("open");
-  $("hintBtn").setAttribute("aria-expanded", String(open));
+// 左下角提示卡：第一次出現，關掉後不再顯示（可從「說明」再打開）
+if (!localStorage.getItem("hl-tip-off")) $("tipCard").hidden = false;
+$("tipClose").onclick = () => {
+  $("tipCard").hidden = true;
+  localStorage.setItem("hl-tip-off", "1");
 };
-document.addEventListener("pointerdown", e => {
-  if (!e.target.closest("#hint")) {
-    $("hint").classList.remove("open");
-    $("hintBtn").setAttribute("aria-expanded", "false");
-  }
-});
 window.addEventListener("resize", () => {
   if (S.BASE) fit();
 });

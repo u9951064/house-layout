@@ -1,4 +1,5 @@
 // 匯入底圖畫面
+import { loadData } from "../io/file.js";
 import { S } from "../core/store.js";
 import { $, toast } from "../core/dom.js";
 import { endCalib, startCalib } from "../tools/calibrate.js";
@@ -21,6 +22,16 @@ export function hideGate() {
 }
 
 export function init() {
+  $("gateSample").onclick = async e => {
+    e.preventDefault();
+    try {
+      const data = await (await fetch("examples/sample-project.json", { cache: "no-cache" })).json();
+      S.gateIntent = "new";
+      loadData(data, "範例兩房");
+    } catch (err) {
+      alert("無法載入範例：" + err.message);
+    }
+  };
   $("gateCancel").onclick = e => {
     e.preventDefault();
     if (S.BASE) hideGate();

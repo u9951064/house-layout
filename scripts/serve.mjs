@@ -13,6 +13,7 @@ const TYPES = {
   ".md": "text/markdown; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
+  ".jpg": "image/jpeg",
 };
 export function serve(port = 8000) {
   const server = http.createServer((req, res) => {

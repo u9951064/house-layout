@@ -117,6 +117,15 @@ export function menuItems(name) {
     ];
   if (name === "help")
     return [
+      { t: "📖 使用教學（完整介紹）", k: "↗", f: () => window.open("guide.html", "_blank", "noopener") },
+      {
+        t: "顯示操作提示",
+        f: () => {
+          $("tipCard").hidden = false;
+          localStorage.removeItem("hl-tip-off");
+        },
+      },
+      "-",
       { t: "關於 House Layout…", f: () => $("aboutModal").classList.add("show") },
       "-",
       {

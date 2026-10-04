@@ -2,6 +2,8 @@
 
 在瀏覽器裡畫室內平面配置圖：<https://house-layout.tinycloud.tw>
 
+📖 [完整使用教學](https://house-layout.tinycloud.tw/guide.html)
+
 - **先匯入自己的房屋底圖**：匯入底圖／專案檔（.json）、上傳平面圖圖片並以兩點校正比例，或輸入外框尺寸建立外牆。
 - **AI 產生底圖**：複製內建提示詞（[PROMPT.md](PROMPT.md)）給 ChatGPT／Claude／Gemini，附上平面尺寸圖或不動產說明書，把回覆貼回網頁即可套用；會自動修正小誤差並列出提醒。
 - **專案與方案分頁**：一間房子一個專案；畫布下方像 Excel 工作表，一頁一個設計方案（雙擊改名、右鍵複製／刪除／排序），可疊圖或並排比較。「儲存檔案」把底圖與所有方案存成一個 .json。
@@ -42,6 +44,8 @@ tests/e2e.test.mjs    端對端測試（Playwright）
 eslint.config.js      ESLint 設定（flat config＋eslint-config-prettier）
 .prettierrc.json      Prettier 設定（printWidth 120）
 PROMPT.md             AI 產生底圖的提示詞（網頁執行時讀取）
+guide.html            使用教學頁（css/guide.css、docs/img 截圖）
+examples/             範例專案（範例兩房，非真實住家）
 ```
 
 慣例：每個模組只放宣告；需要綁定事件的模組匯出 `init()`，由 `main.js` 依序呼叫。跨模組共用的可變狀態都在 `core/store.js` 的 `S`。
@@ -59,6 +63,7 @@ npm test               # 端對端測試
 npm run lint           # ESLint
 npm run format         # Prettier 格式化（JS／CSS）
 npm run check          # lint + 格式檢查 + 測試（CI 同步執行）
+npm run screenshots    # 重新產生教學截圖（docs/img，使用範例專案）
 ```
 
 ES Modules 不能用 `file://` 直接開啟，請用 `npm run dev`。

@@ -70,6 +70,7 @@
   <p style="margin-top:0">在瀏覽器裡畫室內平面配置圖：匯入自己的房屋底圖、拖拉家具、量測空間、用分頁比較多個設計方案。</p>
   <table style="font-size:13.5px;line-height:1.9;border-collapse:collapse">
     <tr><td class="muted" style="padding-right:14px;vertical-align:top;white-space:nowrap">開發者</td><td>Josh Tsai（<a href="https://github.com/u9951064" target="_blank" rel="noopener">@u9951064</a>）</td></tr>
+    <tr><td class="muted" style="padding-right:14px;vertical-align:top;white-space:nowrap">使用教學</td><td><a href="guide.html" target="_blank" rel="noopener">完整介紹與操作方式</a></td></tr>
     <tr><td class="muted" style="padding-right:14px;vertical-align:top;white-space:nowrap">原始碼</td><td><a href="https://github.com/u9951064/house-layout" target="_blank" rel="noopener">github.com/u9951064/house-layout</a></td></tr>
     <tr><td class="muted" style="padding-right:14px;vertical-align:top;white-space:nowrap">問題回報</td><td><a href="https://github.com/u9951064/house-layout/issues" target="_blank" rel="noopener">GitHub Issues</a>（歡迎回報 bug 或提出建議）</td></tr>
     <tr><td class="muted" style="padding-right:14px;vertical-align:top;white-space:nowrap">AI 提示詞</td><td><a href="PROMPT.md" target="_blank" rel="noopener">PROMPT.md</a>（用 AI 從平面圖產生底圖）</td></tr>
@@ -108,21 +109,15 @@
       </g>
     </svg>
     <div id="sheets"></div>
-    <div id="hint">
-      <button id="hintBtn" type="button" title="操作提示" aria-label="操作提示" aria-expanded="false">!</button>
-      <div id="hintPop" role="tooltip">
-        <b>操作提示</b>
-        <ul>
-          <li>拖拉左側元件到圖上</li>
-          <li>拖曳空白處平移、滾輪縮放</li>
-          <li><kbd>M</kbd> 量測距離</li>
-          <li><kbd>R</kbd> 旋轉 90°、<kbd>Delete</kbd> 刪除、方向鍵微調</li>
-          <li><kbd>⌘C</kbd> / <kbd>⌘V</kbd> 複製貼上</li>
-          <li>Shift 點選或框選：多選</li>
-          <li>右鍵：開啟選單</li>
-          <li>放大到 250% 以上會顯示 1 cm 細格</li>
-        </ul>
-      </div>
+    <div id="tipCard" hidden role="note">
+      <button id="tipClose" type="button" title="關閉提示（之後可從「說明 → 顯示操作提示」再打開）" aria-label="關閉提示">✕</button>
+      <b>💡 小提示</b>
+      <ul>
+        <li>從左側把元件拖到圖上；拖曳空白處平移、滾輪縮放</li>
+        <li><kbd>R</kbd> 旋轉、<kbd>Delete</kbd> 刪除、<kbd>⌘C</kbd>/<kbd>⌘V</kbd> 複製貼上</li>
+        <li>Shift 點選或框選多選，右側可對齊與貼合；右鍵開選單</li>
+      </ul>
+      <a href="guide.html" target="_blank" rel="noopener">看完整使用教學 →</a>
     </div>
     <div id="zoomInfo"></div>
     <div id="zoombar" title="縮放（1 m 在螢幕上的像素：100% ≈ 100 px）">
@@ -158,6 +153,7 @@
     <button class="gopt" id="gateDraw" type="button"><b>④ 從空白開始畫底圖</b><span>直接進入底圖編輯模式，用「畫牆」一面一面畫出格局</span></button>
     <button class="gopt" id="gateAI" type="button"><b>⑤ 貼上 AI 產生的底圖</b><span>複製提示詞給 ChatGPT／Claude／Gemini，連同平面尺寸圖或不動產說明書一起送出，再把回覆貼回來</span></button>
   </div>
+  <p style="font-size:13px;margin:4px 0 10px">還沒有平面圖？<a href="#" id="gateSample">先開啟範例專案試用</a>　｜　<a href="guide.html" target="_blank" rel="noopener">使用教學</a></p>
   <p class="muted" style="font-size:12px">PDF 平面圖請先截圖或轉成 PNG。建議圖片中有一段標示尺寸的牆，方便校正。</p>
   <p id="gateClose" class="muted" style="font-size:12px;display:none"><a href="#" id="gateCancel">取消，回到目前的底圖</a></p>
 </div></div>
