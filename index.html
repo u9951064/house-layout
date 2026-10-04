@@ -15,6 +15,19 @@
   header h1 { font-size:15px; margin:0 6px 0 0; white-space:nowrap; }
   header button, header .btn, header select { padding:4px 8px; font-size:12.5px; }
   header label.toggle { font-size:12.5px; }
+  header .grow { flex:1; }
+  #menubar { display:flex; gap:2px; }
+  #menubar .mb { border:none; background:transparent; padding:6px 11px; font-size:13.5px; border-radius:6px; }
+  #menubar .mb:hover, #menubar .mb.open { background:#eef2f7; }
+  #menuPop { position:fixed; background:#fff; border:1px solid #d0d7de; border-radius:8px; box-shadow:0 10px 28px rgba(0,0,0,.16); padding:5px; z-index:40; display:none; min-width:250px; font-size:13px; }
+  #menuPop.show { display:block; }
+  #menuPop .mi { display:grid; grid-template-columns:20px 1fr auto; gap:6px; align-items:center; padding:6px 10px; border-radius:5px; cursor:pointer; white-space:nowrap; }
+  #menuPop .mi:hover { background:#e8f0fe; }
+  #menuPop .mi.off { opacity:.4; pointer-events:none; }
+  #menuPop .mi .k { color:#9ca3af; font-size:12px; }
+  #menuPop .mi .c { color:var(--accent); font-weight:700; }
+  #menuPop .mh { padding:6px 10px 2px; color:#9ca3af; font-size:11.5px; }
+  #menuPop hr { border:none; border-top:1px solid #e5e7eb; margin:5px 4px; }
   header .sep { width:1px; height:24px; background:#e5e7eb; margin:0 4px; }
   button, .btn { font:inherit; font-size:13px; padding:5px 10px; border:1px solid #d0d7de; background:#fff; border-radius:6px; cursor:pointer; white-space:nowrap; }
   button:hover, .btn:hover { background:#f3f4f6; }
@@ -139,16 +152,27 @@
 <div id="app">
   <header>
     <h1 title="House Layout">🏠</h1>
+    <nav id="menubar">
+      <button class="mb" data-menu="file">檔案</button>
+      <button class="mb" data-menu="edit">編輯</button>
+      <button class="mb" data-menu="view">檢視</button>
+      <button class="mb" data-menu="base">底圖</button>
+      <button class="mb" data-menu="tools">工具</button>
+    </nav>
+    <span class="grow"></span>
+    <select id="selProj" title="切換專案" style="max-width:220px;font-size:13px;padding:4px;border:1px solid #d0d7de;border-radius:6px"></select>
+    <span class="sep"></span>
+    <button id="btnUndo" title="復原 (⌘Z)">↶</button>
+    <button id="btnRedo" title="重做 (⇧⌘Z)">↷</button>
+    <button id="btnSave" class="primary" title="儲存整個專案（底圖＋所有方案分頁）成一個 .json 檔（⌘S）">儲存</button>
+    <div id="legacy" hidden>
+
     <button id="btnBase" title="底圖設定：名稱、透明度、重新校正、匯出或更換底圖">底圖</button>
     <button id="btnBaseEdit" title="編輯底圖：畫牆、加門窗、柱子、房間名稱、固定設備">✏️ 編輯底圖</button>
-    <select id="selProj" title="切換專案" style="max-width:170px;font-size:13px;padding:4px;border:1px solid #d0d7de;border-radius:6px"></select>
     <button id="btnProj" title="專案管理：開啟、重新命名、刪除">專案…</button>
     <button id="btnNew" title="建立新專案：命名後匯入新的底圖">＋新專案</button>
     <label class="btn" title="開啟專案檔（底圖＋所有方案分頁），會開成一個新專案">開啟檔案<input id="fileIn" type="file" accept=".json,application/json" hidden></label>
-    <button id="btnSave" class="primary" title="把整個專案（底圖＋所有方案分頁＋疊圖設定）存成一個 .json 檔">儲存檔案</button>
     <span class="sep"></span>
-    <button id="btnUndo" title="復原 (⌘/Ctrl+Z)">↶ 復原</button>
-    <button id="btnRedo" title="重做 (⌘/Ctrl+Shift+Z)">↷ 重做</button>
     <span class="sep"></span>
     <label class="toggle" title="拖曳時物件邊緣自動貼齊其他家具與牆面"><input id="chkEdge" type="checkbox" checked>貼邊</label>
     <label class="toggle"><input id="chkSnap" type="checkbox" checked>吸附</label>
@@ -161,7 +185,9 @@
     <button id="btnFit" title="全圖顯示">全圖</button>
     <select id="selExport" title="匯出目前方案" style="font-size:13px;padding:4px;border:1px solid #d0d7de;border-radius:6px"><option value="">匯出／列印…</option><option value="btnPNG">匯出 PNG</option><option value="btnSVG">匯出 SVG（1:50）</option><option value="btnPrint">列印</option></select>
     <span hidden><button id="btnPNG"></button><button id="btnSVG"></button><button id="btnPrint"></button></span>
+    </div>
   </header>
+<div id="menuPop"></div>
   <aside id="palette"></aside>
   <main id="stage">
     <svg id="svg" xmlns="http://www.w3.org/2000/svg">
@@ -1867,6 +1893,74 @@ function projAction(a, id) {
 $("btnProj").onclick = openProjMgr;
 $("projClose").onclick = () => $("projModal").classList.remove("show");
 $("projNew").onclick = () => { $("projModal").classList.remove("show"); showGate("new"); };
+
+/* ============================================================
+   選單列（檔案／編輯／檢視／底圖／工具）
+   ============================================================ */
+var menuOpen = null;
+function chk(id) { return $(id).checked; }
+function toggleChk(id) { $(id).click(); }
+function zoomBy(k) { const r = svg.getBoundingClientRect(), cx = r.width / 2, cy = r.height / 2, px = (cx - view.x) / view.s, py = (cy - view.y) / view.s; view.s = Math.min(6, Math.max(0.15, view.s * k)); view.x = cx - px * view.s; view.y = cy - py * view.s; applyView(); renderSelection(); }
+function menuItems(name) {
+  const has = !!BASE, sel = selIds().length > 0, design = mode !== "base";
+  const ix = readIndex();
+  if (name === "file") return [
+    { t: "新專案…", f: () => showGate("new") },
+    { t: "開啟檔案…", k: KEY + "O", f: () => $("fileIn").click() },
+    { t: "儲存檔案", k: KEY + "S", f: saveFile, off: !has }, "-",
+    { h: "切換專案" },
+    ...ix.projects.slice(0, 8).map(q => ({ t: "📁 " + q.name, c: PROJ && q.id === PROJ.id, f: () => switchProject(q.id) })),
+    { t: "專案管理…", f: openProjMgr }, "-",
+    { t: "匯出 PNG 圖片", f: () => $("btnPNG").click(), off: !has },
+    { t: "匯出 SVG（1:50 實際比例）", f: () => $("btnSVG").click(), off: !has },
+    { t: "列印…", k: KEY + "P", f: () => $("btnPrint").click(), off: !has }];
+  if (name === "edit") return [
+    { t: "復原", k: KEY + "Z", f: undo, off: !undoStack.length }, { t: "重做", k: "⇧" + KEY + "Z", f: redo, off: !redoStack.length }, "-",
+    { t: "剪下", k: KEY + "X", f: () => copySel(true), off: !sel || !design }, { t: "複製", k: KEY + "C", f: () => copySel(false), off: !sel || !design },
+    { t: "貼上", k: KEY + "V", f: () => pasteClip(null), off: !getClip() || !has || !design }, { t: "再製", k: KEY + "D", f: dupSel, off: !sel || !design },
+    { t: "刪除", k: "Delete", f: delSel, off: !sel || !design }, "-",
+    { t: "全選", k: KEY + "A", f: () => setSel(state.items.map(i => i.id)), off: !state.items.length || !design },
+    { t: "旋轉 90°", k: "R", f: () => rotSel(90), off: !sel || !design }, { t: "左右鏡像", k: "F", f: flipSel, off: !sel || !design }];
+  if (name === "view") return [
+    { t: "格線", c: chk("chkGrid"), f: () => toggleChk("chkGrid") },
+    { t: "顯示家具尺寸", c: chk("chkSize"), f: () => toggleChk("chkSize") },
+    { t: "顯示牆面尺寸標註", c: chk("chkDims"), f: () => toggleChk("chkDims") }, "-",
+    { t: "全圖顯示", f: fit, off: !has }, { t: "放大", k: "滾輪", f: () => zoomBy(1.25), off: !has }, { t: "縮小", f: () => zoomBy(0.8), off: !has }, "-",
+    { t: "並排比較所有方案…", f: openCompare, off: !PROJ }];
+  if (name === "base") return [
+    { t: mode === "base" ? "完成底圖編輯" : "編輯底圖", c: mode === "base", f: () => setMode(mode === "base" ? "design" : "base"), off: !has },
+    { t: "底圖設定（名稱、透明度）", f: () => $("btnBase").click(), off: !has }, "-",
+    { t: "更換底圖…", f: () => showGate("replace"), off: !has },
+    { t: "🤖 AI 產生底圖…", f: () => { gateIntent = has ? "replace" : "new"; openAI(); } },
+    { t: "重新校正圖片比例", f: startCalib, off: !(has && BASE.image) },
+    { t: "匯出底圖檔", f: () => download(`${safeName()}-底圖.json`, new Blob([JSON.stringify(baseData(), null, 1)], { type: "application/json" })), off: !has }];
+  if (name === "tools") return [
+    { t: "量測距離", k: "M", c: measureMode, f: () => setMeasure(!measureMode), off: !has }, "-",
+    { t: "拖曳時貼齊邊緣", c: chk("chkEdge"), f: () => toggleChk("chkEdge") },
+    { t: "吸附格線", c: chk("chkSnap"), f: () => toggleChk("chkSnap") },
+    { h: "吸附精度" },
+    ...[1, 5, 10].map(v => ({ t: `${v} cm`, c: +$("selSnap").value === v, f: () => { $("selSnap").value = String(v); $("selSnap").dispatchEvent(new Event("change")); } }))];
+  return [];
+}
+function openMenu(name, btn) {
+  const M = $("menuPop"), items = menuItems(name);
+  M.innerHTML = items.map((m, i) => m === "-" ? "<hr>" : m.h ? `<div class="mh">${esc(m.h)}</div>` :
+    `<div class="mi${m.off ? " off" : ""}" data-i="${i}"><span class="c">${m.c ? "✓" : ""}</span><span>${esc(m.t)}</span><span class="k">${m.k || ""}</span></div>`).join("");
+  const r = btn.getBoundingClientRect(); M.style.left = r.left + "px"; M.style.top = (r.bottom + 4) + "px"; M.classList.add("show");
+  document.querySelectorAll("#menubar .mb").forEach(b => b.classList.toggle("open", b === btn)); menuOpen = name;
+  M.querySelectorAll(".mi[data-i]").forEach(d => d.onclick = () => { closeMenu(); items[+d.dataset.i].f(); });
+}
+function closeMenu() { $("menuPop").classList.remove("show"); document.querySelectorAll("#menubar .mb").forEach(b => b.classList.remove("open")); menuOpen = null; }
+document.querySelectorAll("#menubar .mb").forEach(b => {
+  b.onclick = e => { e.stopPropagation(); menuOpen === b.dataset.menu ? closeMenu() : openMenu(b.dataset.menu, b); };
+  b.onmouseenter = () => { if (menuOpen && menuOpen !== b.dataset.menu) openMenu(b.dataset.menu, b); };
+});
+document.addEventListener("pointerdown", e => { if (menuOpen && !e.target.closest("#menuPop, #menubar")) closeMenu(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && menuOpen) closeMenu();
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "o") { e.preventDefault(); $("fileIn").click(); }
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p" && BASE) { e.preventDefault(); $("btnPrint").click(); }
+});
 
 /* ============================================================
    啟動
