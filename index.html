@@ -45,7 +45,9 @@
   #sheets .sh.dropL { box-shadow:inset 3px 0 0 var(--accent); }
   #sheets .sh.dropR { box-shadow:inset -3px 0 0 var(--accent); }
   #sheets .grow { flex:1; }
-  #sheets .ctl { display:flex; align-items:center; gap:6px; padding:0 8px; color:#374151; }
+  #sheets .ctl { display:flex; align-items:center; gap:6px; padding:0 8px; color:#374151; white-space:nowrap; flex-shrink:0; }
+  #sheets { overflow-x:auto; scrollbar-width:thin; }
+  #sheets .sh { flex-shrink:0; }
   #sheets select, #sheets .ctl button { font-size:12.5px; padding:2px 6px; }
   #sheetMenu { position:fixed; background:#fff; border:1px solid #d0d7de; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.15); padding:4px; z-index:30; display:none; min-width:150px; }
   #sheetMenu.show { display:block; }
@@ -136,7 +138,7 @@
 <body>
 <div id="app">
   <header>
-    <h1>🏠 House Layout</h1>
+    <h1 title="House Layout">🏠</h1>
     <button id="btnBase" title="底圖設定：名稱、透明度、重新校正、匯出或更換底圖">底圖</button>
     <button id="btnBaseEdit" title="編輯底圖：畫牆、加門窗、柱子、房間名稱、固定設備">✏️ 編輯底圖</button>
     <select id="selProj" title="切換專案" style="max-width:170px;font-size:13px;padding:4px;border:1px solid #d0d7de;border-radius:6px"></select>
@@ -148,6 +150,7 @@
     <button id="btnUndo" title="復原 (⌘/Ctrl+Z)">↶ 復原</button>
     <button id="btnRedo" title="重做 (⌘/Ctrl+Shift+Z)">↷ 重做</button>
     <span class="sep"></span>
+    <label class="toggle" title="拖曳時物件邊緣自動貼齊其他家具與牆面"><input id="chkEdge" type="checkbox" checked>貼邊</label>
     <label class="toggle"><input id="chkSnap" type="checkbox" checked>吸附</label>
     <select id="selSnap" title="吸附精度" style="font-size:13px;padding:3px 4px;border:1px solid #d0d7de;border-radius:6px"><option value="1" selected>1 cm</option><option value="5">5 cm</option><option value="10">10 cm</option></select>
     <label class="toggle"><input id="chkGrid" type="checkbox" checked>格線</label>
@@ -176,7 +179,7 @@
       </g>
     </svg>
     <div id="sheets"></div>
-    <div id="hint">放大到 250% 以上會顯示 1 cm 細格 ｜ 拖拉左側元件到圖上 ｜ <kbd>M</kbd> 量測距離 ｜ 拖曳空白處平移、滾輪縮放 ｜ <kbd>R</kbd> 旋轉 90° ｜ <kbd>Delete</kbd> 刪除 ｜ <kbd>⌘/Ctrl+D</kbd> 複製 ｜ 方向鍵微調</div>
+    <div id="hint">放大到 250% 以上會顯示 1 cm 細格 ｜ 拖拉左側元件到圖上 ｜ <kbd>M</kbd> 量測距離 ｜ 拖曳空白處平移、滾輪縮放 ｜ <kbd>R</kbd> 旋轉 90° ｜ <kbd>Delete</kbd> 刪除 ｜ <kbd>⌘C</kbd>/<kbd>⌘V</kbd> 複製貼上 ｜ Shift 點選／框選多選 ｜ 右鍵選單 ｜ 方向鍵微調</div>
     <div id="zoomInfo"></div>
   </main>
   <aside id="props"></aside>
@@ -663,7 +666,7 @@ let undoStack = [], redoStack = [];
 const svg = document.getElementById("svg"), vp = document.getElementById("viewport");
 const gridLayer = document.getElementById("gridLayer"), baseLayer = document.getElementById("baseLayer"), itemLayer = document.getElementById("itemLayer"), uiLayer = document.getElementById("uiLayer");
 const $ = id => document.getElementById(id);
-const opt = { snap: true, step: 1, grid: true, size: true, dims: false };
+const opt = { snap: true, step: 1, grid: true, size: true, dims: false, edge: true };
 const STORE_KEY = "house-layout-v1";
 
 function baseForSnap() {
@@ -824,7 +827,20 @@ function renderItems() {
   if (PROJ) renderSheets();
 }
 function renderSelection() {
-  uiLayer.innerHTML = ""; drawMeasure(); drawCalib(); if (mode === "base") { drawBaseEditUI(); return; } const it = cur(); if (!it) return;
+  uiLayer.innerHTML = ""; drawMeasure(); drawCalib(); if (mode === "base") { drawBaseEditUI(); return; }
+  const kk = 1 / view.s, bb = BASE && BASE.bounds;
+  for (const gd of snapGuides) {
+    if (gd.x != null) el("line", { x1: gd.x, y1: bb.y, x2: gd.x, y2: bb.y + bb.h, stroke: "#f76707", "stroke-width": 1.2 * kk, "stroke-dasharray": `${5 * kk} ${4 * kk}` }, uiLayer);
+    else el("line", { x1: bb.x, y1: gd.y, x2: bb.x + bb.w, y2: gd.y, stroke: "#f76707", "stroke-width": 1.2 * kk, "stroke-dasharray": `${5 * kk} ${4 * kk}` }, uiLayer);
+  }
+  if (boxSel) { const { a, b } = boxSel; el("rect", { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), width: Math.abs(b.x - a.x), height: Math.abs(b.y - a.y), fill: "rgba(31,111,235,.08)", stroke: "#1f6feb", "stroke-width": kk, "stroke-dasharray": `${4 * kk} ${3 * kk}` }, uiLayer); }
+  const ids = selIds();
+  if (ids.length > 1) {
+    for (const s0 of selItems()) { const g0 = el("g", { transform: `translate(${s0.x} ${s0.y}) rotate(${s0.rot} ${s0.w / 2} ${s0.d / 2})` }, uiLayer); el("rect", { x: -2 * kk, y: -2 * kk, width: s0.w + 4 * kk, height: s0.d + 4 * kk, class: "selbox", "stroke-width": 1.4 * kk }, g0); }
+    const u = unionBox(selItems()); el("rect", { x: u.x1 - 6 * kk, y: u.y1 - 6 * kk, width: u.x2 - u.x1 + 12 * kk, height: u.y2 - u.y1 + 12 * kk, fill: "none", stroke: "#1f6feb", "stroke-width": kk, "stroke-opacity": .5 }, uiLayer);
+    return;
+  }
+  const it = cur(); if (!it) return;
   const g = el("g", { transform: `translate(${it.x} ${it.y}) rotate(${it.rot} ${it.w / 2} ${it.d / 2})` }, uiLayer);
   const k = 1 / view.s;
   el("rect", { x: -3 * k, y: -3 * k, width: it.w + 6 * k, height: it.d + 6 * k, class: "selbox", "stroke-width": 1.4 * k }, g);
@@ -837,6 +853,24 @@ function renderSelection() {
   el("circle", { cx: it.w / 2, cy: -26 * k, r: 6 * k, class: "rothandle", "data-h": "rot", "stroke-width": 1.5 * k }, g);
 }
 const cur = () => state.items.find(i => i.id === state.sel);
+var msel = [], snapGuides = [], boxSel = null;
+function selIds() { if (state.sel == null) return []; return msel.length > 1 && msel.includes(state.sel) ? msel.filter(id => state.items.some(i => i.id === id)) : [state.sel]; }
+function selItems() { const ids = selIds(); return state.items.filter(i => ids.includes(i.id)); }
+function setSel(ids) { ids = ids.filter(id => state.items.some(i => i.id === id)); msel = ids.length > 1 ? ids : []; state.sel = ids.length ? ids[ids.length - 1] : null; renderSelection(); renderProps(); }
+function unionBox(items) { const bs = items.map(itemBox); return { x1: Math.min(...bs.map(b => b.x1)), y1: Math.min(...bs.map(b => b.y1)), x2: Math.max(...bs.map(b => b.x2)), y2: Math.max(...bs.map(b => b.y2)) }; }
+function edgeTargets(excludeIds) {   // 其他家具、牆面、柱子、固定設備的邊
+  const xs = [], ys = [], add = (x1, y1, x2, y2) => { xs.push(x1, x2, (x1 + x2) / 2); ys.push(y1, y2, (y1 + y2) / 2); };
+  state.items.forEach(i => { if (!excludeIds.includes(i.id) && !["rug", "rugRound", "dimension", "text"].includes(i.type)) { const b = itemBox(i); add(b.x1, b.y1, b.x2, b.y2); } });
+  if (BASE) {
+    (BASE.walls || []).forEach(w => { const h = w[4] / 2;
+      if (Math.abs(w[1] - w[3]) < 0.01) { xs.push(Math.min(w[0], w[2]) - h, Math.max(w[0], w[2]) + h); ys.push(w[1] - h, w[1] + h); }
+      else if (Math.abs(w[0] - w[2]) < 0.01) { ys.push(Math.min(w[1], w[3]) - h, Math.max(w[1], w[3]) + h); xs.push(w[0] - h, w[0] + h); } });
+    (BASE.columns || []).forEach(c => { xs.push(c[0], c[2]); ys.push(c[1], c[3]); });
+    (BASE.fixtures || []).forEach(f => { const b = itemBox({ rot: 0, ...f }); xs.push(b.x1, b.x2); ys.push(b.y1, b.y2); });
+  }
+  return { xs, ys };
+}
+function snapAxis(edges, targets, tol) { let best = null; for (const e of edges) for (const t of targets) { const d = t - e; if (Math.abs(d) <= tol && (!best || Math.abs(d) < Math.abs(best.d))) best = { d, at: t }; } return best; }
 const snapV = v => opt.snap ? Math.round(v / opt.step) * opt.step : Math.round(v * 10) / 10;
 
 let drag = null;
@@ -868,7 +902,8 @@ function applyCalib() {
 }
 svg.addEventListener("pointerdown", e => {
   if (calib && e.button === 0) { calib.pts.push(toWorld(e.clientX, e.clientY)); renderSelection(); if (calib.pts.length === 2) setTimeout(applyCalib, 30); return; }
-  if (e.button === 1 || e.button === 2) { startPan(e); return; }
+  if (e.button === 2) return;   // 右鍵：開選單（contextmenu）
+  if (e.button === 1) { startPan(e); return; }
   if (measureMode) { let p = toWorld(e.clientX, e.clientY); if (opt.snap) p = { x: snapV(p.x), y: snapV(p.y) }; measure = { a: p, b: p }; drag = { kind: "measure" }; svg.setPointerCapture(e.pointerId); renderSelection(); return; }
   if (mode === "base") { basePointerDown(e); return; }
   const h = e.target.getAttribute && e.target.getAttribute("data-h");
@@ -876,23 +911,90 @@ svg.addEventListener("pointerdown", e => {
   if (h && cur()) {
     const it = cur(); drag = { kind: h, id: it.id, start: p, orig: { ...it } }; svg.setPointerCapture(e.pointerId); e.preventDefault(); return;
   }
-  const ig = e.target.closest && e.target.closest(".item");
+  const ig = e.target.closest && e.target.closest("#itemLayer .item[data-id]");
   if (ig) {
-    const id = +ig.getAttribute("data-id"); state.sel = id; const it = cur(); renderSelection(); renderProps();
-    if (!it.locked) { drag = { kind: "move", id, start: p, orig: { ...it } }; svg.setPointerCapture(e.pointerId); }
+    const id = +ig.getAttribute("data-id"), ids = selIds();
+    if (e.shiftKey || e.metaKey || e.ctrlKey) { setSel(ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id]); e.preventDefault(); return; }
+    if (ids.includes(id)) { state.sel = id; if (ids.length > 1) msel = ids; } else { msel = []; state.sel = id; }
+    renderSelection(); renderProps();
+    const movers = selItems().filter(i => !i.locked);
+    if (movers.length) { drag = { kind: "mmove", start: p, origs: movers.map(i => ({ id: i.id, x: i.x, y: i.y })), b0: unionBox(movers), moved: false }; svg.setPointerCapture(e.pointerId); }
     e.preventDefault(); return;
   }
-  state.sel = null; renderSelection(); renderProps(); startPan(e);
+  if (e.shiftKey) { boxSel = { a: p, b: p, add: selIds() }; drag = { kind: "box" }; svg.setPointerCapture(e.pointerId); return; }
+  msel = []; state.sel = null; renderSelection(); renderProps(); startPan(e);
 });
 function startPan(e) { drag = { kind: "pan", sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y }; svg.classList.add("panning"); svg.setPointerCapture(e.pointerId); }
-svg.addEventListener("contextmenu", e => e.preventDefault());
+svg.addEventListener("pointerleave", () => { lastMouse = null; });
+svg.addEventListener("contextmenu", e => {
+  e.preventDefault(); if (mode === "base" || !BASE || measureMode) return;
+  const p = toWorld(e.clientX, e.clientY), ig = e.target.closest && e.target.closest("#itemLayer .item[data-id]");
+  if (ig) {
+    const rid = +ig.getAttribute("data-id"); if (!selIds().includes(rid)) { msel = []; } state.sel = rid; if (msel.length > 1 && !msel.includes(rid)) msel = []; renderSelection(); renderProps(); const it = cur();
+    const many = selIds().length > 1;
+    showCtx(e.clientX, e.clientY, [
+      ...(many ? [{ t: `已選取 ${selIds().length} 個`, off: true }, "-", { t: "靠左對齊", f: () => alignSel("left") }, { t: "靠上對齊", f: () => alignSel("top") }, { t: "水平貼合", f: () => alignSel("packh") }, { t: "垂直貼合", f: () => alignSel("packv") }, "-"] : []),
+      { t: "複製", k: KEY + "C", f: () => copySel(false) }, { t: "剪下", k: KEY + "X", f: () => copySel(true), off: !many && it.locked },
+      { t: "貼上", k: KEY + "V", f: () => pasteClip(p), off: !getClip() }, { t: "再製", k: KEY + "D", f: dupSel }, "-",
+      { t: "旋轉 90°", k: "R", f: () => rotSel(90), off: it.locked }, { t: "左右鏡像", k: "F", f: flipSel, off: it.locked },
+      { t: "移到上層", f: () => { it.z = Math.max(...state.items.map(i => i.z || 0)) + 1; renderItems(); commit(); } },
+      { t: "移到下層", f: () => { it.z = Math.min(...state.items.map(i => i.z || 0)) - 1; renderItems(); commit(); } },
+      { t: it.locked ? "解除鎖定" : "鎖定位置", f: () => { it.locked = !it.locked; renderItems(); renderProps(); commit(); } }, "-",
+      { t: "刪除", k: "Delete", f: delSel, danger: true, off: it.locked }]);
+  } else {
+    state.sel = null; renderSelection(); renderProps();
+    showCtx(e.clientX, e.clientY, [{ t: "貼上到這裡", k: KEY + "V", f: () => pasteClip(p), off: !getClip() }]);
+  }
+});
+var CLIP = null, lastMouse = null, pasteN = 0;
+var KEY = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl+";
+function itemName(it) { return it.label || (DEFAULTS[it.type] || {}).name || it.type; }
+function copySel(cut) {
+  let its = selItems(); if (!its.length) return false;
+  if (cut) { its = its.filter(i => !i.locked); if (!its.length) { toast("已鎖定的物件不能剪下"); return true; } }
+  CLIP = its.map(it => { const c = JSON.parse(JSON.stringify(it)); delete c.locked; return c; }); pasteN = 0;
+  try { localStorage.setItem("hl-clip", JSON.stringify(CLIP)); } catch (e) {}
+  const what = its.length > 1 ? `${its.length} 個物件` : `「${itemName(its[0])}」`;
+  if (cut) { state.items = state.items.filter(i => !its.includes(i)); msel = []; state.sel = null; renderItems(); renderProps(); commit(); toast(`已剪下${what}，${KEY}V 貼上`); }
+  else toast(`已複製${what}，${KEY}V 貼上（可跨方案分頁）`);
+  return true;
+}
+function getClip() { let c = CLIP; if (!c) try { c = JSON.parse(localStorage.getItem("hl-clip") || "null"); } catch (e) {} if (!c) return null; return Array.isArray(c) ? (c.length ? c : null) : [c]; }
+function pasteClip(at) {
+  const cs = getClip(); if (!cs) { toast("剪貼簿是空的"); return; } if (!BASE) return;
+  const u = unionBox(cs); let dx, dy;
+  if (at) { dx = snapV(at.x - (u.x1 + u.x2) / 2); dy = snapV(at.y - (u.y1 + u.y2) / 2); } else { pasteN++; dx = dy = 20 * pasteN; }
+  const ids = cs.map(c => { const it = { ...JSON.parse(JSON.stringify(c)), id: state.nextId++, z: state.nextId, locked: false }; it.x = c.x + dx; it.y = c.y + dy; state.items.push(it); return it.id; });
+  renderItems(); setSel(ids); commit();
+}
+function showCtx(x, y, items) {
+  const M = $("sheetMenu");
+  M.innerHTML = items.map((m, i) => m === "-" ? "<hr>" : `<div data-i="${i}" class="${m.danger ? "danger" : ""}" style="display:flex;justify-content:space-between;gap:24px${m.off ? ";opacity:.4;pointer-events:none" : ""}"><span>${m.t}</span><span style="color:#9ca3af">${m.k || ""}</span></div>`).join("");
+  M.style.left = "0px"; M.style.top = "0px"; M.classList.add("show");
+  const r = M.getBoundingClientRect();
+  M.style.left = Math.min(x, innerWidth - r.width - 8) + "px"; M.style.top = Math.min(y, innerHeight - r.height - 8) + "px";
+  M.querySelectorAll("div[data-i]").forEach(d => d.onclick = () => { M.classList.remove("show"); items[+d.dataset.i].f(); });
+}
 svg.addEventListener("pointermove", e => {
+  lastMouse = toWorld(e.clientX, e.clientY);
   if (mode === "base" && basePointerMove(e)) return;
   if (!drag) return;
   if (drag.kind === "pan") { view.x = drag.vx + e.clientX - drag.sx; view.y = drag.vy + e.clientY - drag.sy; applyView(); renderSelection(); return; }
   if (drag.kind === "measure") { let p = toWorld(e.clientX, e.clientY); if (opt.snap) p = { x: snapV(p.x), y: snapV(p.y) };
     if (e.shiftKey) { if (Math.abs(p.x - measure.a.x) > Math.abs(p.y - measure.a.y)) p.y = measure.a.y; else p.x = measure.a.x; }
     measure.b = p; renderSelection(); return; }
+  if (drag.kind === "box") { boxSel.b = toWorld(e.clientX, e.clientY); renderSelection(); return; }
+  if (drag.kind === "mmove") {
+    const p = toWorld(e.clientX, e.clientY), b0 = drag.b0, tol = 8 / view.s;
+    let dx = p.x - drag.start.x, dy = p.y - drag.start.y; snapGuides = [];
+    if (Math.abs(dx) + Math.abs(dy) > 0.5) drag.moved = true;
+    const ex = opt.edge && !e.altKey ? snapAxis([b0.x1 + dx, b0.x2 + dx, (b0.x1 + b0.x2) / 2 + dx], (drag.tg = drag.tg || edgeTargets(drag.origs.map(o => o.id))).xs, tol) : null;
+    const ey = opt.edge && !e.altKey ? snapAxis([b0.y1 + dy, b0.y2 + dy, (b0.y1 + b0.y2) / 2 + dy], drag.tg.ys, tol) : null;
+    if (ex) { dx += ex.d; snapGuides.push({ x: ex.at }); } else dx = snapV(b0.x1 + dx) - b0.x1;
+    if (ey) { dy += ey.d; snapGuides.push({ y: ey.at }); } else dy = snapV(b0.y1 + dy) - b0.y1;
+    for (const o of drag.origs) { const it = state.items.find(i => i.id === o.id); if (it) { it.x = Math.round((o.x + dx) * 10) / 10; it.y = Math.round((o.y + dy) * 10) / 10; } }
+    renderItems(); renderProps(true); return;
+  }
   const it = state.items.find(i => i.id === drag.id); if (!it) return;
   const p = toWorld(e.clientX, e.clientY), o = drag.orig;
   if (drag.kind === "move") { it.x = snapV(o.x + p.x - drag.start.x); it.y = snapV(o.y + p.y - drag.start.y); }
@@ -920,6 +1022,12 @@ svg.addEventListener("pointermove", e => {
 svg.addEventListener("pointerup", e => {
   if (mode === "base" && basePointerUp(e)) return;
   if (!drag) return; svg.classList.remove("panning");
+  if (drag.kind === "box") {
+    const { a, b, add } = boxSel, r = { x1: Math.min(a.x, b.x), y1: Math.min(a.y, b.y), x2: Math.max(a.x, b.x), y2: Math.max(a.y, b.y) };
+    const hit = state.items.filter(i => { const q = itemBox(i); return q.x1 < r.x2 && q.x2 > r.x1 && q.y1 < r.y2 && q.y2 > r.y1; }).map(i => i.id);
+    boxSel = null; drag = null; setSel([...new Set([...add, ...hit])]); if (hit.length) toast(`已選取 ${selIds().length} 個物件`); return;
+  }
+  if (drag.kind === "mmove") { snapGuides = []; const moved = drag.moved; drag = null; renderSelection(); if (moved) commit(); return; }
   if (drag.kind !== "pan" && drag.kind !== "measure") { const it = state.items.find(i => i.id === drag.id); if (it && JSON.stringify(it) !== JSON.stringify(drag.orig)) commit(); }
   drag = null;
 });
@@ -934,8 +1042,8 @@ function addItem(def, x, y) {
   it.x = snapV(x - it.w / 2); it.y = snapV(y - it.d / 2);
   state.items.push(it); state.sel = it.id; renderItems(); renderProps(); commit(); return it;
 }
-function delSel() { const it = cur(); if (!it || it.locked) return; state.items = state.items.filter(i => i !== it); state.sel = null; renderItems(); renderProps(); commit(); }
-function dupSel() { const it = cur(); if (!it) return; const c = { ...JSON.parse(JSON.stringify(it)), id: state.nextId++, x: it.x + 20, y: it.y + 20, locked: false, z: state.nextId }; state.items.push(c); state.sel = c.id; renderItems(); renderProps(); commit(); }
+function delSel() { const del = selItems().filter(i => !i.locked); if (!del.length) return; state.items = state.items.filter(i => !del.includes(i)); msel = []; state.sel = null; renderItems(); renderProps(); commit(); }
+function dupSel() { const src = selItems(); if (!src.length) return; const ids = src.map(it => { const c = { ...JSON.parse(JSON.stringify(it)), id: state.nextId++, x: it.x + 20, y: it.y + 20, locked: false, z: state.nextId }; state.items.push(c); return c.id; }); renderItems(); setSel(ids); commit(); }
 
 /* ============================================================
    元件庫面板（含拖拉）
@@ -977,10 +1085,11 @@ function renderProps(light) {
   if (mode === "base") { if (!(light && document.activeElement && $("props").contains(document.activeElement))) renderBaseProps(); return; }
   const P = $("props"), it = cur();
   if (light && it && document.activeElement && P.contains(document.activeElement)) return;
+  if (selIds().length > 1) { renderMultiProps(); return; }
   if (!it) {
     P.innerHTML = `<h2>屬性</h2><div class="empty">點選圖上的物件即可設定尺寸、角度與名稱。<br><br>
       <b>操作方式</b><br>・從左側把元件拖到圖上（或點一下元件直接加入）<br>・拖曳物件移動；拖曳藍色方塊調整寬深；拖曳上方圓點旋轉（每 15°，按住 Shift 自由旋轉）<br>
-      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br>・✏️「編輯底圖」可畫牆、加門窗、柱子、房間名稱與固定設備<br>・下方分頁像 Excel 工作表：一頁一個方案，雙擊改名、拖曳排序、按住 ⌥／Ctrl 拖曳複製、右鍵更多；「疊圖」「並排比較」可比較方案<br><br>
+      ・<kbd>R</kbd> 旋轉 90°、<kbd>F</kbd> 左右鏡像、方向鍵微調（Shift ×10）<br>・多選：Shift 或 ⌘ 點選、Shift 拖曳空白處框選、<kbd>⌘A</kbd> 全選；可對齊、平均分布、邊緣貼合<br>・拖曳時自動貼齊附近家具與牆面的邊（橘色線），按住 Alt 暫時關閉<br>・右鍵選單；<kbd>⌘C</kbd> 複製、<kbd>⌘X</kbd> 剪下、<kbd>⌘V</kbd> 貼上到游標位置（可跨方案分頁）<br>・物件放進衛浴或陽台會以紅框提示<br>・📏 量測（<kbd>M</kbd>）：拖曳拉線看距離，Shift 鎖水平／垂直<br>・所有元件與牆面使用同一比例（公分），左下有比例尺，可直接評估空間感<br>・✏️「編輯底圖」可畫牆、加門窗、柱子、房間名稱與固定設備<br>・下方分頁像 Excel 工作表：一頁一個方案，雙擊改名、拖曳排序、按住 ⌥／Ctrl 拖曳複製、右鍵更多；「疊圖」「並排比較」可比較方案<br><br>
       <b>存檔</b><br>「儲存檔案」會把整個專案（底圖＋所有方案分頁＋疊圖設定）存成一個 .json 檔，下次用「開啟檔案」開啟；瀏覽器也會自動暫存目前進度。資料不會上傳到任何伺服器。</div>` + listHTML();
     $("props").insertAdjacentHTML("beforeend", renderBaseSection()); bindBaseSection();
     bindList(); return;
@@ -1022,14 +1131,61 @@ function renderProps(light) {
   $("aBack").onclick = () => { it.z = Math.min(...state.items.map(i => i.z || 0)) - 1; renderItems(); commit(); };
   bindList();
 }
+function renderMultiProps() {
+  const its = selItems(), n = its.length, P = $("props"), btn = (a, t, tip) => `<button data-al="${a}" title="${tip || t}">${t}</button>`;
+  P.innerHTML = `<h2>已選取 ${n} 個物件</h2>
+    <div class="muted" style="font-size:12px">Shift／${KEY.replace("+", "")} 點選加減選取；Shift 拖曳空白處框選；${KEY}A 全選。拖曳任一個會一起移動。</div>
+    <b style="display:block;margin-top:12px">對齊</b>
+    <div class="actions" style="margin-top:6px">${btn("left", "⇤ 靠左")}${btn("hcenter", "↔ 水平置中")}${btn("right", "靠右 ⇥")}${btn("top", "⤒ 靠上")}${btn("vcenter", "↕ 垂直置中")}${btn("bottom", "靠下 ⤓")}</div>
+    <b style="display:block;margin-top:12px">平均分布</b>
+    <div class="actions" style="margin-top:6px">${btn("disth", "水平平均", "左右間距相同（3 個以上）")}${btn("distv", "垂直平均", "上下間距相同（3 個以上）")}</div>
+    <b style="display:block;margin-top:12px">邊緣貼合</b>
+    <div class="row"><span>間距 cm</span><input id="mGap" type="number" min="0" step="1" value="${opt.gap || 0}"></div>
+    <div class="actions" style="margin-top:6px">${btn("packh", "→ 水平貼合", "由左而右依序相接（保留上下位置）")}${btn("packv", "↓ 垂直貼合", "由上而下依序相接（保留左右位置）")}${btn("packhA", "→ 貼合並靠上", "相接並對齊上緣")}${btn("packvA", "↓ 貼合並靠左", "相接並對齊左緣")}</div>
+    <b style="display:block;margin-top:12px">尺寸</b>
+    <div class="actions" style="margin-top:6px">${btn("samew", "同寬", "寬度統一為最後選取的物件")}${btn("samed", "同深", "深度統一為最後選取的物件")}</div>
+    <div class="actions" style="margin-top:14px"><button id="mRot">旋轉 90°</button><button id="mDup">再製</button><button id="mCopy">複製</button><button id="mDel" style="color:#d1242f">刪除</button></div>` + listHTML();
+  $("mGap").onchange = e => opt.gap = Math.max(0, +e.target.value || 0);
+  P.querySelectorAll("[data-al]").forEach(b => b.onclick = () => alignSel(b.dataset.al));
+  $("mRot").onclick = () => rotSel(90); $("mDup").onclick = dupSel; $("mCopy").onclick = () => copySel(false); $("mDel").onclick = delSel;
+  bindList();
+}
+function alignSel(kind) {
+  const its = selItems().filter(i => !i.locked); if (its.length < 2) { toast("請至少選取 2 個未鎖定的物件"); return; }
+  const shift = (it, dx, dy) => { it.x = Math.round((it.x + dx) * 10) / 10; it.y = Math.round((it.y + dy) * 10) / 10; };
+  const U = unionBox(its), B = it => itemBox(it), gap = opt.gap || 0, ref = cur() && !cur().locked ? cur() : its[its.length - 1];
+  if (kind === "left") its.forEach(i => shift(i, U.x1 - B(i).x1, 0));
+  if (kind === "right") its.forEach(i => shift(i, U.x2 - B(i).x2, 0));
+  if (kind === "hcenter") its.forEach(i => { const b = B(i); shift(i, (U.x1 + U.x2) / 2 - (b.x1 + b.x2) / 2, 0); });
+  if (kind === "top") its.forEach(i => shift(i, 0, U.y1 - B(i).y1));
+  if (kind === "bottom") its.forEach(i => shift(i, 0, U.y2 - B(i).y2));
+  if (kind === "vcenter") its.forEach(i => { const b = B(i); shift(i, 0, (U.y1 + U.y2) / 2 - (b.y1 + b.y2) / 2); });
+  if (kind === "disth" || kind === "distv") {
+    if (its.length < 3) { toast("平均分布需要 3 個以上的物件"); return; }
+    const H = kind === "disth", sorted = its.slice().sort((a, b) => H ? B(a).x1 - B(b).x1 : B(a).y1 - B(b).y1);
+    const total = H ? U.x2 - U.x1 : U.y2 - U.y1, sizes = sorted.map(i => { const b = B(i); return H ? b.x2 - b.x1 : b.y2 - b.y1; });
+    const g = (total - sizes.reduce((a, b) => a + b, 0)) / (sorted.length - 1); let pos = H ? U.x1 : U.y1;
+    sorted.forEach((i, k) => { const b = B(i); H ? shift(i, pos - b.x1, 0) : shift(i, 0, pos - b.y1); pos += sizes[k] + g; });
+  }
+  if (kind.startsWith("packh") || kind.startsWith("packv")) {
+    const H = kind.startsWith("packh"), sorted = its.slice().sort((a, b) => H ? B(a).x1 - B(b).x1 : B(a).y1 - B(b).y1);
+    let pos = H ? B(sorted[0]).x2 + gap : B(sorted[0]).y2 + gap;
+    if (kind === "packhA") sorted.forEach(i => shift(i, 0, U.y1 - B(i).y1));
+    if (kind === "packvA") sorted.forEach(i => shift(i, U.x1 - B(i).x1, 0));
+    sorted.slice(1).forEach(i => { const b = B(i); H ? shift(i, pos - b.x1, 0) : shift(i, 0, pos - b.y1); const nb = B(i); pos = (H ? nb.x2 : nb.y2) + gap; });
+  }
+  if (kind === "samew" || kind === "samed") its.forEach(i => { if (i === ref) return; if (kind === "samew") { const c = i.x + i.w / 2; i.w = ref.w; i.x = c - i.w / 2; } else { const c = i.y + i.d / 2; i.d = ref.d; i.y = c - i.d / 2; } });
+  renderItems(); renderMultiProps(); commit();
+  toast({ left: "已靠左對齊", right: "已靠右對齊", hcenter: "已水平置中", top: "已靠上對齊", bottom: "已靠下對齊", vcenter: "已垂直置中", disth: "已水平平均分布", distv: "已垂直平均分布", packh: "已水平貼合", packv: "已垂直貼合", packhA: "已水平貼合並靠上", packvA: "已垂直貼合並靠左", samew: "已統一寬度", samed: "已統一深度" }[kind]);
+}
 function listHTML() {
   if (!state.items.length) return "";
-  return `<div class="list"><b>物件清單（${state.items.length}）</b>` + state.items.map(i => `<div data-id="${i.id}" class="${i.id === state.sel ? "sel" : ""}"><span>${esc(i.label || DEFAULTS[i.type]?.name || i.type)}</span><span class="muted">${Math.round(i.w)}×${Math.round(i.d)}</span></div>`).join("") + "</div>";
+  return `<div class="list"><b>物件清單（${state.items.length}）</b>` + state.items.map(i => `<div data-id="${i.id}" class="${selIds().includes(i.id) ? "sel" : ""}"><span>${esc(i.label || DEFAULTS[i.type]?.name || i.type)}</span><span class="muted">${Math.round(i.w)}×${Math.round(i.d)}</span></div>`).join("") + "</div>";
 }
-function bindList() { document.querySelectorAll("#props .list div[data-id]").forEach(d => d.onclick = () => { state.sel = +d.getAttribute("data-id"); renderSelection(); renderProps(); }); }
+function bindList() { document.querySelectorAll("#props .list div[data-id]").forEach(d => d.onclick = e => { const id = +d.getAttribute("data-id"); if (e.shiftKey || e.metaKey || e.ctrlKey) { const ids = selIds(); setSel(ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id]); } else setSel([id]); }); }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-function rotSel(deg) { const it = cur(); if (!it || it.locked) return; it.rot = ((it.rot + deg) % 360 + 360) % 360; renderItems(); renderProps(); commit(); }
-function flipSel() { const it = cur(); if (!it || it.locked) return; it.flip = !it.flip; renderItems(); commit(); }
+function rotSel(deg) { const its = selItems().filter(i => !i.locked); if (!its.length) return; its.forEach(it => it.rot = ((it.rot + deg) % 360 + 360) % 360); renderItems(); renderProps(); commit(); }
+function flipSel() { const its = selItems().filter(i => !i.locked); if (!its.length) return; its.forEach(it => it.flip = !it.flip); renderItems(); commit(); }
 
 /* ============================================================
    底圖編輯模式
@@ -1259,17 +1415,24 @@ document.addEventListener("keydown", e => {
   if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); return; }
   if (mod && e.key.toLowerCase() === "d") { e.preventDefault(); dupSel(); return; }
   if (mod && e.key.toLowerCase() === "s") { e.preventDefault(); saveFile(); return; }
+  if (mod && mode !== "base" && BASE && ["c", "x", "v"].includes(e.key.toLowerCase()) && !(window.getSelection && String(window.getSelection()))) {
+    const k = e.key.toLowerCase();
+    if (k === "v") { e.preventDefault(); pasteClip(lastMouse); return; }
+    if (cur()) { e.preventDefault(); copySel(k === "x"); return; }
+  }
+  if (e.key === "Escape") $("sheetMenu").classList.remove("show");
   if (!mod && (e.key === "m" || e.key === "M")) { setMeasure(!measureMode); return; }
   if (e.key === "Escape" && measureMode) { setMeasure(false); return; }
   if (mode === "base") { baseKey(e); return; }
+  if (mod && e.key.toLowerCase() === "a" && BASE) { e.preventDefault(); setSel(state.items.map(i => i.id)); toast(`已全選 ${state.items.length} 個物件`); return; }
   const it = cur(); if (!it) return;
   if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); delSel(); }
   else if (e.key === "r" || e.key === "R") rotSel(e.shiftKey ? -90 : 90);
   else if (e.key === "f" || e.key === "F") flipSel();
-  else if (e.key === "Escape") { state.sel = null; renderSelection(); renderProps(); }
-  else if (e.key.startsWith("Arrow") && !it.locked) {
+  else if (e.key === "Escape") { msel = []; state.sel = null; renderSelection(); renderProps(); }
+  else if (e.key.startsWith("Arrow")) {
     e.preventDefault(); const st = (e.shiftKey ? 10 : 1) * (opt.snap ? opt.step : 1);
-    if (e.key === "ArrowLeft") it.x -= st; if (e.key === "ArrowRight") it.x += st; if (e.key === "ArrowUp") it.y -= st; if (e.key === "ArrowDown") it.y += st;
+    for (const m of selItems().filter(i => !i.locked)) { if (e.key === "ArrowLeft") m.x -= st; if (e.key === "ArrowRight") m.x += st; if (e.key === "ArrowUp") m.y -= st; if (e.key === "ArrowDown") m.y += st; }
     renderItems(); renderProps(true); clearTimeout(arrowT); arrowT = setTimeout(commit, 400);
   }
 });
@@ -1412,6 +1575,7 @@ $("btnNew").onclick = () => showGate("new");
 $("btnMeasure").onclick = () => setMeasure(!measureMode);
 $("btnUndo").onclick = undo; $("btnRedo").onclick = redo; $("btnFit").onclick = fit;
 $("chkSnap").onchange = e => opt.snap = e.target.checked;
+$("chkEdge").onchange = e => opt.edge = e.target.checked;
 $("selSnap").onchange = e => { opt.step = +e.target.value; drawGrid(); toast(`吸附精度：${opt.step} cm`); };
 $("chkGrid").onchange = e => { opt.grid = e.target.checked; drawGrid(); };
 $("chkSize").onchange = e => { opt.size = e.target.checked; renderItems(); };
