@@ -35,6 +35,8 @@ export function addItem(def, x, y) {
     it.label = t("文字");
     it.fontSize = 16;
   }
+  if (typeof def.init === "function") def.init(it, def); // 擴充模組：新物件的預設參數
+  if (it.layer === undefined) delete it.layer;
   it.x = snapV(x - it.w / 2);
   it.y = snapV(y - it.d / 2);
   state.items.push(it);

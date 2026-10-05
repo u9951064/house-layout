@@ -74,9 +74,10 @@ export function renderItems() {
     dimension: 8,
     text: 9,
   };
-  const list = state.items
-    .slice()
-    .sort((a, b) => (order[a.type] ?? 0) - (order[b.type] ?? 0) || (a.z ?? 0) - (b.z ?? 0));
+  // 繪製順序：地坪最底、天花與裝修在家具之上、水電空調最上
+  const LAYER_ORDER = { floor: -3, ceiling: 7, finish: 7, light: 8, power: 8, hvac: 8 };
+  const rank = it => order[it.type] ?? LAYER_ORDER[layerOf(it)] ?? 0;
+  const list = state.items.slice().sort((a, b) => rank(a) - rank(b) || (a.z ?? 0) - (b.z ?? 0));
   for (const it of list) {
     const vis = showState(it);
     if (vis === "off") continue;
@@ -91,13 +92,15 @@ export function renderItems() {
       },
       itemLayer,
     );
-    el("rect", { x: 0, y: 0, width: it.w, height: it.d, fill: "transparent", stroke: "none" }, g); // 點擊範圍
+    if (!EXT.noHit.has(it.type))
+      el("rect", { x: 0, y: 0, width: it.w, height: it.d, fill: "transparent", stroke: "none" }, g); // 點擊範圍
     (DRAW[it.type] || EXT.draw2d[it.type] || DRAW.cabinet)(g, it.w, it.d, it);
     const showName = it.showName !== false,
       showSize =
         opt.size &&
         !["text", "wall", "wallArc", "column", "dimension", "curtain", "tvwall"].includes(it.type) &&
-        !CURVE_TYPES.has(it.type);
+        !CURVE_TYPES.has(it.type) &&
+        !EXT.noSize.has(it.type);
     if (showName || showSize || it.type === "text") {
       const tg = el(
         "g",

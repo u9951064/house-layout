@@ -21,7 +21,9 @@ const PORT = 4320;
 fs.mkdirSync(OUT, { recursive: true });
 
 const server = await serve(PORT);
-const browser = await chromium.launch();
+const browser = await chromium.launch({
+  args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
+});
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1.5 });
 page.on("dialog", d => d.accept(d.type() === "prompt" ? d.defaultValue() || SAMPLE_NAME : undefined));
 const shot = (name, clip) => page.screenshot({ path: path.join(OUT, name + ".png"), clip });
@@ -143,6 +145,31 @@ await ev(labels => {
   mi.click();
 }, MENU_TEXT.ai);
 await shot("ai", { x: 330, y: 60, width: 780, height: 780 });
+await ev(() => document.getElementById("aiCancel").click());
+
+// 14～18. 3D 與施工圖（範例的方案 C）
+await ev(() => window.__fp.switchDesign(2));
+await page.waitForTimeout(2600);
+await page.selectOption("#selPlan", "ceiling");
+await page.waitForTimeout(300);
+await shot("rcp");
+await page.selectOption("#selPlan", "layout");
+await page.click('[data-view="3d"]');
+await page.waitForFunction(() => window.__fp3d && window.__fp3d.scene);
+await page.waitForTimeout(2500);
+await shot("view3d");
+await page.click('[data-view="elev"]');
+await page.waitForTimeout(400);
+await ev(() => document.querySelector('.ev-face[data-k="4:1"]')?.click());
+await page.waitForTimeout(400);
+await shot("elevation");
+await page.click('[data-view="cab"]');
+await page.waitForTimeout(500);
+await shot("cabinet");
+await page.click('[data-view="sched"]');
+await page.waitForTimeout(400);
+await shot("schedule");
+await page.click('[data-view="plan"]');
 
 await browser.close();
 server.close();

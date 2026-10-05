@@ -39,13 +39,18 @@ S.PROJ.materials                                 // 專案共用的自訂材質
 | `EXT.build3d[type] = (it, ctx) => Object3D` | 3D 模型，局部座標：原點 = 物件左上角、地面 y=0（**模組自己套 elev**），x∈[0,w]、z∈[0,d]；3D 檢視負責平移、旋轉、鏡像 |
 | `EXT.elev2d[type] = (g, it, ctx)` | 立面圖正視圖：局部座標 x∈[0,w]（觀看者面對物件正面時的左→右）、y = −高度（SVG 向上為負），地面 y=0 |
 | `EXT.props[type]` / `EXT.propsAny` | 右側屬性面板額外區塊 `{ html(it), bind(it, api) }`，api = `{ $, commit, rerender }` |
-| `EXT.noResize` / `EXT.noScopeCheck` | 不顯示縮放把手／不檢查放在衛浴陽台 |
+| `EXT.noResize` / `EXT.noScopeCheck` / `EXT.noSize` / `EXT.noHit` | 不顯示縮放把手／不檢查放在衛浴陽台／不顯示寬×深字／不加外框點擊範圍（折線） |
+| `def.tool` | 點選元件庫卡片時改為 `setTool(def.tool, def)`（工具的 `start(def)` 會收到 def） |
+| `EXT.paletteClick.push(def => bool)` | 其他檢視攔截元件庫點選（回傳 true 表示已處理） |
+| `def.init(it, def)` | 新增物件時設定預設參數（例如深拷貝 `it.cab`） |
 | `registerTool(name, tool)` + `setTool(name)`（`src/canvas/interact.js`） | 畫布工具：`down/move/up(p, e)`、`key(e)→bool`、`draw(uiLayer, kk)`、`cancel()`；Esc 結束 |
 | `registerView({ id, name, icon, mount(el), unmount, refresh })` | 主畫面檢視（3D、立面、櫃體工程圖、數量表…），`setView(id)`（`src/ext/views.js`） |
 | `registerPTab({ id, name, html(), bind(api) })` | 右側面板分頁（例如「裝修」） |
 | `registerMenu(menu, () => items)` | 選單附加項（file/edit/view/base/design/help），項目格式同 `src/ui/menubar.js` |
 | `registerSchedule({ id, name, rows() })` | 數量估算表：rows → `[{ group, item, spec, qty, unit, note }]` |
 | `onChange(fn)` | 資料變動通知（commit、restore、items、design、project、view、tool）；**renderItems 拖曳時也會觸發，重活請 debounce** |
+
+繪製順序：floor 圖層最底，ceiling／finish 在家具上，light／power／hvac 最上（`src/canvas/items.js`）。
 
 模組進入點：`src/<module>/index.js` 匯出 `register()`（元件庫建立前，註冊 catalog／draw2d 等）與 `init()`（DOM 就緒後）。
 

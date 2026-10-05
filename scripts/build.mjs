@@ -7,7 +7,18 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = path.join(ROOT, "dist");
-const APP_CSS = ["css/base.css", "css/panels.css", "css/dialogs.css", "css/canvas.css"];
+const APP_CSS = [
+  "css/base.css",
+  "css/panels.css",
+  "css/dialogs.css",
+  "css/canvas.css",
+  "css/materials.css",
+  "css/arch.css",
+  "css/mep.css",
+  "css/cabinet.css",
+  "css/docs.css",
+  "css/view3d.css",
+];
 const GUIDES = ["guide.html", "guide.en.html"];
 const COPY = ["PROMPT.md", "LICENSE", "CNAME", ".nojekyll", "examples", "docs"];
 

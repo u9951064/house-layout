@@ -28,7 +28,11 @@ export function toggleChk(id) {
   $(id).click();
 }
 export function menuItems(name) {
-  const ext = (EXT.menus[name] || []).flatMap(f => (typeof f === "function" ? f() : f)).filter(Boolean);
+  // 每個模組的項目之間加分隔線
+  const ext = (EXT.menus[name] || [])
+    .map(f => [].concat(typeof f === "function" ? f() : f).filter(Boolean))
+    .filter(g => g.length)
+    .flatMap((g, i) => (i ? ["-", ...g] : g));
   const own = coreMenuItems(name);
   return ext.length ? [...own, ...(own.length ? ["-"] : []), ...ext] : own;
 }

@@ -30,6 +30,7 @@
         <a href="#sheets">Design tabs &amp; comparison</a>
         <a href="#base">Editing the base plan</a>
         <a href="#ai">Generating a base plan with AI</a>
+        <a href="#pro">3D, drawings &amp; materials</a>
         <a href="#file">Projects, saving &amp; export</a>
         <a href="#keys">Keyboard shortcuts</a>
         <a href="#privacy">Privacy</a>
@@ -185,6 +186,32 @@
             </ol>
           </div>
           <p class="tip">Full prompt: <a href="PROMPT.md" target="_blank" rel="noopener">PROMPT.md</a>. Survey drawings carry exact dimensions and are usually the most accurate; partition plans aren't to scale, so double-check positions by measuring.</p>
+        </section>
+
+        <section id="pro">
+          <h2>3D, construction drawings &amp; materials</h2>
+          <p>The sample project's “Design C (3D &amp; drawings)” demonstrates these features. Switch between <b>Plan / 3D / Elevations / Schedule / Cabinet drawings</b> on the right of the toolbar; the Design menu has every entry point too.</p>
+          <h3>Drawing types and layers</h3>
+          <p>In plan view, the drop-down at the top right switches between the <b>furniture layout, flooring, reflected ceiling (RCP), lighting &amp; switching, power &amp; data, and HVAC &amp; ERV duct plans</b>. Each one shows (or dims) only the relevant layers.</p>
+          <figure><img src="docs/img/en/rcp.png" alt="Reflected ceiling plan" /><figcaption>Reflected ceiling plan: cove ceiling, downlights, pendant, ERV unit with supply and return ducts</figcaption></figure>
+          <h3>Finishes, cabinetry, MEP</h3>
+          <ul>
+            <li><b>Finishes</b>: floor zones (incl. raised floors), flat / dropped / cove ceilings, beam boxing, curtain pockets, feature walls, wallpaper, curtains (double layer, Roman, roller, venetian). The “Finishes” tab on the right sets floor and ceiling heights, skirting and the material of <b>every wall face</b>.</li>
+            <li><b>Doors and windows</b>: while editing the base plan, set window type (sliding, casement, fixed, bay), sill and head height, glass and frame; door height, leaf style and material.</li>
+            <li><b>Custom cabinetry</b>: base, wall, tall, wardrobe, shoe, TV, bookcase, island, vanity…; board thickness, toe kick, countertop, door/drawer sections, handles and materials.</li>
+            <li><b>MEP</b>: outlets, switches, lights, panels, low voltage; draw runs with “〰 Wiring” and “▭ Duct” in the toolbar (Enter to finish, Backspace to undo a point, Shift for straight lines); a switch can “generate wiring” to its lights and number the circuit.</li>
+            <li><b>Material library</b>: 90 built-in materials (wood floors, tiles, stone, paint, laminates, glass, metal, fabrics…) plus your own custom materials or photos.</li>
+          </ul>
+          <h3>3D view</h3>
+          <figure><img src="docs/img/en/view3d.png" alt="3D view" /><figcaption>Orbit / top / walk; section height, hide ceiling, see-through walls, night mode; doors and cabinet doors closed, half or fully open; the paint bucket re-materials a wall, floor or object with one click</figcaption></figure>
+          <h3>Elevations (draw directly on them)</h3>
+          <figure><img src="docs/img/en/elevation.png" alt="Elevation" /><figcaption>Pick a wall face to get its elevation: openings, cabinets, outlet heights, wall finish and dimensions. Drag objects to change height and position, and add dimensions, notes, material tags and lines</figcaption></figure>
+          <h3>Cabinet drawings and schedule</h3>
+          <div class="grid2">
+            <figure><img src="docs/img/en/cabinet.png" alt="Cabinet drawings" /><figcaption>Closed front, open interior, section, plan and dimensions; cut list, hardware and board estimate, exportable as CSV</figcaption></figure>
+            <figure><img src="docs/img/en/schedule.png" alt="Schedule" /><figcaption>Floor, wall and ceiling areas, cabinet boards, light and outlet counts per circuit, duct lengths</figcaption></figure>
+          </div>
+          <p class="tip">“Design → Export drawing set…” builds title-blocked plans, every elevation, cabinet drawings and the schedule in one go — print them or download a single HTML file. Everything is generated in your browser.</p>
         </section>
 
         <section id="file">

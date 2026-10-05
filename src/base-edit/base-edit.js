@@ -15,6 +15,8 @@ import { addItem } from "../edit/actions.js";
 import { applyGateBase, autosave } from "../project/project.js";
 import { bindBaseSection, renderBaseSection, renderProps } from "../ui/props.js";
 import { showGate } from "../ui/gate.js";
+import { bindMatField, matFieldHTML } from "../materials/index.js";
+import { spec } from "../ext/heights.js";
 
 export const BTOOLS = {
   select: t("選取"),
@@ -518,7 +520,7 @@ export function renderBaseProps() {
                 ? `<div class="row2"><select data-op="${j}" data-f="hinge"><option value="a" ${(op[3] || {}).hinge !== "b" ? "selected" : ""}>${t("鉸鏈：靠起點")}</option><option value="b" ${(op[3] || {}).hinge === "b" ? "selected" : ""}>${t("鉸鏈：靠終點")}</option></select>
               <button data-op="${j}" data-f="side">${t("翻轉開向")}</button></div>`
                 : ""
-            }</div>`;
+            }${openingExtHTML(op, j)}</div>`;
         });
         html += `<div class="actions"><button data-add="win">${t("＋窗")}</button><button data-add="door">${t("＋門")}</button><button data-add="open">${t("＋開口")}</button></div>`;
       } else html += `<div class="muted" style="font-size:12px;margin-top:6px">${t("斜牆目前不支援門窗開口。")}</div>`;
@@ -589,9 +591,22 @@ export function renderBaseProps() {
             op[1] = op[0] + w;
           }
           if (f === "w") op[1] = op[0] + Math.max(10, +x.value || 10);
+          if (OP_EXT_F.includes(f)) {
+            const o = (op[3] = op[3] && typeof op[3] === "object" ? op[3] : {});
+            if (x.value === "") delete o[f];
+            else o[f] = x.type === "number" ? +x.value : x.value;
+          }
           commitBase();
         };
     });
+    (tg[5] || []).forEach((op, j) =>
+      ["frameMat", "leafMat"].forEach(f =>
+        bindMatField(P, `op${j}_${f}`, ["wood", "laminate", "metal", "paint", "glass"], id => {
+          op[3] = { ...(op[3] && typeof op[3] === "object" ? op[3] : {}), [f]: id };
+          commitBase();
+        }),
+      ),
+    );
     P.querySelectorAll("[data-add]").forEach(
       x =>
         (x.onclick = () => {
@@ -745,4 +760,46 @@ export function init() {
       renderSelection();
     }
   });
+}
+
+// 開口的立體規格欄位（窗型、窗台／窗頂、玻璃、門高、門片樣式與材質）
+const OP_EXT_F = ["sill", "head", "style", "glass", "leafStyle"];
+function openingExtHTML(op, j) {
+  const o = (op[3] && typeof op[3] === "object" ? op[3] : {}) || {},
+    sp = spec(),
+    sel = (f, v, opts) =>
+      `<select data-op="${j}" data-f="${f}">${opts.map(([k, l]) => `<option value="${k}" ${v === k ? "selected" : ""}>${l}</option>`).join("")}</select>`,
+    num = (f, label, def) =>
+      `<label>${label}<input data-op="${j}" data-f="${f}" type="number" step="1" placeholder="${def}" value="${o[f] ?? ""}"></label>`;
+  if (op[2] === "win")
+    return `<div class="op-ext"><div class="row2">${sel("style", o.style || "slide2", [
+      ["slide2", t("雙拉窗")],
+      ["slide3", t("三拉窗")],
+      ["casement", t("推射窗")],
+      ["awning", t("上懸窗")],
+      ["fixed", t("固定窗")],
+      ["bay", t("凸窗")],
+    ])}${sel("glass", o.glass || "clear", [
+      ["clear", t("清玻璃")],
+      ["frosted", t("霧面玻璃")],
+      ["reeded", t("長虹玻璃")],
+      ["lowe", t("Low-E 玻璃")],
+    ])}</div><div class="row2">${num("sill", t("窗台高"), sp.winSill)}${num("head", t("窗頂高"), sp.winHead)}</div>${
+      ["casement", "awning", "bay"].includes(o.style)
+        ? `<button data-op="${j}" data-f="side">${t("翻轉開向")}</button>`
+        : ""
+    }${matFieldHTML(`op${j}_frameMat`, o.frameMat || "metal-alu-black", t("窗框材質"))}</div>`;
+  if (op[2] === "door")
+    return `<div class="op-ext"><div class="row2">${num("head", t("門高"), sp.doorH)}<label>${t("門片樣式")}${sel(
+      "leafStyle",
+      o.leafStyle || "flat",
+      [
+        ["flat", t("平板門")],
+        ["panel", t("線板門")],
+        ["glass", t("玻璃門")],
+        ["groove", t("溝縫門")],
+        ["louver", t("百葉門")],
+      ],
+    )}</label></div>${matFieldHTML(`op${j}_leafMat`, o.leafMat || "wood-oak", t("門片材質"))}${matFieldHTML(`op${j}_frameMat`, o.frameMat || "wood-white", t("門框材質"))}</div>`;
+  return `<div class="op-ext"><div class="row2">${num("head", t("開口高"), sp.doorH)}</div></div>`;
 }

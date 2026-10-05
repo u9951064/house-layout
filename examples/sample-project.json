@@ -1,9 +1,8 @@
 {
   "app": "house-layout",
-  "version": 3,
+  "version": 4,
   "name": "範例兩房",
   "base": {
-    "name": "範例兩房",
     "walls": [
       [
         0,
@@ -16,7 +15,24 @@
           [340, 500, "win"]
         ]
       ],
-      [860, 0, 860, 720, 20, [[600, 690, "door", { "hinge": "b", "side": -1 }]]],
+      [
+        860,
+        0,
+        860,
+        720,
+        20,
+        [
+          [
+            600,
+            690,
+            "door",
+            {
+              "hinge": "b",
+              "side": -1
+            }
+          ]
+        ]
+      ],
       [860, 720, 0, 720, 20, [[150, 450, "win"]]],
       [0, 720, 0, 0, 20, [[420, 600, "win"]]],
       [
@@ -26,56 +42,295 @@
         330,
         12,
         [
-          [200, 280, "door", { "hinge": "b", "side": -1 }],
-          [460, 540, "door", { "hinge": "a", "side": -1 }]
+          [
+            200,
+            280,
+            "door",
+            {
+              "hinge": "b",
+              "side": -1
+            }
+          ],
+          [
+            460,
+            540,
+            "door",
+            {
+              "hinge": "a",
+              "side": -1
+            }
+          ]
         ]
       ],
       [300, 0, 300, 330, 12, []],
       [560, 0, 560, 330, 12, []],
-      [560, 230, 860, 230, 12, [[600, 680, "door", { "hinge": "a", "side": 1 }]]]
+      [
+        560,
+        230,
+        860,
+        230,
+        12,
+        [
+          [
+            600,
+            680,
+            "door",
+            {
+              "hinge": "a",
+              "side": 1
+            }
+          ]
+        ]
+      ]
     ],
+    "name": "範例兩房",
     "columns": [[820, 0, 860, 40]],
     "canopies": [],
-    "outOfScope": [{ "name": "衛浴", "r": [566, 6, 854, 224] }],
-    "rooms": [
-      { "n": "主臥", "s": "約 2.9 坪", "x": 150, "y": 250 },
-      { "n": "次臥", "s": "約 2.4 坪", "x": 430, "y": 250 },
-      { "n": "客廳・餐廚", "s": "約 8.5 坪", "x": 430, "y": 560 },
-      { "n": "玄關", "s": "", "x": 770, "y": 560 }
+    "outOfScope": [
+      {
+        "name": "衛浴",
+        "r": [566, 6, 854, 224]
+      }
     ],
-    "fixtures": [{ "type": "counter", "x": 290, "y": 336, "w": 165, "d": 60, "rot": 0, "label": "既有流理台" }]
+    "rooms": [
+      {
+        "n": "主臥",
+        "s": "約 2.9 坪",
+        "x": 150,
+        "y": 250
+      },
+      {
+        "n": "次臥",
+        "s": "約 2.4 坪",
+        "x": 430,
+        "y": 250
+      },
+      {
+        "n": "客廳・餐廚",
+        "s": "約 8.5 坪",
+        "x": 430,
+        "y": 560
+      },
+      {
+        "n": "玄關",
+        "s": "",
+        "x": 770,
+        "y": 560
+      }
+    ],
+    "fixtures": [
+      {
+        "type": "counter",
+        "x": 290,
+        "y": 336,
+        "w": 165,
+        "d": 60,
+        "rot": 0,
+        "label": "既有流理台"
+      }
+    ],
+    "bounds": {
+      "x": -70,
+      "y": -70,
+      "w": 1000,
+      "h": 900
+    }
   },
   "designs": [
     {
       "id": "sampleA",
       "name": "方案 A",
-      "nextId": 12,
       "items": [
-        { "id": 1, "type": "bed2", "label": "雙人床", "x": 74, "y": 10, "w": 152, "d": 188, "rot": 0 },
-        { "id": 2, "type": "nightstand", "label": "床頭櫃", "x": 26, "y": 12, "w": 45, "d": 40, "rot": 0 },
-        { "id": 3, "type": "wardrobeSlide", "label": "衣櫃（拉門）", "x": 60, "y": 258, "w": 180, "d": 65, "rot": 180 },
-        { "id": 4, "type": "deskLift", "label": "升降桌", "x": 312, "y": 10, "w": 120, "d": 60, "rot": 0 },
-        { "id": 5, "type": "bed1", "label": "單人床", "x": 446, "y": 10, "w": 106, "d": 188, "rot": 0 },
-        { "id": 6, "type": "tv", "label": "電視櫃", "x": 100, "y": 340, "w": 150, "d": 40, "rot": 0 },
-        { "id": 7, "type": "sofa", "label": "三人沙發", "x": 70, "y": 622, "w": 210, "d": 90, "rot": 180, "seats": 3 },
-        { "id": 8, "type": "rug", "label": "地毯", "x": 75, "y": 440, "w": 200, "d": 140, "rot": 0 },
-        { "id": 9, "type": "fridge", "label": "冰箱", "x": 470, "y": 340, "w": 70, "d": 70, "rot": 0 },
-        { "id": 10, "type": "dining", "label": "方餐桌", "x": 560, "y": 470, "w": 120, "d": 75, "rot": 0, "chairs": 4 },
-        { "id": 11, "type": "plant", "label": "植栽", "x": 800, "y": 380, "w": 45, "d": 45, "rot": 0 }
-      ]
+        {
+          "id": 1,
+          "type": "bed2",
+          "label": "雙人床",
+          "x": 74,
+          "y": 10,
+          "w": 152,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 2,
+          "type": "nightstand",
+          "label": "床頭櫃",
+          "x": 26,
+          "y": 12,
+          "w": 45,
+          "d": 40,
+          "rot": 0
+        },
+        {
+          "id": 3,
+          "type": "wardrobeSlide",
+          "label": "衣櫃（拉門）",
+          "x": 60,
+          "y": 258,
+          "w": 180,
+          "d": 65,
+          "rot": 180
+        },
+        {
+          "id": 4,
+          "type": "deskLift",
+          "label": "升降桌",
+          "x": 312,
+          "y": 10,
+          "w": 120,
+          "d": 60,
+          "rot": 0
+        },
+        {
+          "id": 5,
+          "type": "bed1",
+          "label": "單人床",
+          "x": 446,
+          "y": 10,
+          "w": 106,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 6,
+          "type": "tv",
+          "label": "電視櫃",
+          "x": 100,
+          "y": 340,
+          "w": 150,
+          "d": 40,
+          "rot": 0
+        },
+        {
+          "id": 7,
+          "type": "sofa",
+          "label": "三人沙發",
+          "x": 70,
+          "y": 622,
+          "w": 210,
+          "d": 90,
+          "rot": 180,
+          "seats": 3
+        },
+        {
+          "id": 8,
+          "type": "rug",
+          "label": "地毯",
+          "x": 75,
+          "y": 440,
+          "w": 200,
+          "d": 140,
+          "rot": 0
+        },
+        {
+          "id": 9,
+          "type": "fridge",
+          "label": "冰箱",
+          "x": 470,
+          "y": 340,
+          "w": 70,
+          "d": 70,
+          "rot": 0
+        },
+        {
+          "id": 10,
+          "type": "dining",
+          "label": "方餐桌",
+          "x": 560,
+          "y": 470,
+          "w": 120,
+          "d": 75,
+          "rot": 0,
+          "chairs": 4
+        },
+        {
+          "id": 11,
+          "type": "plant",
+          "label": "植栽",
+          "x": 800,
+          "y": 380,
+          "w": 45,
+          "d": 45,
+          "rot": 0
+        }
+      ],
+      "nextId": 12,
+      "spec": {}
     },
     {
       "id": "sampleB",
       "name": "方案 B",
-      "nextId": 11,
       "items": [
-        { "id": 1, "type": "bed2", "label": "雙人床", "x": 74, "y": 10, "w": 152, "d": 188, "rot": 0 },
-        { "id": 2, "type": "wardrobeSlide", "label": "衣櫃（拉門）", "x": 60, "y": 258, "w": 180, "d": 65, "rot": 180 },
-        { "id": 3, "type": "deskL", "label": "L 型書桌", "x": 312, "y": 10, "w": 160, "d": 140, "rot": 0 },
-        { "id": 4, "type": "bookshelf", "label": "書櫃", "x": 312, "y": 280, "w": 120, "d": 35, "rot": 180 },
-        { "id": 5, "type": "tv", "label": "電視櫃", "x": 100, "y": 340, "w": 150, "d": 40, "rot": 0 },
-        { "id": 6, "type": "sofaL", "label": "L 型沙發", "x": 50, "y": 548, "w": 240, "d": 160, "rot": 180 },
-        { "id": 7, "type": "fridge", "label": "冰箱", "x": 470, "y": 340, "w": 70, "d": 70, "rot": 0 },
+        {
+          "id": 1,
+          "type": "bed2",
+          "label": "雙人床",
+          "x": 74,
+          "y": 10,
+          "w": 152,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 2,
+          "type": "wardrobeSlide",
+          "label": "衣櫃（拉門）",
+          "x": 60,
+          "y": 258,
+          "w": 180,
+          "d": 65,
+          "rot": 180
+        },
+        {
+          "id": 3,
+          "type": "deskL",
+          "label": "L 型書桌",
+          "x": 312,
+          "y": 10,
+          "w": 160,
+          "d": 140,
+          "rot": 0
+        },
+        {
+          "id": 4,
+          "type": "bookshelf",
+          "label": "書櫃",
+          "x": 312,
+          "y": 280,
+          "w": 120,
+          "d": 35,
+          "rot": 180
+        },
+        {
+          "id": 5,
+          "type": "tv",
+          "label": "電視櫃",
+          "x": 100,
+          "y": 340,
+          "w": 150,
+          "d": 40,
+          "rot": 0
+        },
+        {
+          "id": 6,
+          "type": "sofaL",
+          "label": "L 型沙發",
+          "x": 50,
+          "y": 548,
+          "w": 240,
+          "d": 160,
+          "rot": 180
+        },
+        {
+          "id": 7,
+          "type": "fridge",
+          "label": "冰箱",
+          "x": 470,
+          "y": 340,
+          "w": 70,
+          "d": 70,
+          "rot": 0
+        },
         {
           "id": 8,
           "type": "diningRound",
@@ -103,10 +358,836 @@
           "b": 0,
           "t": 12
         },
-        { "id": 10, "type": "plant", "label": "植栽", "x": 800, "y": 380, "w": 45, "d": 45, "rot": 0 }
-      ]
+        {
+          "id": 10,
+          "type": "plant",
+          "label": "植栽",
+          "x": 800,
+          "y": 380,
+          "w": 45,
+          "d": 45,
+          "rot": 0
+        }
+      ],
+      "nextId": 11,
+      "spec": {}
+    },
+    {
+      "id": "muveydr6jx8b",
+      "name": "方案 C（3D・施工圖）",
+      "items": [
+        {
+          "id": 1,
+          "type": "bed2",
+          "label": "雙人床",
+          "x": 74,
+          "y": 10,
+          "w": 152,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 2,
+          "type": "nightstand",
+          "label": "床頭櫃",
+          "x": 26,
+          "y": 12,
+          "w": 45,
+          "d": 40,
+          "rot": 0
+        },
+        {
+          "id": 4,
+          "type": "deskLift",
+          "label": "升降桌",
+          "x": 312,
+          "y": 10,
+          "w": 120,
+          "d": 60,
+          "rot": 0
+        },
+        {
+          "id": 5,
+          "type": "bed1",
+          "label": "單人床",
+          "x": 446,
+          "y": 10,
+          "w": 106,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 7,
+          "type": "sofa",
+          "label": "三人沙發",
+          "x": 70,
+          "y": 622,
+          "w": 210,
+          "d": 90,
+          "rot": 180,
+          "seats": 3
+        },
+        {
+          "id": 8,
+          "type": "rug",
+          "label": "地毯",
+          "x": 75,
+          "y": 440,
+          "w": 200,
+          "d": 140,
+          "rot": 0
+        },
+        {
+          "id": 9,
+          "type": "fridge",
+          "label": "冰箱",
+          "x": 470,
+          "y": 340,
+          "w": 70,
+          "d": 70,
+          "rot": 0
+        },
+        {
+          "id": 10,
+          "type": "dining",
+          "label": "方餐桌",
+          "x": 560,
+          "y": 470,
+          "w": 120,
+          "d": 75,
+          "rot": 0,
+          "chairs": 4
+        },
+        {
+          "id": 11,
+          "type": "plant",
+          "label": "植栽",
+          "x": 800,
+          "y": 380,
+          "w": 45,
+          "d": 45,
+          "rot": 0
+        },
+        {
+          "id": 12,
+          "type": "floorZone",
+          "label": "地坪區域",
+          "x": 10,
+          "y": 340,
+          "w": 840,
+          "d": 370,
+          "rot": 0,
+          "z": 13
+        },
+        {
+          "id": 13,
+          "type": "cabTV",
+          "label": "懸浮電視櫃",
+          "x": 70,
+          "y": 342,
+          "w": 240,
+          "d": 45,
+          "rot": 0,
+          "z": 14,
+          "cab": {
+            "thk": 1.8,
+            "backThk": 0.8,
+            "doorThk": 1.8,
+            "toe": 0,
+            "toeSet": 5,
+            "top": null,
+            "carcassMat": "lam-white",
+            "doorMat": "lam-light-wood",
+            "interiorMat": "lam-white",
+            "handleMat": "metal-black",
+            "glassMat": "glass-clear",
+            "handle": "groove",
+            "gap": 0.3,
+            "overlay": "full",
+            "fillerL": 0,
+            "fillerR": 0,
+            "lightStrip": true,
+            "sections": [
+              {
+                "w": 0,
+                "kind": "drawer",
+                "n": 1
+              },
+              {
+                "w": 60,
+                "kind": "niche",
+                "n": 0
+              },
+              {
+                "w": 0,
+                "kind": "drawer",
+                "n": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "type": "cabWall",
+          "label": "廚房吊櫃",
+          "x": 290,
+          "y": 336,
+          "w": 120,
+          "d": 35,
+          "rot": 0,
+          "z": 15,
+          "cab": {
+            "thk": 1.8,
+            "backThk": 0.8,
+            "doorThk": 1.8,
+            "toe": 0,
+            "toeSet": 5,
+            "top": null,
+            "carcassMat": "lam-white",
+            "doorMat": "lam-white",
+            "interiorMat": "lam-white",
+            "handleMat": "metal-black",
+            "glassMat": "glass-clear",
+            "handle": "edge",
+            "gap": 0.3,
+            "overlay": "full",
+            "fillerL": 0,
+            "fillerR": 0,
+            "lightStrip": false,
+            "sections": [
+              {
+                "w": 0,
+                "kind": "door2",
+                "n": 1
+              },
+              {
+                "w": 60,
+                "kind": "lift",
+                "n": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": 15,
+          "type": "cabShoe",
+          "label": "鞋櫃",
+          "x": 710,
+          "y": 679,
+          "w": 120,
+          "d": 35,
+          "rot": 180,
+          "z": 16,
+          "cab": {
+            "thk": 1.8,
+            "backThk": 0.8,
+            "doorThk": 1.8,
+            "toe": 8,
+            "toeSet": 5,
+            "top": null,
+            "carcassMat": "lam-white",
+            "doorMat": "lam-light-wood",
+            "interiorMat": "lam-white",
+            "handleMat": "metal-black",
+            "glassMat": "glass-clear",
+            "handle": "push",
+            "gap": 0.3,
+            "overlay": "full",
+            "fillerL": 0,
+            "fillerR": 0,
+            "lightStrip": false,
+            "sections": [
+              {
+                "w": 0,
+                "kind": "door2",
+                "n": 5
+              },
+              {
+                "w": 40,
+                "kind": "door1R",
+                "n": 5
+              }
+            ]
+          }
+        },
+        {
+          "id": 16,
+          "type": "cabWardrobe",
+          "label": "系統衣櫃",
+          "x": 50,
+          "y": 262,
+          "w": 200,
+          "d": 60,
+          "rot": 180,
+          "z": 17,
+          "cab": {
+            "thk": 1.8,
+            "backThk": 0.8,
+            "doorThk": 1.8,
+            "toe": 8,
+            "toeSet": 5,
+            "top": null,
+            "carcassMat": "lam-white",
+            "doorMat": "lam-light-wood",
+            "interiorMat": "lam-white",
+            "handleMat": "metal-black",
+            "glassMat": "glass-clear",
+            "handle": "bar",
+            "gap": 0.3,
+            "overlay": "full",
+            "fillerL": 0,
+            "fillerR": 0,
+            "lightStrip": false,
+            "sections": [
+              {
+                "w": 0,
+                "kind": "hang",
+                "n": 1,
+                "front": "door2",
+                "dr": 2
+              },
+              {
+                "w": 60,
+                "kind": "door1R",
+                "n": 5
+              },
+              {
+                "w": 0,
+                "kind": "hang",
+                "n": 2,
+                "front": "door2"
+              }
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "type": "ceilCove",
+          "label": "間接照明天花",
+          "x": 60,
+          "y": 420,
+          "w": 400,
+          "d": 260,
+          "rot": 0,
+          "z": 18
+        },
+        {
+          "id": 18,
+          "type": "downlight",
+          "label": "嵌燈",
+          "x": 114,
+          "y": 454,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 19,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 19,
+          "type": "downlight",
+          "label": "嵌燈",
+          "x": 254,
+          "y": 454,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 20,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 20,
+          "type": "downlight",
+          "label": "嵌燈",
+          "x": 394,
+          "y": 454,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 21,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 21,
+          "type": "downlight",
+          "label": "嵌燈",
+          "x": 114,
+          "y": 634,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 22,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 22,
+          "type": "downlight",
+          "label": "嵌燈",
+          "x": 254,
+          "y": 634,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 23,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 23,
+          "type": "downlight",
+          "label": "嵌燈",
+          "x": 394,
+          "y": 634,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 24,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 24,
+          "type": "pendant",
+          "label": "吊燈",
+          "x": 600,
+          "y": 488,
+          "w": 40,
+          "d": 40,
+          "rot": 0,
+          "z": 25,
+          "watt": 20,
+          "cct": 2700,
+          "drop": 70,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 25,
+          "type": "downlight",
+          "label": "嵌燈",
+          "x": 144,
+          "y": 114,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 26,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false
+        },
+        {
+          "id": 26,
+          "type": "downlight",
+          "label": "嵌燈",
+          "x": 424,
+          "y": 114,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 27,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false
+        },
+        {
+          "id": 27,
+          "type": "sw2",
+          "label": "雙切開關",
+          "x": 837,
+          "y": 555,
+          "w": 16,
+          "d": 10,
+          "rot": 0,
+          "z": 28,
+          "gang": 2,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 28,
+          "type": "wire",
+          "label": "配線（迴路）",
+          "x": 620,
+          "y": 508,
+          "w": 225,
+          "d": 52,
+          "rot": 0,
+          "z": 29,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "from": 27,
+          "to": 24,
+          "flip": false,
+          "pts": [
+            [225, 52],
+            [0, 0]
+          ]
+        },
+        {
+          "id": 29,
+          "type": "wire",
+          "label": "配線（迴路）",
+          "x": 400,
+          "y": 460,
+          "w": 220,
+          "d": 48,
+          "rot": 0,
+          "z": 30,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 20,
+          "flip": false,
+          "pts": [
+            [220, 48],
+            [0, 0]
+          ]
+        },
+        {
+          "id": 30,
+          "type": "wire",
+          "label": "配線（迴路）",
+          "x": 260,
+          "y": 460,
+          "w": 140,
+          "d": 1,
+          "rot": 0,
+          "z": 31,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 19,
+          "flip": false,
+          "pts": [
+            [140, 0],
+            [0, 0]
+          ]
+        },
+        {
+          "id": 31,
+          "type": "wire",
+          "label": "配線（迴路）",
+          "x": 120,
+          "y": 460,
+          "w": 140,
+          "d": 1,
+          "rot": 0,
+          "z": 32,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 18,
+          "flip": false,
+          "pts": [
+            [140, 0],
+            [0, 0]
+          ]
+        },
+        {
+          "id": 32,
+          "type": "wire",
+          "label": "配線（迴路）",
+          "x": 120,
+          "y": 460,
+          "w": 1,
+          "d": 180,
+          "rot": 0,
+          "z": 33,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 21,
+          "flip": false,
+          "pts": [
+            [0, 0],
+            [0, 180]
+          ]
+        },
+        {
+          "id": 33,
+          "type": "wire",
+          "label": "配線（迴路）",
+          "x": 120,
+          "y": 640,
+          "w": 140,
+          "d": 1,
+          "rot": 0,
+          "z": 34,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 22,
+          "flip": false,
+          "pts": [
+            [0, 0],
+            [140, 0]
+          ]
+        },
+        {
+          "id": 34,
+          "type": "wire",
+          "label": "配線（迴路）",
+          "x": 260,
+          "y": 640,
+          "w": 140,
+          "d": 1,
+          "rot": 0,
+          "z": 35,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 23,
+          "flip": false,
+          "pts": [
+            [0, 0],
+            [140, 0]
+          ]
+        },
+        {
+          "id": 35,
+          "type": "outlet2",
+          "label": "雙插座 110V",
+          "x": 89,
+          "y": 706,
+          "w": 22,
+          "d": 12,
+          "rot": 0,
+          "z": 36,
+          "showName": false
+        },
+        {
+          "id": 36,
+          "type": "outlet2",
+          "label": "雙插座 110V",
+          "x": 289,
+          "y": 339,
+          "w": 22,
+          "d": 12,
+          "rot": 0,
+          "z": 37,
+          "showName": false
+        },
+        {
+          "id": 37,
+          "type": "dataRJ45",
+          "label": "網路插座",
+          "x": 321,
+          "y": 339,
+          "w": 18,
+          "d": 12,
+          "rot": 0,
+          "z": 38,
+          "showName": false
+        },
+        {
+          "id": 38,
+          "type": "tvOut",
+          "label": "電視插座",
+          "x": 181,
+          "y": 339,
+          "w": 18,
+          "d": 12,
+          "rot": 0,
+          "z": 39,
+          "showName": false
+        },
+        {
+          "id": 39,
+          "type": "outlet2",
+          "label": "雙插座 110V",
+          "x": 9,
+          "y": 114,
+          "w": 22,
+          "d": 12,
+          "rot": 0,
+          "z": 40,
+          "showName": false
+        },
+        {
+          "id": 40,
+          "type": "outlet220",
+          "label": "220V 插座",
+          "x": 834,
+          "y": 354,
+          "w": 22,
+          "d": 12,
+          "rot": 0,
+          "z": 41,
+          "showName": false
+        },
+        {
+          "id": 41,
+          "type": "ervUnit",
+          "label": "全熱交換機",
+          "x": 695,
+          "y": 390,
+          "w": 90,
+          "d": 60,
+          "rot": 0,
+          "z": 42,
+          "cmh": 250,
+          "showName": false
+        },
+        {
+          "id": 42,
+          "type": "ductSupply",
+          "label": "送風管（SA）",
+          "x": 430,
+          "y": 160,
+          "w": 270,
+          "d": 260,
+          "rot": 0,
+          "z": 43,
+          "dia": 10,
+          "showName": false,
+          "pts": [
+            [270, 260],
+            [0, 260],
+            [0, 0]
+          ],
+          "flip": false
+        },
+        {
+          "id": 43,
+          "type": "ductSupply",
+          "label": "送風管（SA）",
+          "x": 150,
+          "y": 160,
+          "w": 280,
+          "d": 260,
+          "rot": 0,
+          "z": 44,
+          "dia": 10,
+          "showName": false,
+          "pts": [
+            [280, 260],
+            [0, 260],
+            [0, 0]
+          ],
+          "flip": false
+        },
+        {
+          "id": 44,
+          "type": "ductReturn",
+          "label": "回風管（RA）",
+          "x": 560,
+          "y": 450,
+          "w": 180,
+          "d": 150,
+          "rot": 0,
+          "z": 45,
+          "dia": 10,
+          "showName": false,
+          "pts": [
+            [180, 0],
+            [180, 150],
+            [0, 150]
+          ],
+          "flip": false
+        },
+        {
+          "id": 45,
+          "type": "diffuser",
+          "label": "出風口",
+          "x": 415,
+          "y": 135,
+          "w": 30,
+          "d": 30,
+          "rot": 0,
+          "z": 46,
+          "style": "round",
+          "showName": false
+        },
+        {
+          "id": 46,
+          "type": "diffuser",
+          "label": "出風口",
+          "x": 135,
+          "y": 135,
+          "w": 30,
+          "d": 30,
+          "rot": 0,
+          "z": 47,
+          "style": "round",
+          "showName": false
+        },
+        {
+          "id": 47,
+          "type": "grille",
+          "label": "回風口",
+          "x": 540,
+          "y": 590,
+          "w": 40,
+          "d": 20,
+          "rot": 0,
+          "z": 48,
+          "showName": false
+        },
+        {
+          "id": 48,
+          "type": "curtainDouble",
+          "label": "雙層簾（布＋紗）",
+          "x": 150,
+          "y": 698,
+          "w": 300,
+          "d": 15,
+          "rot": 0,
+          "z": 49
+        },
+        {
+          "id": 49,
+          "type": "curtainDouble",
+          "label": "雙層簾（布＋紗）",
+          "x": 60,
+          "y": 12,
+          "w": 180,
+          "d": 15,
+          "rot": 0,
+          "z": 50
+        }
+      ],
+      "nextId": 50,
+      "spec": {
+        "wallFin": {
+          "4:1": "stone-carrara"
+        },
+        "ceilH": 270
+      }
     }
   ],
+  "materials": [],
   "cur": 0,
   "ghost": null
 }

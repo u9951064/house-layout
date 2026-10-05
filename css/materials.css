@@ -1,0 +1,211 @@
+/* 材質挑選器與屬性面板的材質欄位 */
+#matModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+#matModal.show {
+  display: flex;
+}
+#matModal .matcard {
+  width: min(1080px, 96vw);
+  height: min(720px, 92vh);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px;
+  overflow: hidden;
+}
+#matModal .mhead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+#matModal .mhead h2 {
+  margin: 0;
+  white-space: nowrap;
+}
+#matSearch {
+  flex: 1;
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 10px;
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+}
+#matModal .mbody {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 260px;
+  gap: 12px;
+}
+#matCats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+#matCats button {
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+#matCats button.on {
+  background: #e0ecff;
+  color: #0b57d0;
+  font-weight: 600;
+}
+#matGrid {
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 8px;
+  align-content: start;
+  padding: 2px;
+}
+#matGrid .mcard {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  padding: 5px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: left;
+}
+#matGrid .mcard img {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 5px;
+  display: block;
+  background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 12px 12px;
+}
+#matGrid .mcard small {
+  color: var(--muted, #6b7280);
+  font-size: 11px;
+}
+#matGrid .mcard.on {
+  border-color: #1f6feb;
+  box-shadow: 0 0 0 2px rgba(31, 111, 235, 0.35);
+}
+#matSide {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  border-left: 1px solid #eef0f3;
+  padding-left: 12px;
+}
+#matSide .mbig {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 16px 16px;
+}
+#matSide label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: #374151;
+}
+#matSide input[type="text"],
+#matSide input[type="number"],
+#matSide select {
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 6px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+#matSide input[type="color"] {
+  width: 100%;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+#matSide .row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+#matSide .mprops td {
+  padding: 2px 6px 2px 0;
+  vertical-align: top;
+}
+#matSide .mprops td:first-child {
+  color: var(--muted, #6b7280);
+  white-space: nowrap;
+}
+#matSide .mdot {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1px solid #0003;
+  vertical-align: -1px;
+}
+#matSide .actions,
+#matModal .matcard > .actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#matModal .matcard > .actions {
+  margin-top: 12px;
+}
+#matModal .grow {
+  flex: 1;
+}
+#matModal .empty {
+  color: var(--muted, #6b7280);
+  font-size: 13px;
+  padding: 12px;
+}
+/* 屬性面板的材質欄位 */
+.matrow .matfield {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+  padding: 3px 6px;
+  text-align: left;
+  font-size: 12px;
+}
+.matrow .matfield img {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid #0002;
+  flex: none;
+}
+.matrow .matfield span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 820px) {
+  #matModal .mbody {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  #matCats {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

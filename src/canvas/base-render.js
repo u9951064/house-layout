@@ -124,8 +124,7 @@ export function drawBase() {
       seg(cur, a, "wall");
       if (k === "win") {
         seg(a, b, "win");
-        if (hz) L(baseLayer, a, y1, b, y1, "winline");
-        else L(baseLayer, x1, a, x1, b, "winline");
+        drawWinStyle(hz, hz ? y1 : x1, a, b, th, o);
       }
       if (k === "door" && o) {
         // 門：鉸鏈端與開向
@@ -217,4 +216,54 @@ export function dimLine(x1, y1, x2, y2, label, off) {
 }
 export function drawDims() {
   (S.BASE.dims || []).forEach(([x1, y1, x2, y2]) => dimLine(x1, y1, x2, y2, Math.round(Math.hypot(x2 - x1, y2 - y1))));
+}
+
+// 窗型圖例：雙拉／三拉（錯開的窗扇線）、推射／上懸（開啟弧線）、固定（單線）、凸窗（外推框）
+function drawWinStyle(hz, c, a, b, th, o) {
+  const st = (o && o.style) || "slide2",
+    side = o && o.side === -1 ? -1 : 1,
+    ln = (p, q, off, cls = "winline") =>
+      hz ? L(baseLayer, p, c + off, q, c + off, cls) : L(baseLayer, c + off, p, c + off, q, cls),
+    len = b - a;
+  if (st === "slide2" || st === "slide3") {
+    const n = st === "slide3" ? 3 : 2,
+      pw = len / n,
+      off = th * 0.16;
+    for (let i = 0; i < n; i++)
+      ln(a + i * pw - (i ? pw * 0.06 : 0), a + (i + 1) * pw + (i < n - 1 ? pw * 0.06 : 0), i % 2 ? off : -off);
+    return;
+  }
+  ln(a, b, 0);
+  if (st === "casement" || st === "awning") {
+    const r = Math.min(len, 60),
+      h = th / 2,
+      P0 = hz ? [a, c + side * h] : [c + side * h, a],
+      P1 = hz ? [a + r, c + side * (h + r * 0.5)] : [c + side * (h + r * 0.5), a + r];
+    L(baseLayer, P0[0], P0[1], P1[0], P1[1], "door-arc");
+    if (st === "casement" && len > 70) {
+      const Q0 = hz ? [b, c + side * h] : [c + side * h, b],
+        Q1 = hz ? [b - r, c + side * (h + r * 0.5)] : [c + side * (h + r * 0.5), b - r];
+      L(baseLayer, Q0[0], Q0[1], Q1[0], Q1[1], "door-arc");
+    }
+  }
+  if (st === "bay") {
+    const dpt = 45,
+      h = th / 2,
+      off = side * (h + dpt),
+      inset = Math.min(30, len / 4),
+      pts = hz
+        ? [
+            [a, c + side * h],
+            [a + inset, c + off],
+            [b - inset, c + off],
+            [b, c + side * h],
+          ]
+        : [
+            [c + side * h, a],
+            [c + off, a + inset],
+            [c + off, b - inset],
+            [c + side * h, b],
+          ];
+    PATH(baseLayer, "M" + pts.map(p => p.join(" ")).join(" L"), "winline");
+  }
 }

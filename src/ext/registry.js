@@ -21,6 +21,10 @@ export const EXT = {
   propsAny: [],
   /** 不顯示縮放把手的類型（折線、參數化元件） */
   noResize: new Set(),
+  /** 不顯示「寬×深」尺寸字的類型（符號、折線） */
+  noSize: new Set(),
+  /** 不加整個外框點擊範圍的類型（折線：只有線本身可點） */
+  noHit: new Set(),
   /** 不檢查「放在不在範圍區」的類型 */
   noScopeCheck: new Set(),
   /** 畫布工具：name → { cursor?, down(p, e), move(p, e), up(p, e), key(e) → bool, draw(uiLayer, kk), cancel() } */
@@ -33,6 +37,8 @@ export const EXT = {
   ptabs: [],
   /** 選單附加項目：menu 名稱（file/edit/view/base/design/help）→ [() => item | item[]] */
   menus: {},
+  /** 點選元件庫卡片時的攔截器：[(def) → true 表示已處理]（例如立面圖檢視直接放到牆面） */
+  paletteClick: [],
   /** 每次 renderItems 之後呼叫（例如 3D 檢視需要同步） */
   onChange: [],
   /** 數量估算表區塊：[{ id, name, rows() → [{ group, item, qty, unit, note }] }] */
@@ -57,8 +63,13 @@ export function registerMenu(menu, fn) {
 export function registerSchedule(s) {
   EXT.schedules.push(s);
 }
+/** 訂閱資料變動，回傳取消訂閱函式 */
 export function onChange(fn) {
   EXT.onChange.push(fn);
+  return () => {
+    const i = EXT.onChange.indexOf(fn);
+    if (i >= 0) EXT.onChange.splice(i, 1);
+  };
 }
 export function emitChange(why) {
   for (const f of EXT.onChange) {

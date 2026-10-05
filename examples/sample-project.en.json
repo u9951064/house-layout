@@ -1,9 +1,8 @@
 {
   "app": "house-layout",
-  "version": 3,
+  "version": 4,
   "name": "Sample 2-bedroom",
   "base": {
-    "name": "Sample 2-bedroom",
     "walls": [
       [
         0,
@@ -84,6 +83,7 @@
         ]
       ]
     ],
+    "name": "Sample 2-bedroom",
     "columns": [[820, 0, 860, 40]],
     "canopies": [],
     "outOfScope": [
@@ -128,13 +128,18 @@
         "rot": 0,
         "label": "Existing counter"
       }
-    ]
+    ],
+    "bounds": {
+      "x": -70,
+      "y": -70,
+      "w": 1000,
+      "h": 900
+    }
   },
   "designs": [
     {
       "id": "sampleA",
       "name": "Design A",
-      "nextId": 12,
       "items": [
         {
           "id": 1,
@@ -248,12 +253,13 @@
           "d": 45,
           "rot": 0
         }
-      ]
+      ],
+      "nextId": 12,
+      "spec": {}
     },
     {
       "id": "sampleB",
       "name": "Design B",
-      "nextId": 11,
       "items": [
         {
           "id": 1,
@@ -362,9 +368,826 @@
           "d": 45,
           "rot": 0
         }
-      ]
+      ],
+      "nextId": 11,
+      "spec": {}
+    },
+    {
+      "id": "muveye1te1ku",
+      "name": "Design C (3D & drawings)",
+      "items": [
+        {
+          "id": 1,
+          "type": "bed2",
+          "label": "Double bed",
+          "x": 74,
+          "y": 10,
+          "w": 152,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 2,
+          "type": "nightstand",
+          "label": "Nightstand",
+          "x": 26,
+          "y": 12,
+          "w": 45,
+          "d": 40,
+          "rot": 0
+        },
+        {
+          "id": 4,
+          "type": "deskLift",
+          "label": "Standing desk",
+          "x": 312,
+          "y": 10,
+          "w": 120,
+          "d": 60,
+          "rot": 0
+        },
+        {
+          "id": 5,
+          "type": "bed1",
+          "label": "Single bed",
+          "x": 446,
+          "y": 10,
+          "w": 106,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 7,
+          "type": "sofa",
+          "label": "3-seat sofa",
+          "x": 70,
+          "y": 622,
+          "w": 210,
+          "d": 90,
+          "rot": 180,
+          "seats": 3
+        },
+        {
+          "id": 8,
+          "type": "rug",
+          "label": "Rug",
+          "x": 75,
+          "y": 440,
+          "w": 200,
+          "d": 140,
+          "rot": 0
+        },
+        {
+          "id": 9,
+          "type": "fridge",
+          "label": "Fridge",
+          "x": 470,
+          "y": 340,
+          "w": 70,
+          "d": 70,
+          "rot": 0
+        },
+        {
+          "id": 10,
+          "type": "dining",
+          "label": "Dining table",
+          "x": 560,
+          "y": 470,
+          "w": 120,
+          "d": 75,
+          "rot": 0,
+          "chairs": 4
+        },
+        {
+          "id": 11,
+          "type": "plant",
+          "label": "Plant",
+          "x": 800,
+          "y": 380,
+          "w": 45,
+          "d": 45,
+          "rot": 0
+        },
+        {
+          "id": 12,
+          "type": "floorZone",
+          "label": "Floor zone",
+          "x": 10,
+          "y": 340,
+          "w": 840,
+          "d": 370,
+          "rot": 0,
+          "z": 13
+        },
+        {
+          "id": 13,
+          "type": "cabTV",
+          "label": "Floating TV cabinet",
+          "x": 70,
+          "y": 342,
+          "w": 240,
+          "d": 45,
+          "rot": 0,
+          "z": 14,
+          "cab": {
+            "thk": 1.8,
+            "backThk": 0.8,
+            "doorThk": 1.8,
+            "toe": 0,
+            "toeSet": 5,
+            "top": null,
+            "carcassMat": "lam-white",
+            "doorMat": "lam-light-wood",
+            "interiorMat": "lam-white",
+            "handleMat": "metal-black",
+            "glassMat": "glass-clear",
+            "handle": "groove",
+            "gap": 0.3,
+            "overlay": "full",
+            "fillerL": 0,
+            "fillerR": 0,
+            "lightStrip": true,
+            "sections": [
+              {
+                "w": 0,
+                "kind": "drawer",
+                "n": 1
+              },
+              {
+                "w": 60,
+                "kind": "niche",
+                "n": 0
+              },
+              {
+                "w": 0,
+                "kind": "drawer",
+                "n": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "type": "cabWall",
+          "label": "Kitchen wall cabinet",
+          "x": 290,
+          "y": 336,
+          "w": 120,
+          "d": 35,
+          "rot": 0,
+          "z": 15,
+          "cab": {
+            "thk": 1.8,
+            "backThk": 0.8,
+            "doorThk": 1.8,
+            "toe": 0,
+            "toeSet": 5,
+            "top": null,
+            "carcassMat": "lam-white",
+            "doorMat": "lam-white",
+            "interiorMat": "lam-white",
+            "handleMat": "metal-black",
+            "glassMat": "glass-clear",
+            "handle": "edge",
+            "gap": 0.3,
+            "overlay": "full",
+            "fillerL": 0,
+            "fillerR": 0,
+            "lightStrip": false,
+            "sections": [
+              {
+                "w": 0,
+                "kind": "door2",
+                "n": 1
+              },
+              {
+                "w": 60,
+                "kind": "lift",
+                "n": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": 15,
+          "type": "cabShoe",
+          "label": "Shoe cabinet",
+          "x": 710,
+          "y": 679,
+          "w": 120,
+          "d": 35,
+          "rot": 180,
+          "z": 16,
+          "cab": {
+            "thk": 1.8,
+            "backThk": 0.8,
+            "doorThk": 1.8,
+            "toe": 8,
+            "toeSet": 5,
+            "top": null,
+            "carcassMat": "lam-white",
+            "doorMat": "lam-light-wood",
+            "interiorMat": "lam-white",
+            "handleMat": "metal-black",
+            "glassMat": "glass-clear",
+            "handle": "push",
+            "gap": 0.3,
+            "overlay": "full",
+            "fillerL": 0,
+            "fillerR": 0,
+            "lightStrip": false,
+            "sections": [
+              {
+                "w": 0,
+                "kind": "door2",
+                "n": 5
+              },
+              {
+                "w": 40,
+                "kind": "door1R",
+                "n": 5
+              }
+            ]
+          }
+        },
+        {
+          "id": 16,
+          "type": "cabWardrobe",
+          "label": "System wardrobe",
+          "x": 50,
+          "y": 262,
+          "w": 200,
+          "d": 60,
+          "rot": 180,
+          "z": 17,
+          "cab": {
+            "thk": 1.8,
+            "backThk": 0.8,
+            "doorThk": 1.8,
+            "toe": 8,
+            "toeSet": 5,
+            "top": null,
+            "carcassMat": "lam-white",
+            "doorMat": "lam-light-wood",
+            "interiorMat": "lam-white",
+            "handleMat": "metal-black",
+            "glassMat": "glass-clear",
+            "handle": "bar",
+            "gap": 0.3,
+            "overlay": "full",
+            "fillerL": 0,
+            "fillerR": 0,
+            "lightStrip": false,
+            "sections": [
+              {
+                "w": 0,
+                "kind": "hang",
+                "n": 1,
+                "front": "door2",
+                "dr": 2
+              },
+              {
+                "w": 60,
+                "kind": "door1R",
+                "n": 5
+              },
+              {
+                "w": 0,
+                "kind": "hang",
+                "n": 2,
+                "front": "door2"
+              }
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "type": "ceilCove",
+          "label": "Cove-lit ceiling",
+          "x": 60,
+          "y": 420,
+          "w": 400,
+          "d": 260,
+          "rot": 0,
+          "z": 18
+        },
+        {
+          "id": 18,
+          "type": "downlight",
+          "label": "Downlight",
+          "x": 114,
+          "y": 454,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 19,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 19,
+          "type": "downlight",
+          "label": "Downlight",
+          "x": 254,
+          "y": 454,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 20,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 20,
+          "type": "downlight",
+          "label": "Downlight",
+          "x": 394,
+          "y": 454,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 21,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 21,
+          "type": "downlight",
+          "label": "Downlight",
+          "x": 114,
+          "y": 634,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 22,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 22,
+          "type": "downlight",
+          "label": "Downlight",
+          "x": 254,
+          "y": 634,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 23,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 23,
+          "type": "downlight",
+          "label": "Downlight",
+          "x": 394,
+          "y": 634,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 24,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 24,
+          "type": "pendant",
+          "label": "Pendant light",
+          "x": 600,
+          "y": 488,
+          "w": 40,
+          "d": 40,
+          "rot": 0,
+          "z": 25,
+          "watt": 20,
+          "cct": 2700,
+          "drop": 70,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 25,
+          "type": "downlight",
+          "label": "Downlight",
+          "x": 144,
+          "y": 114,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 26,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false
+        },
+        {
+          "id": 26,
+          "type": "downlight",
+          "label": "Downlight",
+          "x": 424,
+          "y": 114,
+          "w": 12,
+          "d": 12,
+          "rot": 0,
+          "z": 27,
+          "dia": 12,
+          "watt": 10,
+          "cct": 3000,
+          "showName": false
+        },
+        {
+          "id": 27,
+          "type": "sw2",
+          "label": "2-gang switch",
+          "x": 837,
+          "y": 555,
+          "w": 16,
+          "d": 10,
+          "rot": 0,
+          "z": 28,
+          "gang": 2,
+          "showName": false,
+          "circuit": "L1"
+        },
+        {
+          "id": 28,
+          "type": "wire",
+          "label": "Wiring (circuit)",
+          "x": 620,
+          "y": 508,
+          "w": 225,
+          "d": 52,
+          "rot": 0,
+          "z": 29,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "from": 27,
+          "to": 24,
+          "flip": false,
+          "pts": [
+            [225, 52],
+            [0, 0]
+          ]
+        },
+        {
+          "id": 29,
+          "type": "wire",
+          "label": "Wiring (circuit)",
+          "x": 400,
+          "y": 460,
+          "w": 220,
+          "d": 48,
+          "rot": 0,
+          "z": 30,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 20,
+          "flip": false,
+          "pts": [
+            [220, 48],
+            [0, 0]
+          ]
+        },
+        {
+          "id": 30,
+          "type": "wire",
+          "label": "Wiring (circuit)",
+          "x": 260,
+          "y": 460,
+          "w": 140,
+          "d": 1,
+          "rot": 0,
+          "z": 31,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 19,
+          "flip": false,
+          "pts": [
+            [140, 0],
+            [0, 0]
+          ]
+        },
+        {
+          "id": 31,
+          "type": "wire",
+          "label": "Wiring (circuit)",
+          "x": 120,
+          "y": 460,
+          "w": 140,
+          "d": 1,
+          "rot": 0,
+          "z": 32,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 18,
+          "flip": false,
+          "pts": [
+            [140, 0],
+            [0, 0]
+          ]
+        },
+        {
+          "id": 32,
+          "type": "wire",
+          "label": "Wiring (circuit)",
+          "x": 120,
+          "y": 460,
+          "w": 1,
+          "d": 180,
+          "rot": 0,
+          "z": 33,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 21,
+          "flip": false,
+          "pts": [
+            [0, 0],
+            [0, 180]
+          ]
+        },
+        {
+          "id": 33,
+          "type": "wire",
+          "label": "Wiring (circuit)",
+          "x": 120,
+          "y": 640,
+          "w": 140,
+          "d": 1,
+          "rot": 0,
+          "z": 34,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 22,
+          "flip": false,
+          "pts": [
+            [0, 0],
+            [140, 0]
+          ]
+        },
+        {
+          "id": 34,
+          "type": "wire",
+          "label": "Wiring (circuit)",
+          "x": 260,
+          "y": 640,
+          "w": 140,
+          "d": 1,
+          "rot": 0,
+          "z": 35,
+          "kind": "light",
+          "layer": "light",
+          "circuit": "L1",
+          "showName": false,
+          "to": 23,
+          "flip": false,
+          "pts": [
+            [0, 0],
+            [140, 0]
+          ]
+        },
+        {
+          "id": 35,
+          "type": "outlet2",
+          "label": "Duplex outlet 110V",
+          "x": 89,
+          "y": 706,
+          "w": 22,
+          "d": 12,
+          "rot": 0,
+          "z": 36,
+          "showName": false
+        },
+        {
+          "id": 36,
+          "type": "outlet2",
+          "label": "Duplex outlet 110V",
+          "x": 289,
+          "y": 339,
+          "w": 22,
+          "d": 12,
+          "rot": 0,
+          "z": 37,
+          "showName": false
+        },
+        {
+          "id": 37,
+          "type": "dataRJ45",
+          "label": "Data outlet (RJ45)",
+          "x": 321,
+          "y": 339,
+          "w": 18,
+          "d": 12,
+          "rot": 0,
+          "z": 38,
+          "showName": false
+        },
+        {
+          "id": 38,
+          "type": "tvOut",
+          "label": "TV outlet",
+          "x": 181,
+          "y": 339,
+          "w": 18,
+          "d": 12,
+          "rot": 0,
+          "z": 39,
+          "showName": false
+        },
+        {
+          "id": 39,
+          "type": "outlet2",
+          "label": "Duplex outlet 110V",
+          "x": 9,
+          "y": 114,
+          "w": 22,
+          "d": 12,
+          "rot": 0,
+          "z": 40,
+          "showName": false
+        },
+        {
+          "id": 40,
+          "type": "outlet220",
+          "label": "220V outlet",
+          "x": 834,
+          "y": 354,
+          "w": 22,
+          "d": 12,
+          "rot": 0,
+          "z": 41,
+          "showName": false
+        },
+        {
+          "id": 41,
+          "type": "ervUnit",
+          "label": "ERV unit",
+          "x": 695,
+          "y": 390,
+          "w": 90,
+          "d": 60,
+          "rot": 0,
+          "z": 42,
+          "cmh": 250,
+          "showName": false
+        },
+        {
+          "id": 42,
+          "type": "ductSupply",
+          "label": "Supply duct (SA)",
+          "x": 430,
+          "y": 160,
+          "w": 270,
+          "d": 260,
+          "rot": 0,
+          "z": 43,
+          "dia": 10,
+          "showName": false,
+          "pts": [
+            [270, 260],
+            [0, 260],
+            [0, 0]
+          ],
+          "flip": false
+        },
+        {
+          "id": 43,
+          "type": "ductSupply",
+          "label": "Supply duct (SA)",
+          "x": 150,
+          "y": 160,
+          "w": 280,
+          "d": 260,
+          "rot": 0,
+          "z": 44,
+          "dia": 10,
+          "showName": false,
+          "pts": [
+            [280, 260],
+            [0, 260],
+            [0, 0]
+          ],
+          "flip": false
+        },
+        {
+          "id": 44,
+          "type": "ductReturn",
+          "label": "Return duct (RA)",
+          "x": 560,
+          "y": 450,
+          "w": 180,
+          "d": 150,
+          "rot": 0,
+          "z": 45,
+          "dia": 10,
+          "showName": false,
+          "pts": [
+            [180, 0],
+            [180, 150],
+            [0, 150]
+          ],
+          "flip": false
+        },
+        {
+          "id": 45,
+          "type": "diffuser",
+          "label": "Supply diffuser",
+          "x": 415,
+          "y": 135,
+          "w": 30,
+          "d": 30,
+          "rot": 0,
+          "z": 46,
+          "style": "round",
+          "showName": false
+        },
+        {
+          "id": 46,
+          "type": "diffuser",
+          "label": "Supply diffuser",
+          "x": 135,
+          "y": 135,
+          "w": 30,
+          "d": 30,
+          "rot": 0,
+          "z": 47,
+          "style": "round",
+          "showName": false
+        },
+        {
+          "id": 47,
+          "type": "grille",
+          "label": "Return grille",
+          "x": 540,
+          "y": 590,
+          "w": 40,
+          "d": 20,
+          "rot": 0,
+          "z": 48,
+          "showName": false
+        },
+        {
+          "id": 48,
+          "type": "curtainDouble",
+          "label": "Double curtain (drape + sheer)",
+          "x": 150,
+          "y": 698,
+          "w": 300,
+          "d": 15,
+          "rot": 0,
+          "z": 49
+        },
+        {
+          "id": 49,
+          "type": "curtainDouble",
+          "label": "Double curtain (drape + sheer)",
+          "x": 60,
+          "y": 12,
+          "w": 180,
+          "d": 15,
+          "rot": 0,
+          "z": 50
+        }
+      ],
+      "nextId": 50,
+      "spec": {
+        "wallFin": {
+          "4:1": "stone-carrara"
+        },
+        "ceilH": 270
+      }
     }
   ],
+  "materials": [],
   "cur": 0,
   "ghost": null
 }

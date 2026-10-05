@@ -320,7 +320,7 @@ test("範例專案可從匯入畫面開啟", async () => {
   });
   await page.waitForFunction(() => window.__fp.proj && window.__fp.proj.name === "範例兩房");
   const r = await ev(() => ({ designs: window.__fp.proj.designs.length, items: window.__fp.state.items.length }));
-  assert.equal(r.designs, 2);
+  assert.equal(r.designs, 3);
   assert.ok(r.items > 5);
 });
 
@@ -354,6 +354,18 @@ test("英文字典涵蓋所有 t() 字串", async () => {
   for (const f of files)
     for (const m of fs.readFileSync(path.join("src", f), "utf8").matchAll(/\bt\(\s*(["'`])((?:\\.|(?!\1).)*)\1/g))
       if (/\p{Script=Han}/u.test(m[2]) && !(m[2] in EN)) missing.push(`${f}: ${m[2]}`);
+  assert.deepEqual(missing, []);
+});
+
+test("程式中引用的材質 id 都存在於材質庫", async () => {
+  const fs = await import("node:fs");
+  const ids = new Set(await ev(() => window.__materials.allMats().map(m => m.id)));
+  const files = fs.readdirSync("src", { recursive: true }).filter(f => f.endsWith(".js") && !f.startsWith("materials"));
+  const re = /"((?:floor|tile|stone|wood|skirt|lam|lacquer|paint|wp|brick|ceil|ct|metal|glass|fab)-[a-z0-9-]+)"/g;
+  const missing = [];
+  for (const f of files)
+    for (const m of fs.readFileSync(path.join("src", f), "utf8").matchAll(re))
+      if (!ids.has(m[1])) missing.push(`${f}: ${m[1]}`);
   assert.deepEqual(missing, []);
 });
 

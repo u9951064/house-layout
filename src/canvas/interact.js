@@ -21,10 +21,11 @@ export function activeTool() {
   return (S.tool && EXT.tools[S.tool]) || null;
 }
 /** 啟用／關閉畫布工具（name=null 關閉） */
-export function setTool(name) {
+export function setTool(name, opts) {
   const prev = activeTool();
   if (prev && prev.cancel) prev.cancel();
   S.tool = name && EXT.tools[name] ? name : null;
+  if (activeTool() && activeTool().start) activeTool().start(opts);
   svg.style.cursor = (activeTool() && activeTool().cursor) || "";
   document.body.dataset.tool = S.tool || "";
   renderSelection();

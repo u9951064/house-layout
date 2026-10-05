@@ -7,6 +7,8 @@ import { DRAW } from "../shapes/draw.js";
 import { fit, toWorld } from "../canvas/view.js";
 import { addItem } from "../edit/actions.js";
 import { EXT } from "../ext/registry.js";
+import { setView } from "../ext/views.js";
+import { setTool } from "../canvas/interact.js";
 
 export function buildPalette() {
   const pal = $("palette");
@@ -68,6 +70,14 @@ export function buildPalette() {
         e.dataTransfer.effectAllowed = "copy";
       });
       card.addEventListener("click", () => {
+        // 折線類元件（走線、風管）：改為啟用畫圖工具
+        if (def.tool && EXT.tools[def.tool]) {
+          if (S.view !== "plan") setView("plan");
+          setTool(def.tool, def);
+          return;
+        }
+        // 其他檢視（例如立面圖）可攔截點選
+        for (const h of EXT.paletteClick) if (h(def)) return;
         const r = svg.getBoundingClientRect();
         const p = toWorld(r.left + r.width / 2, r.top + r.height / 2);
         addItem(def, p.x, p.y);

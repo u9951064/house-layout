@@ -1,0 +1,458 @@
+/* 工程圖模組：立面圖檢視、數量表、施工圖集 */
+.ev-wrap {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  height: 100%;
+  min-height: 0;
+}
+.ev-side {
+  border-right: 1px solid #e5e7eb;
+  background: #fff;
+  overflow-y: auto;
+  padding: 8px;
+  font-size: 13px;
+}
+.ev-key {
+  width: 100%;
+  height: 190px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+.ev-key-wall {
+  stroke: #374151;
+  stroke-linecap: square;
+}
+.ev-key-room {
+  font-size: 34px;
+  fill: #9ca3af;
+}
+.ev-key-face {
+  stroke: transparent;
+  stroke-width: 22;
+  cursor: pointer;
+}
+.ev-key-face:hover {
+  stroke: #bfdbfe;
+}
+.ev-key-face.on {
+  stroke: #1f6feb;
+  stroke-width: 10;
+}
+.ev-key-idx {
+  cursor: pointer;
+  fill: #fff;
+  stroke: #6b7280;
+  stroke-width: 3;
+}
+.ev-key-idx text {
+  font-size: 24px;
+  font-weight: 700;
+  fill: #374151;
+  stroke: none;
+}
+.ev-key-idx.on path {
+  fill: #1f6feb;
+  stroke: #1f6feb;
+}
+.ev-key-idx.on circle {
+  stroke: #1f6feb;
+}
+.ev-list .ev-grp {
+  margin-top: 10px;
+}
+.ev-list .ev-grp > b {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+.ev-face {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 0 6px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.ev-face small {
+  grid-column: 2;
+}
+.ev-face:hover {
+  background: #f3f6fa;
+}
+.ev-face.on {
+  background: #e0ecff;
+}
+.ev-letter {
+  grid-row: span 2;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #6b7280;
+  text-align: center;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 17px;
+}
+.ev-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.ev-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+.ev-bar .grow {
+  flex: 1;
+}
+.ev-bar .tb {
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.ev-bar .tb:hover {
+  background: #eef2f7;
+}
+.ev-bar .tb.on {
+  background: #e0ecff;
+  border-color: #a8c7fa;
+  color: #0b57d0;
+}
+.ev-bar .seg {
+  display: inline-flex;
+  border: 1px solid #d0d7de;
+  border-radius: 7px;
+  overflow: hidden;
+}
+.ev-bar .seg .tb {
+  border-radius: 0;
+}
+.ev-bar .tsep {
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+.ev-lbl {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #4b5563;
+  font-size: 12px;
+}
+.ev-lbl input {
+  width: 56px;
+}
+.ev-canvas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+}
+#evSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  user-select: none;
+}
+.ev-hint {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  background: #ffffffd9;
+  padding: 3px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+/* 立面圖圖元（也會被匯出到圖紙） */
+.ev-wallfill {
+  stroke: none;
+}
+.ev-plenum {
+  fill: #fafafa;
+  stroke: none;
+}
+.ev-cut {
+  stroke: #111;
+  stroke-width: 1.2;
+}
+.ev-floor {
+  stroke: #111;
+  stroke-width: 2.4;
+}
+.ev-ceil {
+  stroke: #222;
+  stroke-width: 1.4;
+}
+.ev-slab {
+  stroke: #666;
+  stroke-width: 0.8;
+  stroke-dasharray: 8 5;
+}
+.ev-skirt {
+  stroke: #444;
+  stroke-width: 0.6;
+}
+.ev-hole {
+  fill: #fff;
+  stroke: #111;
+  stroke-width: 1.2;
+}
+.ev-hidden {
+  fill: none;
+  stroke: #666;
+  stroke-width: 0.8;
+  stroke-dasharray: 6 4;
+}
+.ev-frame {
+  fill: none;
+  stroke: #222;
+  stroke-width: 0.9;
+}
+.ev-frameline {
+  fill: none;
+  stroke: #222;
+  stroke-width: 0.9;
+}
+.ev-glass {
+  fill: #dbeafe;
+  fill-opacity: 0.55;
+  stroke: #222;
+  stroke-width: 0.6;
+}
+.ev-glass.frosted {
+  fill: #e5e7eb;
+}
+.ev-leaf {
+  fill: #fff;
+  stroke: #222;
+  stroke-width: 0.9;
+}
+.ev-swing {
+  fill: none;
+  stroke: #444;
+  stroke-width: 0.7;
+  stroke-dasharray: 6 4;
+}
+.ev-handle {
+  fill: #fff;
+  stroke: #222;
+  stroke-width: 0.8;
+}
+.ev-thin {
+  fill: none;
+  stroke: #444;
+  stroke-width: 0.5;
+}
+.ev-objbox {
+  fill: #fff;
+  fill-opacity: 0.85;
+  stroke: #1f2937;
+  stroke-width: 1;
+}
+.ev-objline {
+  stroke: #1f2937;
+  stroke-width: 1.4;
+}
+.ev-ceilzone {
+  stroke: #1f2937;
+  stroke-width: 1.4;
+  stroke-dasharray: 10 4 2 4;
+}
+.ev-obj {
+  cursor: move;
+}
+.ev-dim {
+  stroke: #2563eb;
+  stroke-width: 0.6;
+}
+.ev-tick {
+  stroke: #2563eb;
+  stroke-width: 1.3;
+}
+.ev-dimtext {
+  fill: #1d4ed8;
+  text-anchor: middle;
+}
+.ev-level {
+  fill: #111;
+}
+.ev-leader {
+  fill: none;
+  stroke: #444;
+  stroke-width: 0.6;
+}
+.ev-dot {
+  fill: #111;
+}
+.ev-text {
+  fill: #1f2937;
+}
+.ev-title {
+  font-weight: 700;
+  fill: #111;
+}
+.ev-note-text {
+  fill: #7c2d12;
+}
+.ev-note-shape {
+  stroke: #7c2d12;
+  stroke-width: 1;
+}
+.ev-mark {
+  fill: none;
+  stroke: #b91c1c;
+  stroke-width: 1;
+}
+.ev-swatch {
+  stroke: #333;
+  stroke-width: 0.4;
+}
+.ev-note-hit {
+  fill: transparent;
+  stroke: none;
+  cursor: move;
+}
+.ev-note.sel .ev-note-hit {
+  stroke: #f76707;
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+.ev-selbox {
+  fill: none;
+  stroke: #1f6feb;
+  stroke-width: 1.4;
+  stroke-dasharray: 6 4;
+  pointer-events: none;
+}
+.ev-handle-ui {
+  fill: #fff;
+  stroke: #1f6feb;
+  stroke-width: 1.5;
+  cursor: ns-resize;
+}
+.ev-uitext {
+  fill: #1f6feb;
+  pointer-events: none;
+}
+/* 圖紙 */
+.sh-frame {
+  fill: none;
+  stroke: #111;
+  stroke-width: 0.5;
+}
+.sh-line {
+  fill: none;
+  stroke: #333;
+  stroke-width: 0.25;
+}
+.sh-thin {
+  stroke: #d1d5db;
+  stroke-width: 0.15;
+}
+.sh-text {
+  fill: #111;
+}
+/* 數量表 */
+.sc-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 20px 40px;
+  font-size: 13px;
+}
+.sc-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sc-bar b {
+  font-size: 18px;
+}
+.sc-bar .grow {
+  flex: 1;
+}
+.sc-note {
+  font-size: 12px;
+}
+.sc-sec h3 {
+  margin: 18px 0 6px;
+  font-size: 15px;
+}
+.sc-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+.sc-table th,
+.sc-table td {
+  border: 1px solid #e5e7eb;
+  padding: 5px 8px;
+  text-align: left;
+}
+.sc-table th {
+  background: #f3f6fa;
+}
+.sc-table .num {
+  text-align: right;
+}
+.sc-table tr.sub td {
+  font-weight: 700;
+  background: #fafafa;
+}
+.sc-empty {
+  padding: 40px;
+  text-align: center;
+  color: #6b7280;
+}
+/* 施工圖集對話框 */
+#drawsetModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+}
+#drawsetModal.show {
+  display: flex;
+}
+.ds-card {
+  width: min(640px, 94vw);
+}
+.ds-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  font-size: 13px;
+}
+.ds-cols .toggle {
+  display: flex;
+  margin: 4px 0;
+}
+.ds-sub {
+  padding-left: 18px;
+  font-size: 12px;
+}
+.ds-cols .row {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+}

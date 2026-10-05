@@ -11,6 +11,32 @@ import { autosave } from "../project/project.js";
 import { renderProps } from "../ui/props.js";
 import { hideGate } from "../ui/gate.js";
 
+// 開口的立體規格（窗台、窗頂、窗型、門片…），只保留合法值，其餘交給方案預設（見 docs/ARCHITECTURE-3D.md）
+const OP_ENUM = {
+  style: ["slide2", "slide3", "casement", "fixed", "awning", "bay"],
+  glass: ["clear", "frosted", "reeded", "lowe"],
+  leafStyle: ["flat", "panel", "glass", "groove", "louver"],
+};
+const OP_KEYS = {
+  win: { sill: [0, 400], head: [10, 600], style: 1, glass: 1, frameMat: 0, side: 2 },
+  door: { head: [100, 600], leafStyle: 1, leafMat: 0, frameMat: 0 },
+  open: { head: [50, 600] },
+};
+function openingOpts(k, ov) {
+  const out = {};
+  for (const [key, rule] of Object.entries(OP_KEYS[k] || {})) {
+    const v = ov[key];
+    if (v == null || v === "") continue;
+    if (Array.isArray(rule)) {
+      const n = Number(v);
+      if (isFinite(n)) out[key] = Math.max(rule[0], Math.min(rule[1], n));
+    } else if (rule === 1) {
+      if (OP_ENUM[key].includes(v)) out[key] = v;
+    } else if (rule === 2) out[key] = Number(v) < 0 ? -1 : 1;
+    else if (typeof v === "string" && v.length < 80) out[key] = v;
+  }
+  return out;
+}
 export function validBase(b) {
   if (!b || typeof b !== "object") return false;
   const okWalls =
@@ -114,10 +140,18 @@ export function normalizeBase(o) {
       }
       if (b - a < 5) return;
       const k = typeMap[String(op[2] || "open").toLowerCase()] || typeMap[op[2]] || "open";
-      if (k === "door") {
-        const ov = op[3] && typeof op[3] === "object" ? op[3] : {};
-        ops.push([a, b, "door", { hinge: ov.hinge === "b" ? "b" : "a", side: N(ov.side) < 0 ? -1 : 1 }]);
-      } else ops.push([a, b, k]);
+      const ov = op[3] && typeof op[3] === "object" ? op[3] : {};
+      if (k === "door")
+        ops.push([
+          a,
+          b,
+          "door",
+          { hinge: ov.hinge === "b" ? "b" : "a", side: N(ov.side) < 0 ? -1 : 1, ...openingOpts(k, ov) },
+        ]);
+      else {
+        const ex = openingOpts(k, ov);
+        ops.push(Object.keys(ex).length ? [a, b, k, ex] : [a, b, k]);
+      }
     });
     ops.sort((p, q) => p[0] - q[0]);
     for (let j = 1; j < ops.length; j++)

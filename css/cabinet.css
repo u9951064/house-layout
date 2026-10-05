@@ -1,0 +1,122 @@
+/* 櫃體：屬性面板分格編輯器、櫃體工程圖檢視 */
+#props .cabprops {
+  margin-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 10px;
+}
+#props .cabprops .row2 label {
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+#props .cabsec {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 5px 6px;
+  margin: 5px 0;
+  background: #fafbfc;
+  cursor: default;
+  display: block;
+}
+#props .cabsec-h {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+#props .cabsec-h select {
+  flex: 1;
+}
+#props .cabsec-h button {
+  padding: 2px 6px;
+  font-size: 11px;
+}
+#props .cabsec-b label {
+  display: grid;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+#props .cabsec-b {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding-top: 4px;
+}
+#props .cabsec-b select {
+  grid-column: 1 / -1;
+}
+.cabview {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  height: 100%;
+}
+.cablist {
+  border-right: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+.cablist div[data-id] {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+.cablist div[data-id]:hover {
+  background: #f3f4f6;
+}
+.cablist div[data-id].sel {
+  background: #e8f0fe;
+}
+.cablist small {
+  color: var(--muted);
+}
+.cabmain {
+  overflow: auto;
+  padding: 10px 14px 30px;
+}
+.cabbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.cabbar .grow {
+  flex: 1;
+}
+.cabsheetwrap {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+}
+.cabsheetwrap svg {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  display: block;
+}
+.cabtables h3 {
+  font-size: 14px;
+  margin: 14px 0 6px;
+}
+.cabtbl {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12.5px;
+  background: #fff;
+}
+.cabtbl th,
+.cabtbl td {
+  border: 1px solid #e5e7eb;
+  padding: 4px 7px;
+  text-align: left;
+}
+.cabtbl th {
+  background: #f3f6fa;
+}

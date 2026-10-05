@@ -13,6 +13,14 @@
 - **拖拉家具元件**：床、衣櫃、沙發、餐桌、書桌、化妝台、各式門與隔間（含弧形牆、弧形拉門）等 80 種建商平面圖風格圖例，可設定寬深與角度。
 - **同一比例（公分）**：比例尺、量測工具、1 cm 吸附格線，方便評估空間感。
 - **存檔與匯出**：專案檔（.json，含底圖）可再次開啟；匯出 PNG 或 1:50 實際尺寸的 SVG。
+- **3D 與施工圖**（範例「方案 C」示範）：
+  - **3D 檢視**（three.js）：環繞／俯視／漫遊、剖切、隱藏天花、夜間模式、門片與櫃門開關、材質刷、匯出圖片。
+  - **圖面別**：平面配置圖、地坪材質圖、天花板圖（RCP）、燈具開關迴路圖、插座弱電配置圖、空調全熱交換風管圖。
+  - **立面圖**：選牆面自動產生，可直接拖曳物件、加尺寸／文字／材質標示；櫃門可切換開關。
+  - **系統櫃／木作櫃**：參數化分格、門抽、檯面與材質，櫃體工程圖（關門／開門／剖面）、裁切清單、五金清單。
+  - **裝修與水電空調**：地坪、天花（平釘／降板／間照／包樑）、每面牆材質、踢腳板、窗簾、門窗樣式；插座、開關、燈具、走線迴路、全熱交換機與風管。
+  - **材質庫**（90 種內建＋自訂）、**數量估算表**（CSV）、**施工圖集**（含圖框，列印或單一 HTML 下載）。
+  - 擴充架構說明：[docs/ARCHITECTURE-3D.md](docs/ARCHITECTURE-3D.md)。
 
 ## 隱私
 
@@ -41,9 +49,17 @@ src/
   project/            project（專案與暫存）、sheets（方案分頁）、compare、manager
   io/                 file（存檔／開檔）、export（PNG／SVG／列印）
   ui/                 palette、props、menubar、toolbar、zoombar、gate、ai、keyboard、context-menu
+  ext/                擴充註冊表（registry）、圖層與圖面別（plans）、檢視切換（views）、立體尺寸與設計規格（heights）
+  materials/          材質庫、程序化紋理、材質挑選器
+  arch/               裝修：地坪、天花、牆面、窗簾、門板、「裝修」分頁
+  cabinet/            參數化櫃體、櫃體工程圖、裁切與五金清單
+  mep/                插座、開關、燈具、走線、全熱交換與風管
+  view3d/             3D 檢視（three.js，按需載入）
+  docs/               立面圖、數量表、圖框與施工圖集
+  i18n/               英文字典（每個模組一個檔）
 scripts/serve.mjs     開發用靜態伺服器（零相依）
 scripts/build.mjs     正式版建置（esbuild）
-tests/e2e.test.mjs    端對端測試（Playwright）
+tests/*.test.mjs      端對端測試（Playwright；e2e 與各模組）
 eslint.config.js      ESLint 設定（flat config＋eslint-config-prettier）
 .prettierrc.json      Prettier 設定（printWidth 120）
 PROMPT.md             AI 產生底圖的提示詞（網頁執行時讀取）
