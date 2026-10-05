@@ -11,6 +11,7 @@ import { delSel, dupSel, flipSel, rotSel } from "../edit/actions.js";
 import { baseKey } from "../base-edit/base-edit.js";
 import { saveFile } from "../io/file.js";
 import { renderProps } from "./props.js";
+import { activeTool, setTool } from "../canvas/interact.js";
 
 export function init() {
   document.addEventListener("keydown", e => {
@@ -56,6 +57,18 @@ export function init() {
       }
     }
     if (e.key === "Escape") $("sheetMenu").classList.remove("show");
+    const tool = activeTool();
+    if (tool && S.mode !== "base") {
+      if (tool.key && tool.key(e)) {
+        e.preventDefault();
+        renderSelection();
+        return;
+      }
+      if (e.key === "Escape") {
+        setTool(null);
+        return;
+      }
+    }
     if (!mod && (e.key === "m" || e.key === "M")) {
       setMeasure(!S.measureMode);
       return;

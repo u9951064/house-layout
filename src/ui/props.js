@@ -17,6 +17,8 @@ import { autosave, renderProjSelect } from "../project/project.js";
 import { baseData, download, safeName } from "../io/file.js";
 import { showGate } from "./gate.js";
 import { openAI } from "./ai.js";
+import { EXT } from "../ext/registry.js";
+import { itemElev, itemH } from "../ext/heights.js";
 
 export function renderProps(light) {
   if (S.mode === "base") {
@@ -27,13 +29,19 @@ export function renderProps(light) {
   if (light && document.activeElement && $("props").contains(document.activeElement)) return;
   // 在畫布上選到物件時，若停在「底圖」頁就切回「屬性」
   const selKey = selIds().join(",");
-  if (selKey && selKey !== S.lastSelKey && S.propTab === "base") S.propTab = "props";
+  if (selKey && selKey !== S.lastSelKey && S.propTab !== "list") S.propTab = "props";
   S.lastSelKey = selKey;
   renderTabs();
   const P = $("propBody");
   if (S.propTab === "list") {
     P.innerHTML = listHTML() || `<div class="empty">${t("這個方案還沒有物件。從左側元件庫拖拉到圖上即可加入。")}</div>`;
     bindList();
+    return;
+  }
+  const xt = EXT.ptabs.find(x => x.id === S.propTab);
+  if (xt) {
+    P.innerHTML = xt.html();
+    if (xt.bind) xt.bind({ $, commit, rerender: () => renderProps() });
     return;
   }
   if (S.propTab === "base") {
@@ -64,15 +72,21 @@ export function renderProps(light) {
     <div class="row"><span>${t("直線 B")}</span><input id="cB" type="number" min="0" step="1" value="${it.b ?? 0}"></div>
     <div class="row"><span>${t("厚度")}</span><input id="cT" type="number" min="1" max="60" step="1" value="${it.t ?? 12}"></div>
     <div class="muted" style="font-size:12px">${t("單位 cm。一個元件 = 直線 A → 弧形 → 直線 B；長度設 0 即省略該段。外框 {w}×{d}。", { w: Math.round(it.w), d: Math.round(it.d) })}</div>`
-        : `<div class="row"><span>${t("寬 (cm)")}</span><input id="pW" type="number" min="5" step="1" value="${Math.round(it.w * 10) / 10}"></div>
+        : EXT.noResize.has(it.type)
+          ? ""
+          : `<div class="row"><span>${t("寬 (cm)")}</span><input id="pW" type="number" min="5" step="1" value="${Math.round(it.w * 10) / 10}"></div>
     <div class="row"><span>${t("深 (cm)")}</span><input id="pD" type="number" min="3" step="1" value="${Math.round(it.d * 10) / 10}"></div>`
     }
+    ${def.no3d ? "" : `<div class="row2"><label>${t("高度 (cm)")}<input id="pH" type="number" min="0" step="1" value="${Math.round(itemH(it) * 10) / 10}"></label><label>${t("離地 (cm)")}<input id="pE" type="number" step="1" value="${Math.round(itemElev(it) * 10) / 10}"></label></div>`}
     <div class="row"><span>${t("旋轉 (°)")}</span><input id="pRot" type="number" step="15" value="${it.rot}"></div>
     <div class="row2"><label>X (cm)<input id="pX" type="number" step="5" value="${Math.round(it.x)}"></label><label>Y (cm)<input id="pY" type="number" step="5" value="${Math.round(it.y)}"></label></div>
     ${it.type === "wallArc" ? `<div class="row"><span>${t("牆厚 (cm)")}</span><input id="pThick" type="number" min="3" max="40" value="${it.thick || 12}"></div>` : ""}
     ${["wallArc", "slideDoorArc", "vanityArc", "cabinetArc"].includes(it.type) ? `<div class="muted" style="font-size:12px">${t("弧形：寬＝水平半徑、深＝垂直半徑（兩者相同為正圓弧）。用旋轉或鏡像調整朝向。")}</div>` : ""}
     ${it.type === "sofa" ? `<div class="row"><span>${t("座位數")}</span><input id="pSeats" type="number" min="1" max="5" value="${it.seats || 2}"></div>` : ""}
     ${["dining", "diningRound"].includes(it.type) ? `<div class="row"><span>${t("椅子數")}</span><input id="pChairs" type="number" min="0" max="10" value="${it.chairs ?? 4}"></div>` : ""}
+    ${extProps(it)
+      .map(x => x.html(it))
+      .join("")}
     <label class="toggle" style="margin-top:8px"><input id="pShow" type="checkbox" ${it.showName !== false ? "checked" : ""}>${t("圖上顯示名稱")}</label>
     <label class="toggle" style="margin-top:6px"><input id="pLock" type="checkbox" ${it.locked ? "checked" : ""}>${t("鎖定位置")}</label>
     ${bad ? `<div class="warn">⚠ ${t("此物件放在衛浴或陽台內（不在設計範圍）")}</div>` : ""}
@@ -110,6 +124,17 @@ export function renderProps(light) {
     it.y = cy - it.d / 2;
   });
   num("pRot", v => (it.rot = ((v % 360) + 360) % 360));
+  num("pH", v => (it.h = Math.max(0, v)));
+  num("pE", v => (it.elev = v));
+  const api = {
+    $,
+    commit: () => {
+      renderItems();
+      commit();
+    },
+    rerender: () => renderProps(),
+  };
+  for (const x of extProps(it)) if (x.bind) x.bind(it, api);
   num("pX", v => (it.x = v));
   num("pY", v => (it.y = v));
   num("pThick", v => (it.thick = Math.max(3, v)));
@@ -163,6 +188,10 @@ export function renderProps(light) {
     commit();
   };
 }
+/** 適用於這個物件的擴充屬性區塊 */
+function extProps(it) {
+  return [...(EXT.props[it.type] ? [EXT.props[it.type]] : []), ...EXT.propsAny.filter(x => x.test(it))];
+}
 export function renderMultiProps() {
   const its = selItems(),
     n = its.length,
@@ -196,10 +225,12 @@ function renderTabs() {
   const count = { list: state.items.length, props: selIds().length || "" };
   $("props").innerHTML =
     `<div class="ptabs" role="tablist">` +
-    PTABS.map(
-      ([k, label]) =>
-        `<button role="tab" data-ptab="${k}" class="${S.propTab === k ? "on" : ""}" aria-selected="${S.propTab === k}">${t(label)}${count[k] ? ` <small>${count[k]}</small>` : ""}</button>`,
-    ).join("") +
+    [...PTABS, ...EXT.ptabs.map(x => [x.id, x.name])]
+      .map(
+        ([k, label]) =>
+          `<button role="tab" data-ptab="${k}" class="${S.propTab === k ? "on" : ""}" aria-selected="${S.propTab === k}">${t(label)}${count[k] ? ` <small>${count[k]}</small>` : ""}</button>`,
+      )
+      .join("") +
     `</div><div id="propBody"></div>`;
   $("props")
     .querySelectorAll("[data-ptab]")

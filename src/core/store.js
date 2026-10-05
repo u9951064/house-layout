@@ -33,7 +33,11 @@ export const S = {
   menuOpen: null,
   propTab: "props",
   lastSelKey: "",
+  view: "plan", // 主畫面檢視：plan 平面圖｜3d｜elev 立面圖｜cab 櫃體工程圖｜sched 數量表（見 ext/registry.js）
+  plan: "layout", // 平面圖面別：layout 配置圖｜floor 地坪｜ceiling 天花｜light 燈具迴路｜power 插座弱電｜hvac 空調風管
+  tool: null, // 目前的畫布工具（EXT.tools 的 key），null＝一般選取
 };
-export const state = { items: [], sel: null, nextId: 1 };
+/** 目前方案：物件、下一個 id、設計規格（天花高度、預設材質、牆面裝修…，見 ext/heights.js SPEC_DEFAULTS） */
+export const state = { items: [], sel: null, nextId: 1, spec: {} };
 export const view = { x: 0, y: 0, s: 1 };
 export const opt = { snap: true, step: 1, grid: true, size: true, dims: false, edge: true };

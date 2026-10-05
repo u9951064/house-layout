@@ -6,6 +6,7 @@ import { snapshot, updateButtons } from "../core/history.js";
 import { renderItems } from "../canvas/items.js";
 import { autosave, curDesign, syncDesign, uid } from "./project.js";
 import { openCompare, renderGhost } from "./compare.js";
+import { emitChange } from "../ext/registry.js";
 import { renderProps } from "../ui/props.js";
 
 export function switchDesign(k) {
@@ -17,6 +18,7 @@ export function switchDesign(k) {
   const d = curDesign();
   state.items = d.items;
   state.nextId = d.nextId;
+  state.spec = d.spec || (d.spec = {});
   state.sel = null;
   if (S.ghostId === d.id) S.ghostId = null;
   S.undoStack = [];
@@ -27,6 +29,7 @@ export function switchDesign(k) {
   renderProps();
   updateButtons();
   autosave();
+  emitChange("design");
 }
 export function nextName() {
   const used = new Set(S.PROJ.designs.map(d => d.name));
@@ -46,6 +49,7 @@ export function addDesign(copyIdx) {
     name: name.trim() || nextName(),
     items: src ? JSON.parse(JSON.stringify(src.items)) : [],
     nextId: src ? src.nextId : 1,
+    spec: src ? JSON.parse(JSON.stringify(src.spec || {})) : {},
   };
   S.PROJ.designs.splice(copyIdx != null ? copyIdx + 1 : S.PROJ.designs.length, 0, d);
   switchDesign(S.PROJ.designs.indexOf(d));
@@ -116,6 +120,7 @@ export function copyDesignTo(from, to) {
     name,
     items: JSON.parse(JSON.stringify(from === S.PROJ.cur ? state.items : src.items)),
     nextId: src.nextId,
+    spec: JSON.parse(JSON.stringify(from === S.PROJ.cur ? state.spec : src.spec || {})),
   };
   S.PROJ.designs.splice(to, 0, d);
   switchDesign(S.PROJ.designs.indexOf(d));

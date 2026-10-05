@@ -6,6 +6,7 @@ import { LIB } from "../shapes/library.js";
 import { DRAW } from "../shapes/draw.js";
 import { fit, toWorld } from "../canvas/view.js";
 import { addItem } from "../edit/actions.js";
+import { EXT } from "../ext/registry.js";
 
 export function buildPalette() {
   const pal = $("palette");
@@ -53,7 +54,7 @@ export function buildPalette() {
         `${-pad - (def.w < def.d ? (def.d - def.w) / 2 : 0)} ${-pad - extra * 0.5 - (def.type === "swingDoor" ? def.w : def.type === "doubleDoor" ? def.w / 2 : def.type === "foldDoor" ? def.d : 0) - (def.d < def.w ? (def.w - def.d) / 2 - extra * 0.3 : 0)} ${m} ${m + extra * 0.4}`,
       );
       const g = el("g", { class: "item" }, ps);
-      DRAW[def.type](g, def.w, def.d, def);
+      (DRAW[def.type] || EXT.draw2d[def.type] || DRAW.cabinet)(g, def.w, def.d, def);
       if (def.type === "text") {
         const t = TXT(g, def.w / 2, def.d / 2, "Aa");
         t.style.fontSize = "22px";

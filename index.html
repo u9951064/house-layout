@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="css/panels.css">
 <link rel="stylesheet" href="css/dialogs.css">
 <link rel="stylesheet" href="css/canvas.css">
+<script type="importmap">{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }</script>
 <script type="module" src="src/main.js"></script>
 </head>
 <body>
@@ -20,6 +21,7 @@
       <button class="mb" data-menu="edit">編輯</button>
       <button class="mb" data-menu="view">檢視</button>
       <button class="mb" data-menu="base">底圖</button>
+      <button class="mb" data-menu="design">設計</button>
       <button class="mb" data-menu="help">說明</button>
       <button class="mb" data-menu="lang" title="語言 Language">🌐 語言</button>
     </nav>
@@ -64,6 +66,10 @@
   <button class="tb tog" data-chk="chkGrid" title="顯示格線">格線</button>
   <button class="tb tog" data-chk="chkSize" title="家具上顯示寬×深">尺寸</button>
   <button class="tb tog" data-chk="chkDims" title="顯示底圖的牆面尺寸標註">牆尺寸</button>
+  <span class="tsep"></span>
+  <span id="toolSlot"></span>
+  <span class="grow"></span>
+  <span id="viewTabs"></span>
 </div>
 <div id="menuPop"></div>
 <div id="aboutModal"><div class="gcard" style="width:min(520px,92vw)">
@@ -109,6 +115,7 @@
         <g id="uiLayer"></g>
       </g>
     </svg>
+    <div id="viewHost" hidden></div>
     <div id="sheets"></div>
     <div id="tipCard" hidden role="note">
       <button id="tipClose" type="button" title="關閉提示（之後可從「說明 → 顯示操作提示」再打開）" aria-label="關閉提示">✕</button>

@@ -14,7 +14,22 @@ import { alignSel } from "../edit/align.js";
 import { basePointerDown, basePointerMove, basePointerUp } from "../base-edit/base-edit.js";
 import { renderProps } from "../ui/props.js";
 import { showCtx } from "../ui/context-menu.js";
+import { EXT, emitChange } from "../ext/registry.js";
 
+/** 目前啟用的畫布工具（EXT.tools），沒有則為 null */
+export function activeTool() {
+  return (S.tool && EXT.tools[S.tool]) || null;
+}
+/** 啟用／關閉畫布工具（name=null 關閉） */
+export function setTool(name) {
+  const prev = activeTool();
+  if (prev && prev.cancel) prev.cancel();
+  S.tool = name && EXT.tools[name] ? name : null;
+  svg.style.cursor = (activeTool() && activeTool().cursor) || "";
+  document.body.dataset.tool = S.tool || "";
+  renderSelection();
+  emitChange("tool");
+}
 export function startPan(e) {
   S.drag = { kind: "pan", sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y };
   svg.classList.add("panning");
@@ -32,6 +47,13 @@ export function init() {
     if (e.button === 2) return; // 右鍵：開選單（contextmenu）
     if (e.button === 1) {
       startPan(e);
+      return;
+    }
+    const tool = activeTool();
+    if (tool && S.mode !== "base") {
+      if (e.shiftKey && e.altKey) return startPan(e);
+      if (tool.down) tool.down(toWorld(e.clientX, e.clientY), e);
+      renderSelection();
       return;
     }
     if (S.measureMode) {
@@ -176,6 +198,12 @@ export function init() {
   svg.addEventListener("pointermove", e => {
     S.lastMouse = toWorld(e.clientX, e.clientY);
     if (S.mode === "base" && basePointerMove(e)) return;
+    const tool = activeTool();
+    if (tool && S.mode !== "base" && !(S.drag && S.drag.kind === "pan")) {
+      if (tool.move) tool.move(S.lastMouse, e);
+      renderSelection();
+      return;
+    }
     if (!S.drag) return;
     if (S.drag.kind === "pan") {
       view.x = S.drag.vx + e.clientX - S.drag.sx;
@@ -291,6 +319,12 @@ export function init() {
   });
   svg.addEventListener("pointerup", e => {
     if (S.mode === "base" && basePointerUp(e)) return;
+    const tool = activeTool();
+    if (tool && S.mode !== "base" && !(S.drag && S.drag.kind === "pan")) {
+      if (tool.up) tool.up(toWorld(e.clientX, e.clientY), e);
+      renderSelection();
+      return;
+    }
     if (!S.drag) return;
     svg.classList.remove("panning");
     if (S.drag.kind === "box") {

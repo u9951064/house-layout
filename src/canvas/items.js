@@ -10,8 +10,11 @@ import { drawMeasure } from "../tools/measure.js";
 import { drawCalib } from "../tools/calibrate.js";
 import { drawBaseEditUI } from "../base-edit/base-edit.js";
 import { renderSheets } from "../project/sheets.js";
+import { EXT, emitChange } from "../ext/registry.js";
+import { layerOf, showState } from "../ext/plans.js";
 
 export function inOutOfScope(it) {
+  if (EXT.noScopeCheck.has(it.type) || !["furniture", "cabinet"].includes(layerOf(it))) return false;
   if (
     [
       "text",
@@ -75,10 +78,12 @@ export function renderItems() {
     .slice()
     .sort((a, b) => (order[a.type] ?? 0) - (order[b.type] ?? 0) || (a.z ?? 0) - (b.z ?? 0));
   for (const it of list) {
+    const vis = showState(it);
+    if (vis === "off") continue;
     const g = el(
       "g",
       {
-        class: "item" + (it.locked ? " locked" : "") + (inOutOfScope(it) ? " bad" : ""),
+        class: "item" + (vis === "dim" ? " dim" : "") + (it.locked ? " locked" : "") + (inOutOfScope(it) ? " bad" : ""),
         "data-id": it.id,
         transform:
           `translate(${it.x} ${it.y}) rotate(${it.rot} ${it.w / 2} ${it.d / 2})` +
@@ -87,7 +92,7 @@ export function renderItems() {
       itemLayer,
     );
     el("rect", { x: 0, y: 0, width: it.w, height: it.d, fill: "transparent", stroke: "none" }, g); // 點擊範圍
-    (DRAW[it.type] || DRAW.cabinet)(g, it.w, it.d, it);
+    (DRAW[it.type] || EXT.draw2d[it.type] || DRAW.cabinet)(g, it.w, it.d, it);
     const showName = it.showName !== false,
       showSize =
         opt.size &&
@@ -131,11 +136,14 @@ export function renderItems() {
   }
   renderSelection();
   if (S.PROJ) renderSheets();
+  emitChange("items");
 }
 export function renderSelection() {
   uiLayer.innerHTML = "";
   drawMeasure();
   drawCalib();
+  const tool = S.tool && EXT.tools[S.tool];
+  if (tool && tool.draw && S.mode !== "base") tool.draw(uiLayer, 1 / view.s);
   if (S.mode === "base") {
     drawBaseEditUI();
     return;
@@ -238,7 +246,7 @@ export function renderSelection() {
   );
   if (it.locked) return;
   const hs = 9 * k;
-  for (const [hx, hy, kind] of CURVE_TYPES.has(it.type)
+  for (const [hx, hy, kind] of CURVE_TYPES.has(it.type) || EXT.noResize.has(it.type)
     ? []
     : [
         [it.w, it.d / 2, "e"],

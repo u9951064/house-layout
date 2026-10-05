@@ -24,13 +24,15 @@ const common = {
 };
 const outputOf = (meta, ext) => path.basename(Object.keys(meta.outputs).find(f => f.endsWith(ext)));
 
-// JS：單一 ESM bundle
+// JS：ESM bundle；3D（three.js）等以 import() 載入的模組拆成獨立 chunk，按需下載
 const js = await esbuild.build({
   ...common,
   entryPoints: { app: "src/main.js" },
   format: "esm",
   target: "es2022",
+  splitting: true,
   entryNames: "[name]-[hash]",
+  chunkNames: "chunk-[hash]",
   absWorkingDir: ROOT,
 });
 // CSS：依原本載入順序合併
@@ -52,7 +54,7 @@ const guideCss = await esbuild.build({
   absWorkingDir: ROOT,
 });
 
-const appJs = outputOf(js.metafile, ".js"),
+const appJs = path.basename(Object.entries(js.metafile.outputs).find(([, o]) => o.entryPoint === "src/main.js")[0]),
   appCss = outputOf(css.metafile, ".css"),
   gCss = outputOf(guideCss.metafile, ".css");
 
@@ -64,6 +66,8 @@ html = html.replace(links.join("\n"), `<link rel="stylesheet" href="assets/${app
 const entry = '<script type="module" src="src/main.js"></script>';
 if (!html.includes(entry)) throw new Error("index.html 找不到進入點 script");
 html = html.replace(entry, `<script type="module" src="assets/${appJs}"></script>`);
+// 開發用 importmap（指向 node_modules）在正式版不需要，three.js 已打包
+html = html.replace(/<script type="importmap">[\s\S]*?<\/script>\n?/, "");
 fs.writeFileSync(path.join(DIST, "index.html"), html);
 
 // 使用教學頁（中／英）：CSS 換成雜湊檔，圖片加上內容版本號

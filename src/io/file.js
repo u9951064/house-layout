@@ -52,7 +52,7 @@ export function loadData(o, fname) {
   }
   const name = askName(o.name || o.base.name || fname);
   if (name === null) return;
-  newProject(name, o.base, designs, o.cur || 0, o.ghost || null);
+  newProject(name, o.base, designs, o.cur || 0, o.ghost || null, Array.isArray(o.materials) ? o.materials : []);
 }
 export function openFile(file) {
   const rd = new FileReader();

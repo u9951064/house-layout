@@ -16,6 +16,8 @@ import { openProjMgr } from "../project/manager.js";
 import { baseData, download, safeName, saveFile } from "../io/file.js";
 import { showGate } from "./gate.js";
 import { openAI } from "./ai.js";
+import { EXT } from "../ext/registry.js";
+import { setPlan, setView } from "../ext/views.js";
 
 const GUIDE = isEn ? "guide.en.html" : "guide.html";
 
@@ -26,6 +28,11 @@ export function toggleChk(id) {
   $(id).click();
 }
 export function menuItems(name) {
+  const ext = (EXT.menus[name] || []).flatMap(f => (typeof f === "function" ? f() : f)).filter(Boolean);
+  const own = coreMenuItems(name);
+  return ext.length ? [...own, ...(own.length ? ["-"] : []), ...ext] : own;
+}
+function coreMenuItems(name) {
   const has = !!S.BASE,
     sel = selIds().length > 0,
     design = S.mode !== "base";
@@ -142,6 +149,14 @@ export function menuItems(name) {
         f: () => window.open("https://github.com/u9951064/house-layout/issues/new", "_blank", "noopener"),
       },
       { t: t("AI 底圖提示詞（PROMPT.md）"), k: "↗", f: () => window.open("PROMPT.md", "_blank", "noopener") },
+    ];
+  if (name === "design")
+    return [
+      { h: t("檢視") },
+      { t: t("平面圖"), c: S.view === "plan", f: () => setView("plan") },
+      ...EXT.views.map(v => ({ t: v.name, c: S.view === v.id, f: () => setView(v.id), off: !has })),
+      { h: t("圖面別") },
+      ...EXT.plans.map(p => ({ t: p.name, c: S.view === "plan" && S.plan === p.id, f: () => setPlan(p.id) })),
     ];
   if (name === "lang") return LANGS.map(([k, label]) => ({ t: label, c: LANG === k, f: () => setLang(k) }));
   return [];

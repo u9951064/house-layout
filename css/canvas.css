@@ -172,3 +172,35 @@
   background: #fff7ed;
   border-color: #fdba74;
 }
+
+/* 檢視切換與圖面別 */
+#toolbar .grow {
+  flex: 1;
+}
+#viewTabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+#viewTabs select {
+  font-size: 13px;
+  padding: 3px 4px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+#viewHost {
+  position: absolute;
+  inset: 0 0 40px 0;
+  background: #f6f7f9;
+  z-index: 4;
+  overflow: auto;
+}
+body:not([data-view="plan"]) #zoombar,
+body:not([data-view="plan"]) #zoomInfo,
+body:not([data-view="plan"]) #tipCard {
+  display: none;
+}
+#itemLayer .item.dim {
+  opacity: 0.28;
+  pointer-events: none;
+}

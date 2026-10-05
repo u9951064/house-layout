@@ -6,6 +6,7 @@ import { snapshot, updateButtons } from "../core/history.js";
 import { setBase, validBase } from "../model/base.js";
 import { setMode } from "../base-edit/base-edit.js";
 import { renderSheets } from "./sheets.js";
+import { emitChange } from "../ext/registry.js";
 import { renderGhost } from "./compare.js";
 
 export const STORE_KEY = "house-layout-v1";
@@ -31,13 +32,14 @@ export function projectData() {
   syncDesign();
   return {
     app: "house-layout",
-    version: 3,
+    version: 4,
     savedAt: new Date().toISOString(),
     name: S.PROJ ? S.PROJ.name : (S.BASE && S.BASE.name) || "",
     base: S.BASE,
     designs: S.PROJ
-      ? S.PROJ.designs.map(d => ({ id: d.id, name: d.name, items: d.items, nextId: d.nextId }))
-      : [{ id: "d1", name: t("方案 {x}", { x: "A" }), items: state.items, nextId: state.nextId }],
+      ? S.PROJ.designs.map(d => ({ id: d.id, name: d.name, items: d.items, nextId: d.nextId, spec: d.spec || {} }))
+      : [{ id: "d1", name: t("方案 {x}", { x: "A" }), items: state.items, nextId: state.nextId, spec: state.spec }],
+    materials: S.PROJ ? S.PROJ.materials || [] : [],
     cur: S.PROJ ? S.PROJ.cur : 0,
     ghost: S.ghostId || null,
   };
@@ -60,6 +62,7 @@ export function syncDesign() {
   const d = curDesign();
   d.items = state.items;
   d.nextId = state.nextId;
+  d.spec = state.spec;
 }
 export function readIndex() {
   try {
@@ -88,6 +91,7 @@ export function parseDesigns(o) {
       name: String(d.name || t("方案 {x}", { x: String.fromCharCode(65 + k) })),
       items,
       nextId: Math.max(d.nextId || 1, 1, ...items.map(i => (i.id || 0) + 1)),
+      spec: d.spec && typeof d.spec === "object" ? d.spec : {},
     };
   });
 }
@@ -106,12 +110,14 @@ export function openProject(pj) {
     name: pj.name,
     designs: pj.designs,
     cur: Math.min(Math.max(0, pj.cur || 0), pj.designs.length - 1),
+    materials: Array.isArray(pj.materials) ? pj.materials : [],
   };
   S.ghostId = pj.designs.some(d => d.id === pj.ghost) ? pj.ghost : null;
   S.lastAIWarn = [];
   const d = curDesign();
   state.items = d.items;
   state.nextId = d.nextId;
+  state.spec = d.spec || (d.spec = {});
   state.sel = null;
   S.BASE = null;
   setBase({ ...pj.base, name: pj.name }, true);
@@ -122,16 +128,18 @@ export function openProject(pj) {
   renderGhost();
   renderSheets();
   renderProjSelect();
+  emitChange("project");
 }
-export function newProject(name, base, designs, cur = 0, ghost = null) {
+export function newProject(name, base, designs, cur = 0, ghost = null, materials = []) {
   if (!validBase(base)) throw new Error(t("底圖格式不正確"));
   openProject({
     id: uid(),
     name,
     base,
-    designs: designs || [{ id: uid(), name: t("方案 {x}", { x: "A" }), items: [], nextId: 1 }],
+    designs: designs || [{ id: uid(), name: t("方案 {x}", { x: "A" }), items: [], nextId: 1, spec: {} }],
     cur,
     ghost,
+    materials,
   });
   autosave();
   renderProjSelect();
@@ -175,6 +183,7 @@ export function switchProject(id) {
     designs: parseDesigns(pj),
     cur: pj.cur || 0,
     ghost: pj.ghost,
+    materials: pj.materials,
   });
   autosave();
   toast(t("已開啟專案「{name}」", { name: S.PROJ.name }));

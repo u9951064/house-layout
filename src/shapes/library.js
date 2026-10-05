@@ -101,8 +101,8 @@ export const LIB = [
       { type: "bike", name: t("飛輪／健身車"), w: 55, d: 120 },
       { type: "dumbbell", name: t("啞鈴架"), w: 60, d: 40 },
       { type: "petbed", name: t("寵物窩"), w: 60, d: 50 },
-      { type: "ac", name: t("冷氣室內機（上方）"), w: 90, d: 22 },
-      { type: "curtain", name: t("窗簾"), w: 160, d: 12 },
+      { type: "ac", name: t("冷氣室內機（上方）"), w: 90, d: 22, layer: "hvac" },
+      { type: "curtain", name: t("窗簾"), w: 160, d: 12, layer: "finish" },
     ],
   },
   {
@@ -131,8 +131,15 @@ export const LIB = [
 LIB.forEach(c => c.items.forEach(it => CURVE_TYPES.has(it.type) && applyCurve(it)));
 export const DEFAULTS = {};
 
-LIB.forEach(c =>
-  c.items.forEach(it => {
+/** 註冊元件分類（擴充模組用）：cat.layer 為整類預設圖層，個別 def.layer 可覆寫 */
+export function registerCatalog(cat, index = LIB.length) {
+  if (!LIB.includes(cat)) LIB.splice(index, 0, cat);
+  for (const it of cat.items) {
+    it.layer ||= cat.layer || "furniture";
     if (!DEFAULTS[it.type]) DEFAULTS[it.type] = it;
-  }),
-);
+  }
+}
+LIB.forEach(c => {
+  c.layer ||= c.items.some(i => i.type === "swingDoor") ? "partition" : "furniture";
+  registerCatalog(c);
+});

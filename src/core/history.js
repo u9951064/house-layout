@@ -5,6 +5,7 @@ import { computeBounds, drawBase, drawGrid } from "../canvas/base-render.js";
 import { renderItems } from "../canvas/items.js";
 import { autosave } from "../project/project.js";
 import { renderProps } from "../ui/props.js";
+import { emitChange } from "../ext/registry.js";
 
 export function baseForSnap() {
   if (!S.BASE) return null;
@@ -12,7 +13,13 @@ export function baseForSnap() {
   return b.image ? { ...b, image: { ...b.image, src: "@img" } } : b;
 }
 export function snapshot() {
-  return JSON.stringify({ items: state.items, nextId: state.nextId, base: baseForSnap() });
+  return JSON.stringify({
+    items: state.items,
+    nextId: state.nextId,
+    spec: state.spec,
+    mats: S.PROJ ? S.PROJ.materials || [] : [],
+    base: baseForSnap(),
+  });
 }
 export function commit() {
   S.undoStack.push(S.lastSnap);
@@ -21,11 +28,14 @@ export function commit() {
   S.lastSnap = snapshot();
   autosave();
   updateButtons();
+  emitChange("commit");
 }
 export function restore(snap) {
   const o = JSON.parse(snap);
   state.items = o.items;
   state.nextId = o.nextId;
+  state.spec = o.spec || {};
+  if (S.PROJ && o.mats) S.PROJ.materials = o.mats;
   if (o.base) {
     const src = S.BASE && S.BASE.image && S.BASE.image.src;
     if (o.base.image && o.base.image.src === "@img") o.base.image.src = src;
@@ -41,6 +51,7 @@ export function restore(snap) {
   renderProps();
   autosave();
   updateButtons();
+  emitChange("restore");
 }
 export function undo() {
   if (!S.undoStack.length) return;

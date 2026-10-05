@@ -6,7 +6,7 @@ import path from "node:path";
 import { serve } from "../scripts/serve.mjs";
 import { chromium } from "playwright";
 
-const PORT = 4199,
+const PORT = +process.env.TEST_PORT || 4199,
   URL = `http://127.0.0.1:${PORT}/index.html`;
 const SAMPLE = {
   app: "house-layout-base",
@@ -150,7 +150,7 @@ test("方案分頁：新增、複製、拖曳排序、疊圖與並排比較", as
   assert.equal(r.cards, 3);
 });
 
-test("存檔內容（v3）與開檔成新專案", async () => {
+test("存檔內容（v4）與開檔成新專案", async () => {
   const r = await ev(() => {
     const f = window.__fp,
       data = JSON.parse(JSON.stringify(f.projectData()));
@@ -162,7 +162,7 @@ test("存檔內容（v3）與開檔成新專案", async () => {
       projects: document.querySelectorAll("#selProj option").length,
     };
   });
-  assert.equal(r.version, 3);
+  assert.equal(r.version, 4);
   assert.equal(r.reopened, r.designs);
   assert.equal(r.projects, 2);
 });

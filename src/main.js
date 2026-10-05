@@ -42,9 +42,20 @@ import { init as init_project_compare } from "./project/compare.js";
 import { init as init_project_manager } from "./project/manager.js";
 import { init as init_ui_menubar } from "./ui/menubar.js";
 import { init as init_ui_zoombar } from "./ui/zoombar.js";
+import { init as init_views } from "./ext/views.js";
+import "./ext/plans.js";
+// 擴充模組（材質、裝修、櫃體、水電空調、3D、工程圖）
+import * as materials from "./materials/index.js";
+import * as arch from "./arch/index.js";
+import * as cabinet from "./cabinet/index.js";
+import * as mep from "./mep/index.js";
+import * as view3d from "./view3d/index.js";
+import * as docs from "./docs/index.js";
+const MODULES = [materials, arch, cabinet, mep, view3d, docs];
 
 translateDOM(); // 先翻譯 index.html 的靜態文字
 S.lastSnap = snapshot();
+for (const m of MODULES) m.register();
 buildPalette(); // 先建好元件庫，收合狀態（palette init）才套得上
 
 // 初始化各模組（綁定事件）
@@ -65,6 +76,8 @@ init_project_compare();
 init_project_manager();
 init_ui_menubar();
 init_ui_zoombar();
+for (const m of MODULES) m.init();
+init_views();
 
 (function boot() {
   let ix = readIndex();
