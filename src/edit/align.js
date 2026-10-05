@@ -1,4 +1,5 @@
 // 多選對齊、平均分布、邊緣貼合
+import { t } from "../core/i18n.js";
 import { opt } from "../core/store.js";
 import { toast } from "../core/dom.js";
 import { commit } from "../core/history.js";
@@ -10,7 +11,7 @@ import { renderMultiProps } from "../ui/props.js";
 export function alignSel(kind) {
   const its = selItems().filter(i => !i.locked);
   if (its.length < 2) {
-    toast("請至少選取 2 個未鎖定的物件");
+    toast(t("請至少選取 2 個未鎖定的物件"));
     return;
   }
   const shift = (it, dx, dy) => {
@@ -37,7 +38,7 @@ export function alignSel(kind) {
     });
   if (kind === "disth" || kind === "distv") {
     if (its.length < 3) {
-      toast("平均分布需要 3 個以上的物件");
+      toast(t("平均分布需要 3 個以上的物件"));
       return;
     }
     const H = kind === "disth",
@@ -86,20 +87,20 @@ export function alignSel(kind) {
   commit();
   toast(
     {
-      left: "已靠左對齊",
-      right: "已靠右對齊",
-      hcenter: "已水平置中",
-      top: "已靠上對齊",
-      bottom: "已靠下對齊",
-      vcenter: "已垂直置中",
-      disth: "已水平平均分布",
-      distv: "已垂直平均分布",
-      packh: "已水平貼合",
-      packv: "已垂直貼合",
-      packhA: "已水平貼合並靠上",
-      packvA: "已垂直貼合並靠左",
-      samew: "已統一寬度",
-      samed: "已統一深度",
+      left: t("已靠左對齊"),
+      right: t("已靠右對齊"),
+      hcenter: t("已水平置中"),
+      top: t("已靠上對齊"),
+      bottom: t("已靠下對齊"),
+      vcenter: t("已垂直置中"),
+      disth: t("已水平平均分布"),
+      distv: t("已垂直平均分布"),
+      packh: t("已水平貼合"),
+      packv: t("已垂直貼合"),
+      packhA: t("已水平貼合並靠上"),
+      packvA: t("已垂直貼合並靠左"),
+      samew: t("已統一寬度"),
+      samed: t("已統一深度"),
     }[kind],
   );
 }

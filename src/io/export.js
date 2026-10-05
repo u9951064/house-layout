@@ -1,4 +1,5 @@
 // 匯出 PNG／SVG／列印
+import { LOCALE, t } from "../core/i18n.js";
 import { S, opt, state } from "../core/store.js";
 import { $, NS, svg, toast } from "../core/dom.js";
 import { fit } from "../canvas/view.js";
@@ -50,7 +51,7 @@ export function exportSVGString(scale = 1, label = S.PROJ ? curDesign().name : "
   title.setAttribute("y", b.y - 10);
   title.setAttribute("font-size", "22");
   title.setAttribute("font-weight", "600");
-  title.textContent = `${S.BASE.name}${label ? "｜" + label : ""}\u3000平面配置圖（${new Date().toLocaleDateString("zh-TW")}）`;
+  title.textContent = `${S.BASE.name}${label ? "｜" + label : ""}\u3000${t("平面配置圖（{date}）", { date: new Date().toLocaleDateString(LOCALE) })}`;
   clone.appendChild(title);
   return new XMLSerializer().serializeToString(clone);
 }
@@ -64,8 +65,8 @@ export function init() {
       / width="[^"]*" height="[^"]*"/,
       ` width="${(b.w / 5).toFixed(1)}mm" height="${((b.h + 40) / 5).toFixed(1)}mm"`,
     ); // 1:50
-    download(`${safeName()}-${dname()}-1比50-${stamp()}.svg`, new Blob([s], { type: "image/svg+xml" }));
-    toast("SVG 為 1:50 實際尺寸，列印時選 100%");
+    download(`${safeName()}-${dname()}-${t("1比50")}-${stamp()}.svg`, new Blob([s], { type: "image/svg+xml" }));
+    toast(t("SVG 為 1:50 實際尺寸，列印時選 100%"));
   };
   $("btnPNG").onclick = () => {
     if (!S.BASE) return;

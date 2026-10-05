@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>User Guide | House Layout floor-plan tool</title>
+    <meta name="description" content="The complete House Layout guide: import a base plan, place furniture, align and pack, compare designs, edit the base plan, generate a base plan with AI, save and export." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/guide.css" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="index.html?lang=en">🏠 House Layout</a>
+      <nav>
+        <a href="guide.html" class="btn" lang="zh-Hant">繁體中文</a>
+        <a href="index.html?lang=en" class="btn primary">Open the app</a>
+        <a href="https://github.com/u9951064/house-layout" target="_blank" rel="noopener" class="btn">GitHub</a>
+      </nav>
+    </header>
+
+    <div class="layout">
+      <aside class="toc">
+        <b>Contents</b>
+        <a href="#intro">What is it</a>
+        <a href="#start">Quick start</a>
+        <a href="#ui">Interface tour</a>
+        <a href="#furniture">Placing furniture</a>
+        <a href="#multi">Multi-select, align &amp; pack</a>
+        <a href="#curve">Arcs &amp; composite elements</a>
+        <a href="#measure">Measuring &amp; scale</a>
+        <a href="#sheets">Design tabs &amp; comparison</a>
+        <a href="#base">Editing the base plan</a>
+        <a href="#ai">Generating a base plan with AI</a>
+        <a href="#file">Projects, saving &amp; export</a>
+        <a href="#keys">Keyboard shortcuts</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#dev">Developer</a>
+      </aside>
+
+      <main>
+        <section id="intro">
+          <h1>House Layout User Guide</h1>
+          <p class="lead">
+            House Layout is a browser-based tool for drawing interior floor plans. Import your own base plan, drag beds, sofas, wardrobes, desks and other furniture from the library, judge the space in real centimetres, and use tabs to build several designs and compare them.
+          </p>
+          <ul class="features">
+            <li><b>One true scale</b>: furniture and walls are drawn in centimetres, with a scale bar, a measuring tool and 1 cm snapping.</li>
+            <li><b>Architectural floor-plan style</b>: about 80 elements, including curved walls, curved sliding doors and straight + arc composite elements.</li>
+            <li><b>Compare designs</b>: tabs like Excel worksheets, with overlay and side-by-side compare.</li>
+            <li><b>Your data stays on your computer</b>: no backend, no sign-up.</li>
+          </ul>
+          <figure>
+            <img src="docs/img/en/overview.png" alt="The House Layout interface (sample 2-bedroom)" />
+            <figcaption>The whole interface (every image in this guide uses the "Sample 2-bedroom" layout)</figcaption>
+          </figure>
+        </section>
+
+        <section id="start">
+          <h2>Quick start</h2>
+          <p>The first time you open the site you'll see the import screen. You need a base plan (walls and dimensions) before you can start designing. There are five ways to get one:</p>
+          <div class="cols">
+            <figure class="narrow"><img src="docs/img/en/gate.png" alt="Import base plan screen" /></figure>
+            <ol>
+              <li><b>Import a base plan or project file</b>: a <code>.json</code> exported by this tool.</li>
+              <li>
+                <b>Upload a floor-plan image</b>: PNG/JPG. After uploading, click <b>two endpoints with a known distance</b> (for example a wall marked 360) and enter the real length in cm. The image is scaled to match, and you can trace the walls over it.
+              </li>
+              <li><b>Enter outer dimensions</b>: creates a rectangular outer wall; then use "Edit base plan" to add partitions, doors and windows.</li>
+              <li><b>Draw a base plan from scratch</b>: jumps straight into base-plan editing so you can draw wall by wall with "Draw wall".</li>
+              <li><b>Paste an AI-generated base plan</b>: give your floor plan or property brochure to an AI and paste back the result (see <a href="#ai">Generating a base plan with AI</a>).</li>
+            </ol>
+          </div>
+          <p class="tip">
+            No floor plan yet? Click "<b>Try the sample project first</b>" on the import screen to load the sample 2-bedroom used in this guide (with two designs). Every time you create or open something you are asked to name it, and it opens as a new project — your existing projects are never overwritten.
+          </p>
+        </section>
+
+        <section id="ui">
+          <h2>Interface tour</h2>
+          <table>
+            <tr><th>Where</th><th>What</th></tr>
+            <tr><td>Menu bar (top)</td><td><b>File</b> (new project, open, save, switch project, export, print), <b>Edit</b> (undo, cut, copy, paste…), <b>View</b>, <b>Base plan</b>, <b>Help</b>; on the right are the project switcher, undo/redo and save.</td></tr>
+            <tr><td>Toolbar</td><td>📏 Measure, 🧲 Edge snap, ⌗ Snap and its precision (1 / 5 / 10 cm), grid, furniture sizes, wall dimensions.</td></tr>
+            <tr><td>Library (left)</td><td>Collapsible categories (like Visio) with search; « collapses the whole panel.</td></tr>
+            <tr><td>Right panel</td><td>Three tabs: <b>Properties</b> (settings for the selection, or alignment for multi-select), <b>Objects</b> (a list), <b>Base plan</b> (base-plan info and actions).</td></tr>
+            <tr><td>Tab bar (bottom)</td><td>Each tab is one design; overlay and side-by-side compare are on the right.</td></tr>
+            <tr><td>Zoom bar (bottom right)</td><td>Slider, + / −, type a percentage; ▾ offers 20%–100% and fit to screen.</td></tr>
+          </table>
+          <div class="grid2">
+            <figure><img src="docs/img/en/menu.png" alt="File menu" /><figcaption>Menu bar (File)</figcaption></figure>
+            <figure><img src="docs/img/en/palette.png" alt="Element library" /><figcaption>Library: collapsible, searchable categories</figcaption></figure>
+          </div>
+        </section>
+
+        <section id="furniture">
+          <h2>Placing furniture</h2>
+          <ul>
+            <li><b>Drag</b> an element from the left onto the plan, or <b>click</b> it to add it in the middle of the view.</li>
+            <li>Drag an object to move it; drag the blue squares to resize; drag the dot on top to rotate (15° steps, hold Shift for free rotation).</li>
+            <li>In the "Properties" tab you can type width, depth, angle, position and name; sofas have a seat count and dining tables a chair count.</li>
+            <li>Furniture placed inside an "out of scope" area (bathroom, balcony…) gets a red outline as a warning.</li>
+            <li><b>Right-click</b> an object for copy, cut, paste, duplicate, rotate, mirror, bring forward/send back, lock and delete.</li>
+          </ul>
+          <div class="grid2">
+            <figure><img src="docs/img/en/props.png" alt="Properties panel" /><figcaption>Properties: size, angle, name</figcaption></figure>
+            <figure><img src="docs/img/en/context.png" alt="Context menu" /><figcaption>Right-click menu</figcaption></figure>
+          </div>
+        </section>
+
+        <section id="multi">
+          <h2>Multi-select, align &amp; pack</h2>
+          <div class="cols">
+            <figure class="narrow"><img src="docs/img/en/multi.png" alt="Multi-select alignment panel" /></figure>
+            <div>
+              <ul>
+                <li><b>Multi-select</b>: Shift- or ⌘-click, Shift-drag on empty space for a selection box, ⌘A to select all. Dragging any of them moves them all.</li>
+                <li><b>Align</b>: left, center horizontally, right, top, center vertically, bottom.</li>
+                <li><b>Distribute</b>: equal spacing between 3 or more objects.</li>
+                <li><b>Pack</b>: line objects up edge to edge, with an optional gap (e.g. fridge, appliance cabinet and tall cabinet in a row).</li>
+                <li><b>Same width / same depth</b>: matches the last selected object.</li>
+                <li><b>Edge snap while dragging</b>: edges near other furniture or walls snap automatically and show an orange guide; hold Alt to suspend it, or turn off "Edge snap" in the toolbar.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="curve">
+          <h2>Arcs &amp; composite elements</h2>
+          <p>
+            The "Doors · Walls · Labels" category contains <b>Straight + arc sliding door</b>, <b>Straight + arc wall</b> and <b>Straight + arc glass</b>. Each is <b>a single element</b> made of "straight A → arc → straight B". In the Properties tab you set the straight lengths, arc radius, arc angle, bend direction and thickness, and the bounding box is calculated for you. Great for curved sliding doors around a corner, rounded partitions or glass.
+          </p>
+          <figure><img src="docs/img/en/curve.png" alt="Settings for a straight + arc sliding door" /><figcaption>Straight + arc sliding door: one element, set by parameters</figcaption></figure>
+          <p>There are also pure arcs — "Curved sliding door", "Curved wall", "Corner curved vanity" and "Corner curved cabinet": width = horizontal radius, depth = vertical radius; use rotate or mirror to change the orientation.</p>
+        </section>
+
+        <section id="measure">
+          <h2>Measuring &amp; scale</h2>
+          <ul>
+            <li>All elements and walls share one scale (centimetres); a 0–3 m scale bar sits at the bottom left.</li>
+            <li>Click <b>📏 Measure</b> in the toolbar or press <kbd>M</kbd>, then drag on the plan to see a distance; Shift locks it horizontal/vertical.</li>
+            <li>Snap precision can be 1 / 5 / 10 cm; at 250% zoom and above a 1 cm fine grid appears.</li>
+            <li>"Wall dims" shows the wall dimension annotations included in the base-plan file.</li>
+          </ul>
+        </section>
+
+        <section id="sheets">
+          <h2>Design tabs &amp; comparison</h2>
+          <figure><img src="docs/img/en/sheets.png" alt="Tab bar and zoom bar" /><figcaption>Tab bar (left) and zoom bar (right) at the bottom</figcaption></figure>
+          <ul>
+            <li>A project (one home) can hold several designs, shown at the bottom like Excel worksheets: click to switch, <b>double-click to rename</b>, <b>drag to reorder</b>, hold ⌥ (Windows: Ctrl) while dragging to <b>duplicate</b>, and right-click for more.</li>
+            <li>All designs share the same base plan; change the walls in "Edit base plan" and every design updates.</li>
+            <li><b>Overlay</b>: draws another design in translucent red on top of the current canvas so you can see the differences.</li>
+            <li><b>Side-by-side compare</b>: shows all designs next to each other with object counts and lists, and lets you switch directly.</li>
+            <li>⌘C / ⌘V copies furniture between designs.</li>
+          </ul>
+          <div class="grid2">
+            <figure><img src="docs/img/en/ghost.png" alt="Overlay comparison" /><figcaption>Overlay: the other design is shown in red</figcaption></figure>
+            <figure><img src="docs/img/en/compare.png" alt="Side-by-side compare" /><figcaption>Side-by-side compare</figcaption></figure>
+          </div>
+        </section>
+
+        <section id="base">
+          <h2>Editing the base plan</h2>
+          <p>Enter from "Base plan → Edit base plan" (or the button in the right panel's "Base plan" tab). Furniture fades and locks, and the left side switches to the base-plan tools:</p>
+          <figure><img src="docs/img/en/base-edit.png" alt="Base-plan editing mode" /><figcaption>Base-plan editing: tools, wall thickness and fixtures on the left</figcaption></figure>
+          <table>
+            <tr><th>Tool</th><th>How to use</th></tr>
+            <tr><td>Draw wall</td><td>Click repeatedly to draw walls, locked horizontal/vertical by default (Alt for angled walls); snaps to existing wall endpoints. Esc, Enter or double-click to finish. Quick wall thicknesses: exterior 20, RC 15, partition 12, light partition 10.</td></tr>
+            <tr><td>Window / Door / Opening</td><td>Click on a wall to add one, then adjust position and width on the right; doors also have a hinge side and swing direction.</td></tr>
+            <tr><td>Column / Canopy / Out of scope</td><td>Drag out an area. "Out of scope" areas can be named (bathroom, balcony…) and furniture placed inside gets a red warning outline.</td></tr>
+            <tr><td>Room name</td><td>Click to place; you can add a subtitle (e.g. the floor area).</td></tr>
+            <tr><td>Fixtures</td><td>Kitchen counter, fridge, tall cabinet and so on become part of the base plan; they lock when you leave editing and are shared by all designs.</td></tr>
+            <tr><td>Select</td><td>Drag to move, drag wall endpoints to change length, Delete to remove; ⌘Z undoes.</td></tr>
+          </table>
+        </section>
+
+        <section id="ai">
+          <h2>Generating a base plan with AI</h2>
+          <div class="cols">
+            <figure class="narrow"><img src="docs/img/en/ai.png" alt="AI base plan dialog" /></figure>
+            <ol>
+              <li>Choose "Base plan → AI-generate base plan" or option ⑤ on the import screen, then click "Copy prompt".</li>
+              <li>Paste it into an AI that can read images or PDFs (ChatGPT, Claude, Gemini…) and attach a <b>dimensioned floor plan</b> or a <b>property brochure</b> (survey drawing, partition plan).</li>
+              <li>Paste the AI's whole reply back and click "Apply".</li>
+              <li>The tool extracts the JSON and fixes small errors (e.g. walls off by up to 2 cm). Warnings are listed in the right panel's "Base plan" tab; fine-tune with "Edit base plan".</li>
+            </ol>
+          </div>
+          <p class="tip">Full prompt: <a href="PROMPT.md" target="_blank" rel="noopener">PROMPT.md</a>. Survey drawings carry exact dimensions and are usually the most accurate; partition plans aren't to scale, so double-check positions by measuring.</p>
+        </section>
+
+        <section id="file">
+          <h2>Projects, saving &amp; export</h2>
+          <ul>
+            <li><b>One file is one whole project</b>: "Save file" (⌘S) stores the base plan, every design tab and the overlay setting in a single <code>.json</code>. "Open file" (⌘O), or dropping a file onto the window, asks for a name and opens it as a new project.</li>
+            <li>The browser keeps all projects automatically; switch between them with 📁 at the top right, and rename or delete them in "File → Manage projects". To back up or move to another computer, use "Save file".</li>
+            <li><b>Export</b>: PNG image, SVG (true 1:50 scale — print at 100%), or print.</li>
+            <li>The base plan can be exported on its own as a base-plan file, so others can make different designs on the same plan.</li>
+          </ul>
+        </section>
+
+        <section id="keys">
+          <h2>Keyboard shortcuts</h2>
+          <table class="keys">
+            <tr><td><kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd></td><td>Undo / redo</td><td><kbd>⌘S</kbd> / <kbd>⌘O</kbd></td><td>Save / open</td></tr>
+            <tr><td><kbd>⌘C</kbd> <kbd>⌘X</kbd> <kbd>⌘V</kbd></td><td>Copy, cut, paste</td><td><kbd>⌘D</kbd></td><td>Duplicate</td></tr>
+            <tr><td><kbd>⌘A</kbd></td><td>Select all</td><td><kbd>Delete</kbd></td><td>Delete</td></tr>
+            <tr><td><kbd>R</kbd> / <kbd>⇧R</kbd></td><td>Rotate 90° (reverse)</td><td><kbd>F</kbd></td><td>Mirror horizontally</td></tr>
+            <tr><td>Arrow keys (Shift ×10)</td><td>Nudge position</td><td><kbd>M</kbd></td><td>Measure</td></tr>
+            <tr><td>Shift / ⌘ click</td><td>Add to / remove from selection</td><td>Shift-drag on empty space</td><td>Selection box</td></tr>
+            <tr><td>Alt while dragging</td><td>Suspend edge snap</td><td><kbd>Esc</kbd></td><td>Deselect / close menu</td></tr>
+            <tr><td colspan="4" class="muted">While editing the base plan: <kbd>V</kbd> select, <kbd>W</kbd> draw wall, <kbd>Esc</kbd> / <kbd>Enter</kbd> finish the wall. On Windows, use Ctrl instead of ⌘.</td></tr>
+          </table>
+        </section>
+
+        <section id="privacy">
+          <h2>Privacy</h2>
+          <p>
+            House Layout is a single static web page with no backend and no trackers. Your base plans and designs live only in your browser (localStorage) and in files you download; nothing is uploaded to any server. When you generate a base plan with AI, the data only travels between you and the AI service you choose.
+          </p>
+        </section>
+
+        <section id="dev">
+          <h2>Developer</h2>
+          <p>
+            Josh Tsai (<a href="https://github.com/u9951064" target="_blank" rel="noopener">@u9951064</a>) · Source code and issues: <a href="https://github.com/u9951064/house-layout" target="_blank" rel="noopener">github.com/u9951064/house-layout</a> · <a href="LICENSE" target="_blank" rel="noopener">MIT License</a>
+          </p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

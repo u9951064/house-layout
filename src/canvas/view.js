@@ -1,4 +1,5 @@
 // 畫布縮放平移與座標轉換
+import { t } from "../core/i18n.js";
 import { S, view } from "../core/store.js";
 import { $, svg, vp } from "../core/dom.js";
 import { drawGrid } from "./base-render.js";
@@ -11,7 +12,7 @@ export function applyView() {
   S.gridT = setTimeout(() => {
     if (typeof drawGrid === "function") drawGrid();
   }, 120);
-  $("zoomInfo").textContent = `縮放 ${Math.round(view.s * 100)}%（1 m ≈ ${Math.round(view.s * 100)} px）`;
+  $("zoomInfo").textContent = t("縮放 {p}%（1 m ≈ {p} px）", { p: Math.round(view.s * 100) });
   if (typeof syncZoom === "function") syncZoom();
 }
 export function toWorld(cx, cy) {

@@ -1,4 +1,5 @@
 // 畫布滑鼠互動：選取、拖曳、縮放、框選、右鍵
+import { t } from "../core/i18n.js";
 import { S, opt, state, view } from "../core/store.js";
 import { KEY, svg, toast } from "../core/dom.js";
 import { commit } from "../core/history.js";
@@ -121,24 +122,24 @@ export function init() {
       showCtx(e.clientX, e.clientY, [
         ...(many
           ? [
-              { t: `已選取 ${selIds().length} 個`, off: true },
+              { t: t("已選取 {n} 個", { n: selIds().length }), off: true },
               "-",
-              { t: "靠左對齊", f: () => alignSel("left") },
-              { t: "靠上對齊", f: () => alignSel("top") },
-              { t: "水平貼合", f: () => alignSel("packh") },
-              { t: "垂直貼合", f: () => alignSel("packv") },
+              { t: t("靠左對齊"), f: () => alignSel("left") },
+              { t: t("靠上對齊"), f: () => alignSel("top") },
+              { t: t("水平貼合"), f: () => alignSel("packh") },
+              { t: t("垂直貼合"), f: () => alignSel("packv") },
               "-",
             ]
           : []),
-        { t: "複製", k: KEY + "C", f: () => copySel(false) },
-        { t: "剪下", k: KEY + "X", f: () => copySel(true), off: !many && it.locked },
-        { t: "貼上", k: KEY + "V", f: () => pasteClip(p), off: !getClip() },
-        { t: "再製", k: KEY + "D", f: dupSel },
+        { t: t("複製"), k: KEY + "C", f: () => copySel(false) },
+        { t: t("剪下"), k: KEY + "X", f: () => copySel(true), off: !many && it.locked },
+        { t: t("貼上"), k: KEY + "V", f: () => pasteClip(p), off: !getClip() },
+        { t: t("再製"), k: KEY + "D", f: dupSel },
         "-",
-        { t: "旋轉 90°", k: "R", f: () => rotSel(90), off: it.locked },
-        { t: "左右鏡像", k: "F", f: flipSel, off: it.locked },
+        { t: t("旋轉 90°"), k: "R", f: () => rotSel(90), off: it.locked },
+        { t: t("左右鏡像"), k: "F", f: flipSel, off: it.locked },
         {
-          t: "移到上層",
+          t: t("移到上層"),
           f: () => {
             it.z = Math.max(...state.items.map(i => i.z || 0)) + 1;
             renderItems();
@@ -146,7 +147,7 @@ export function init() {
           },
         },
         {
-          t: "移到下層",
+          t: t("移到下層"),
           f: () => {
             it.z = Math.min(...state.items.map(i => i.z || 0)) - 1;
             renderItems();
@@ -154,7 +155,7 @@ export function init() {
           },
         },
         {
-          t: it.locked ? "解除鎖定" : "鎖定位置",
+          t: it.locked ? t("解除鎖定") : t("鎖定位置"),
           f: () => {
             it.locked = !it.locked;
             renderItems();
@@ -163,13 +164,13 @@ export function init() {
           },
         },
         "-",
-        { t: "刪除", k: "Delete", f: delSel, danger: true, off: it.locked },
+        { t: t("刪除"), k: "Delete", f: delSel, danger: true, off: it.locked },
       ]);
     } else {
       state.sel = null;
       renderSelection();
       renderProps();
-      showCtx(e.clientX, e.clientY, [{ t: "貼上到這裡", k: KEY + "V", f: () => pasteClip(p), off: !getClip() }]);
+      showCtx(e.clientX, e.clientY, [{ t: t("貼上到這裡"), k: KEY + "V", f: () => pasteClip(p), off: !getClip() }]);
     }
   });
   svg.addEventListener("pointermove", e => {
@@ -304,7 +305,7 @@ export function init() {
       S.boxSel = null;
       S.drag = null;
       setSel([...new Set([...add, ...hit])]);
-      if (hit.length) toast(`已選取 ${selIds().length} 個物件`);
+      if (hit.length) toast(t("已選取 {n} 個物件", { n: selIds().length }));
       return;
     }
     if (S.drag.kind === "mmove") {

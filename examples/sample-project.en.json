@@ -1,0 +1,370 @@
+{
+  "app": "house-layout",
+  "version": 3,
+  "name": "Sample 2-bedroom",
+  "base": {
+    "name": "Sample 2-bedroom",
+    "walls": [
+      [
+        0,
+        0,
+        860,
+        0,
+        20,
+        [
+          [60, 240, "win"],
+          [340, 500, "win"]
+        ]
+      ],
+      [
+        860,
+        0,
+        860,
+        720,
+        20,
+        [
+          [
+            600,
+            690,
+            "door",
+            {
+              "hinge": "b",
+              "side": -1
+            }
+          ]
+        ]
+      ],
+      [860, 720, 0, 720, 20, [[150, 450, "win"]]],
+      [0, 720, 0, 0, 20, [[420, 600, "win"]]],
+      [
+        0,
+        330,
+        560,
+        330,
+        12,
+        [
+          [
+            200,
+            280,
+            "door",
+            {
+              "hinge": "b",
+              "side": -1
+            }
+          ],
+          [
+            460,
+            540,
+            "door",
+            {
+              "hinge": "a",
+              "side": -1
+            }
+          ]
+        ]
+      ],
+      [300, 0, 300, 330, 12, []],
+      [560, 0, 560, 330, 12, []],
+      [
+        560,
+        230,
+        860,
+        230,
+        12,
+        [
+          [
+            600,
+            680,
+            "door",
+            {
+              "hinge": "a",
+              "side": 1
+            }
+          ]
+        ]
+      ]
+    ],
+    "columns": [[820, 0, 860, 40]],
+    "canopies": [],
+    "outOfScope": [
+      {
+        "name": "Bathroom",
+        "r": [566, 6, 854, 224]
+      }
+    ],
+    "rooms": [
+      {
+        "n": "Master bedroom",
+        "s": "≈ 9.6 m²",
+        "x": 150,
+        "y": 250
+      },
+      {
+        "n": "Bedroom 2",
+        "s": "≈ 7.9 m²",
+        "x": 430,
+        "y": 250
+      },
+      {
+        "n": "Living & dining",
+        "s": "≈ 28.1 m²",
+        "x": 430,
+        "y": 560
+      },
+      {
+        "n": "Entry",
+        "s": "",
+        "x": 770,
+        "y": 560
+      }
+    ],
+    "fixtures": [
+      {
+        "type": "counter",
+        "x": 290,
+        "y": 336,
+        "w": 165,
+        "d": 60,
+        "rot": 0,
+        "label": "Existing counter"
+      }
+    ]
+  },
+  "designs": [
+    {
+      "id": "sampleA",
+      "name": "Design A",
+      "nextId": 12,
+      "items": [
+        {
+          "id": 1,
+          "type": "bed2",
+          "label": "Double bed",
+          "x": 74,
+          "y": 10,
+          "w": 152,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 2,
+          "type": "nightstand",
+          "label": "Nightstand",
+          "x": 26,
+          "y": 12,
+          "w": 45,
+          "d": 40,
+          "rot": 0
+        },
+        {
+          "id": 3,
+          "type": "wardrobeSlide",
+          "label": "Wardrobe (sliding)",
+          "x": 60,
+          "y": 258,
+          "w": 180,
+          "d": 65,
+          "rot": 180
+        },
+        {
+          "id": 4,
+          "type": "deskLift",
+          "label": "Standing desk",
+          "x": 312,
+          "y": 10,
+          "w": 120,
+          "d": 60,
+          "rot": 0
+        },
+        {
+          "id": 5,
+          "type": "bed1",
+          "label": "Single bed",
+          "x": 446,
+          "y": 10,
+          "w": 106,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 6,
+          "type": "tv",
+          "label": "TV stand",
+          "x": 100,
+          "y": 340,
+          "w": 150,
+          "d": 40,
+          "rot": 0
+        },
+        {
+          "id": 7,
+          "type": "sofa",
+          "label": "3-seat sofa",
+          "x": 70,
+          "y": 622,
+          "w": 210,
+          "d": 90,
+          "rot": 180,
+          "seats": 3
+        },
+        {
+          "id": 8,
+          "type": "rug",
+          "label": "Rug",
+          "x": 75,
+          "y": 440,
+          "w": 200,
+          "d": 140,
+          "rot": 0
+        },
+        {
+          "id": 9,
+          "type": "fridge",
+          "label": "Fridge",
+          "x": 470,
+          "y": 340,
+          "w": 70,
+          "d": 70,
+          "rot": 0
+        },
+        {
+          "id": 10,
+          "type": "dining",
+          "label": "Dining table",
+          "x": 560,
+          "y": 470,
+          "w": 120,
+          "d": 75,
+          "rot": 0,
+          "chairs": 4
+        },
+        {
+          "id": 11,
+          "type": "plant",
+          "label": "Plant",
+          "x": 800,
+          "y": 380,
+          "w": 45,
+          "d": 45,
+          "rot": 0
+        }
+      ]
+    },
+    {
+      "id": "sampleB",
+      "name": "Design B",
+      "nextId": 11,
+      "items": [
+        {
+          "id": 1,
+          "type": "bed2",
+          "label": "Double bed",
+          "x": 74,
+          "y": 10,
+          "w": 152,
+          "d": 188,
+          "rot": 0
+        },
+        {
+          "id": 2,
+          "type": "wardrobeSlide",
+          "label": "Wardrobe (sliding)",
+          "x": 60,
+          "y": 258,
+          "w": 180,
+          "d": 65,
+          "rot": 180
+        },
+        {
+          "id": 3,
+          "type": "deskL",
+          "label": "L-shaped desk",
+          "x": 312,
+          "y": 10,
+          "w": 160,
+          "d": 140,
+          "rot": 0
+        },
+        {
+          "id": 4,
+          "type": "bookshelf",
+          "label": "Bookcase",
+          "x": 312,
+          "y": 280,
+          "w": 120,
+          "d": 35,
+          "rot": 180
+        },
+        {
+          "id": 5,
+          "type": "tv",
+          "label": "TV stand",
+          "x": 100,
+          "y": 340,
+          "w": 150,
+          "d": 40,
+          "rot": 0
+        },
+        {
+          "id": 6,
+          "type": "sofaL",
+          "label": "L-shaped sofa",
+          "x": 50,
+          "y": 548,
+          "w": 240,
+          "d": 160,
+          "rot": 180
+        },
+        {
+          "id": 7,
+          "type": "fridge",
+          "label": "Fridge",
+          "x": 470,
+          "y": 340,
+          "w": 70,
+          "d": 70,
+          "rot": 0
+        },
+        {
+          "id": 8,
+          "type": "diningRound",
+          "label": "Round dining table",
+          "x": 580,
+          "y": 460,
+          "w": 90,
+          "d": 90,
+          "rot": 0,
+          "chairs": 4
+        },
+        {
+          "id": 9,
+          "type": "curveSlide",
+          "label": "Straight + curved sliding door",
+          "x": 330,
+          "y": 400,
+          "w": 172,
+          "d": 72,
+          "rot": 0,
+          "a": 100,
+          "r": 60,
+          "ang": 90,
+          "turn": 1,
+          "b": 0,
+          "t": 12
+        },
+        {
+          "id": 10,
+          "type": "plant",
+          "label": "Plant",
+          "x": 800,
+          "y": 380,
+          "w": 45,
+          "d": 45,
+          "rot": 0
+        }
+      ]
+    }
+  ],
+  "cur": 0,
+  "ghost": null
+}

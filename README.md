@@ -2,7 +2,9 @@
 
 在瀏覽器裡畫室內平面配置圖：<https://house-layout.tinycloud.tw>
 
-📖 [完整使用教學](https://house-layout.tinycloud.tw/guide.html)
+📖 [完整使用教學](https://house-layout.tinycloud.tw/guide.html)｜[English guide](https://house-layout.tinycloud.tw/guide.en.html)
+
+🌐 介面支援繁體中文（預設）與英文：從「說明」選單切換，或在網址加上 `?lang=en`（例如 <https://house-layout.tinycloud.tw/?lang=en>）。
 
 - **先匯入自己的房屋底圖**：匯入底圖／專案檔（.json）、上傳平面圖圖片並以兩點校正比例，或輸入外框尺寸建立外牆。
 - **AI 產生底圖**：複製內建提示詞（[PROMPT.md](PROMPT.md)）給 ChatGPT／Claude／Gemini，附上平面尺寸圖或不動產說明書，把回覆貼回網頁即可套用；會自動修正小誤差並列出提醒。
@@ -45,7 +47,7 @@ tests/e2e.test.mjs    端對端測試（Playwright）
 eslint.config.js      ESLint 設定（flat config＋eslint-config-prettier）
 .prettierrc.json      Prettier 設定（printWidth 120）
 PROMPT.md             AI 產生底圖的提示詞（網頁執行時讀取）
-guide.html            使用教學頁（css/guide.css、docs/img 截圖）
+guide.html            使用教學頁（css/guide.css、docs/img 截圖）；guide.en.html 為英文版（docs/img/en）
 examples/             範例專案（範例兩房，非真實住家）
 ```
 
@@ -65,6 +67,7 @@ npm run lint           # ESLint
 npm run format         # Prettier 格式化（JS／CSS）
 npm run check          # lint + 格式檢查 + 測試（CI 同步執行）
 npm run screenshots    # 重新產生教學截圖（docs/img，使用範例專案）
+npm run screenshots:en # 英文版教學截圖（docs/img/en）
 npm run build          # 正式版建置到 dist/（JS／CSS 打包成內容雜湊檔名）
 npm run preview        # 建置並在 http://127.0.0.1:8001/ 預覽
 ```

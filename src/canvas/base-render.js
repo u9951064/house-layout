@@ -1,4 +1,5 @@
 // 底圖繪製：格線、牆、門窗、柱、雨遮、固定設備、比例尺
+import { t } from "../core/i18n.js";
 import { S, opt, view } from "../core/store.js";
 import { L, PATH, R, TXT, baseLayer, el, gridLayer, svg } from "../core/dom.js";
 import { DRAW } from "../shapes/draw.js";
@@ -92,7 +93,7 @@ export function drawBase() {
     const [x1, y1, x2, y2] = o.r;
     R(baseLayer, x1, y1, x2 - x1, y2 - y1, "oos");
     TXT(baseLayer, (x1 + x2) / 2, (y1 + y2) / 2 - 6, o.name || "", "roomlabel");
-    TXT(baseLayer, (x1 + x2) / 2, (y1 + y2) / 2 + 16, "不在設計範圍", "roomsub");
+    TXT(baseLayer, (x1 + x2) / 2, (y1 + y2) / 2 + 16, t("不在設計範圍"), "roomsub");
   });
   if (B.decor) {
     const dg = el("g", { opacity: 0.45 }, baseLayer);
@@ -196,7 +197,7 @@ export function drawBase() {
     const t = TXT(sb, sx + i * 100, sy + 24, i + " m", "roomsub");
     t.style.fill = "#222";
   }
-  const st = TXT(sb, sx + 150, sy - 10, "比例尺（家具與牆面同一比例，單位 cm）", "roomsub");
+  const st = TXT(sb, sx + 150, sy - 10, t("比例尺（家具與牆面同一比例，單位 cm）"), "roomsub");
   st.style.fill = "#444";
   if (opt.dims) drawDims();
 }

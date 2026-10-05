@@ -1,4 +1,5 @@
 // 左側元件庫（可收合）與拖拉放置
+import { t } from "../core/i18n.js";
 import { S } from "../core/store.js";
 import { $, TXT, el, svg, toast } from "../core/dom.js";
 import { LIB } from "../shapes/library.js";
@@ -11,11 +12,11 @@ export function buildPalette() {
   pal.innerHTML = "";
   const sw = document.createElement("input");
   sw.type = "search";
-  sw.placeholder = "搜尋元件（例如：門、櫃、床）";
+  sw.placeholder = t("搜尋元件（例如：門、櫃、床）");
   sw.style.cssText =
     "width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid #d0d7de;border-radius:6px;margin:4px 0 2px";
   sw.oninput = () => {
-    const q = sw.value.trim();
+    const q = sw.value.trim().toLowerCase();
     pal.classList.toggle("searching", !!q);
     pal.querySelectorAll(".pal").forEach(c => (c.style.display = !q || c.dataset.name.includes(q) ? "" : "none"));
     pal.querySelectorAll("h3").forEach(h => {
@@ -37,8 +38,8 @@ export function buildPalette() {
       const card = document.createElement("div");
       card.className = "pal";
       card.draggable = true;
-      card.dataset.name = def.name + cat.cat;
-      card.title = `拖拉到圖上（${def.w}×${def.d} cm）`;
+      card.dataset.name = (def.name + cat.cat).toLowerCase();
+      card.title = t("拖拉到圖上（{w}×{d} cm）", { w: def.w, d: def.d });
       const ps = el("svg", {});
       const pad = 14,
         m = Math.max(def.w, def.d) + pad * 2;
@@ -69,14 +70,14 @@ export function buildPalette() {
         const r = svg.getBoundingClientRect();
         const p = toWorld(r.left + r.width / 2, r.top + r.height / 2);
         addItem(def, p.x, p.y);
-        toast(`已加入「${def.name}」，可拖曳移動`);
+        toast(t("已加入「{name}」，可拖曳移動", { name: def.name }));
       });
       grid.appendChild(card);
     }
   }
 }
 export function palTopHTML() {
-  return `<div class="paltop"><button class="paltog" title="收起面板">«</button><button data-all="0" title="全部收合">全部收合</button><button data-all="1" title="全部展開">全部展開</button></div><div class="palrail" title="展開面板">» 圖案庫</div>`;
+  return `<div class="paltop"><button class="paltog" title="${t("收起面板")}">«</button><button data-all="0" title="${t("全部收合")}">${t("全部收合")}</button><button data-all="1" title="${t("全部展開")}">${t("全部展開")}</button></div><div class="palrail" title="${t("展開面板")}">» ${t("圖案庫")}</div>`;
 }
 export const COLL_KEY = "hl-collapsed";
 export function collSet() {

@@ -1,4 +1,5 @@
 // 家具繪製與選取框
+import { t } from "../core/i18n.js";
 import { CURVE_TYPES } from "../shapes/curve.js";
 import { S, opt, state, view } from "../core/store.js";
 import { TXT, el, itemLayer, uiLayer } from "../core/dom.js";
@@ -102,7 +103,11 @@ export function renderItems() {
         g,
       );
       const label =
-        it.type === "text" ? it.label || "文字" : it.type === "dimension" ? `${Math.round(it.w)} cm` : it.label || "";
+        it.type === "text"
+          ? it.label || t("文字")
+          : it.type === "dimension"
+            ? `${Math.round(it.w)} cm`
+            : it.label || "";
       const big = Math.min(14, Math.max(9, Math.min(it.w, it.d) * 0.22));
       if (it.type === "dimension") {
         const t = TXT(tg, it.w / 2, -6, label);

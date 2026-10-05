@@ -23,6 +23,7 @@
     "test": "node --test tests/*.test.mjs",
     "test:install": "playwright install chromium-headless-shell",
     "screenshots": "node scripts/screenshots.mjs",
+    "screenshots:en": "node scripts/screenshots.mjs en",
     "build": "node scripts/build.mjs",
     "preview": "node scripts/build.mjs && node scripts/serve.mjs 8001 dist",
     "test:dist": "TEST_ROOT=dist node --test tests/*.test.mjs"

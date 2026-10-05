@@ -1,4 +1,5 @@
 // 專案管理視窗
+import { LOCALE, t } from "../core/i18n.js";
 import { S, state } from "../core/store.js";
 import { $, esc } from "../core/dom.js";
 import { drawBase, drawGrid } from "../canvas/base-render.js";
@@ -17,10 +18,10 @@ export function openProjMgr() {
       .slice()
       .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
       .map(
-        q => `<div class="projRow"><div><b>📁 ${esc(q.name)}</b>${S.PROJ && q.id === S.PROJ.id ? ' <span class="muted">（目前）</span>' : ""}<br><small class="muted">最後修改：${q.updatedAt ? new Date(q.updatedAt).toLocaleString("zh-TW") : "-"}</small></div>
-    <div class="actions" style="margin:0"><button data-a="open" data-id="${q.id}">開啟</button><button data-a="ren" data-id="${q.id}">重新命名</button><button data-a="del" data-id="${q.id}" style="color:#d1242f">刪除</button></div></div>`,
+        q => `<div class="projRow"><div><b>📁 ${esc(q.name)}</b>${S.PROJ && q.id === S.PROJ.id ? ` <span class="muted">${t("（目前）")}</span>` : ""}<br><small class="muted">${t("最後修改：")}${q.updatedAt ? new Date(q.updatedAt).toLocaleString(LOCALE) : "-"}</small></div>
+    <div class="actions" style="margin:0"><button data-a="open" data-id="${q.id}">${t("開啟")}</button><button data-a="ren" data-id="${q.id}">${t("重新命名")}</button><button data-a="del" data-id="${q.id}" style="color:#d1242f">${t("刪除")}</button></div></div>`,
       )
-      .join("") || '<p class="muted">尚無專案</p>';
+      .join("") || `<p class="muted">${t("尚無專案")}</p>`;
   Lp.querySelectorAll("button[data-a]").forEach(b => (b.onclick = () => projAction(b.dataset.a, b.dataset.id)));
   $("projModal").classList.add("show");
 }
@@ -34,7 +35,7 @@ export function projAction(a, id) {
     return;
   }
   if (a === "ren") {
-    const n = prompt("專案名稱", m.name);
+    const n = prompt(t("專案名稱"), m.name);
     if (n === null || !n.trim()) return;
     m.name = n.trim();
     writeIndex(ix);
@@ -53,7 +54,7 @@ export function projAction(a, id) {
     }
   }
   if (a === "del") {
-    if (!confirm(`刪除專案「${m.name}」？會從這個瀏覽器移除（建議先「儲存檔案」備份）。`)) return;
+    if (!confirm(t("刪除專案「{name}」？會從這個瀏覽器移除（建議先「儲存檔案」備份）。", { name: m.name }))) return;
     localStorage.removeItem(PKEY(id));
     ix.projects = ix.projects.filter(q => q.id !== id);
     if (S.PROJ && S.PROJ.id === id) {

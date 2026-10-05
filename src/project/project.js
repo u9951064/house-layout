@@ -1,4 +1,5 @@
 // 專案：建立、切換、暫存（localStorage）
+import { t } from "../core/i18n.js";
 import { S, state } from "../core/store.js";
 import { $, esc, toast } from "../core/dom.js";
 import { snapshot, updateButtons } from "../core/history.js";
@@ -22,7 +23,7 @@ export function autosave() {
   } catch (e) {
     if (!S.quotaWarned) {
       S.quotaWarned = true;
-      toast("瀏覽器暫存空間不足（底圖圖片較大），請記得用「儲存檔案」存檔");
+      toast(t("瀏覽器暫存空間不足（底圖圖片較大），請記得用「儲存檔案」存檔"));
     }
   }
 }
@@ -36,7 +37,7 @@ export function projectData() {
     base: S.BASE,
     designs: S.PROJ
       ? S.PROJ.designs.map(d => ({ id: d.id, name: d.name, items: d.items, nextId: d.nextId }))
-      : [{ id: "d1", name: "方案 A", items: state.items, nextId: state.nextId }],
+      : [{ id: "d1", name: t("方案 {x}", { x: "A" }), items: state.items, nextId: state.nextId }],
     cur: S.PROJ ? S.PROJ.cur : 0,
     ghost: S.ghostId || null,
   };
@@ -52,7 +53,7 @@ export function curDesign() {
   return S.PROJ.designs[S.PROJ.cur];
 }
 export function dname() {
-  return S.PROJ ? curDesign().name.replace(/[\\/:*?"<>|]/g, "_") : "方案";
+  return S.PROJ ? curDesign().name.replace(/[\\/:*?"<>|]/g, "_") : t("方案");
 }
 export function syncDesign() {
   if (!S.PROJ) return;
@@ -78,20 +79,21 @@ export function cleanItems(items) {
     .map(i => ({ ...i, rot: +i.rot || 0, label: i.label != null ? String(i.label) : "" }));
 }
 export function parseDesigns(o) {
-  const src = Array.isArray(o.designs) && o.designs.length ? o.designs : [{ name: "方案 A", items: o.items }];
+  const src =
+    Array.isArray(o.designs) && o.designs.length ? o.designs : [{ name: t("方案 {x}", { x: "A" }), items: o.items }];
   return src.map((d, k) => {
     const items = cleanItems(d.items);
     return {
       id: d.id || uid(),
-      name: String(d.name || `方案 ${String.fromCharCode(65 + k)}`),
+      name: String(d.name || t("方案 {x}", { x: String.fromCharCode(65 + k) })),
       items,
       nextId: Math.max(d.nextId || 1, 1, ...items.map(i => (i.id || 0) + 1)),
     };
   });
 }
 export function askName(def) {
-  const n = prompt("專案名稱", def || "我的新家");
-  return n === null ? null : n.trim() || def || "未命名專案";
+  const n = prompt(t("專案名稱"), def || t("我的新家"));
+  return n === null ? null : n.trim() || def || t("未命名專案");
 }
 export function openProject(pj) {
   if (S.PROJ) {
@@ -122,25 +124,25 @@ export function openProject(pj) {
   renderProjSelect();
 }
 export function newProject(name, base, designs, cur = 0, ghost = null) {
-  if (!validBase(base)) throw new Error("底圖格式不正確");
+  if (!validBase(base)) throw new Error(t("底圖格式不正確"));
   openProject({
     id: uid(),
     name,
     base,
-    designs: designs || [{ id: uid(), name: "方案 A", items: [], nextId: 1 }],
+    designs: designs || [{ id: uid(), name: t("方案 {x}", { x: "A" }), items: [], nextId: 1 }],
     cur,
     ghost,
   });
   autosave();
   renderProjSelect();
-  toast(`已建立專案「${name}」（${S.PROJ.designs.length} 個方案分頁）`);
+  toast(t("已建立專案「{name}」（{n} 個方案分頁）", { name, n: S.PROJ.designs.length }));
 }
 export function applyGateBase(b, suggested) {
-  if (!validBase(b)) throw new Error("底圖格式不正確（需要 walls 牆面資料或 image 圖片）");
+  if (!validBase(b)) throw new Error(t("底圖格式不正確（需要 walls 牆面資料或 image 圖片）"));
   if (S.gateIntent === "replace" && S.BASE) {
     if (
       (state.items.length || (S.BASE.walls || []).length) &&
-      !confirm(`更換「${S.PROJ.name}」的底圖？所有方案的家具保留在原座標，可用「復原」還原。`)
+      !confirm(t("更換「{name}」的底圖？所有方案的家具保留在原座標，可用「復原」還原。", { name: S.PROJ.name }))
     )
       return false;
     S.undoStack.push(S.lastSnap);
@@ -162,20 +164,20 @@ export function switchProject(id) {
     pj = JSON.parse(localStorage.getItem(PKEY(id)) || "null");
   } catch (e) {}
   if (!pj || !validBase(pj.base)) {
-    alert("無法讀取這個專案");
+    alert(t("無法讀取這個專案"));
     renderProjSelect();
     return;
   }
   openProject({
     id,
-    name: pj.name || pj.base.name || "未命名專案",
+    name: pj.name || pj.base.name || t("未命名專案"),
     base: pj.base,
     designs: parseDesigns(pj),
     cur: pj.cur || 0,
     ghost: pj.ghost,
   });
   autosave();
-  toast(`已開啟專案「${S.PROJ.name}」`);
+  toast(t("已開啟專案「{name}」", { name: S.PROJ.name }));
 }
 export function renderProjSelect() {
   const ix = readIndex(),
@@ -186,7 +188,7 @@ export function renderProjSelect() {
           q => `<option value="${q.id}" ${S.PROJ && q.id === S.PROJ.id ? "selected" : ""}>📁 ${esc(q.name)}</option>`,
         )
         .join("")
-    : `<option value="">（尚無專案）</option>`;
+    : `<option value="">${t("（尚無專案）")}</option>`;
 }
 
 export function init() {

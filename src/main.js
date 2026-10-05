@@ -1,4 +1,5 @@
 // 進入點：初始化各模組並還原上次的專案
+import { t, translateDOM } from "./core/i18n.js";
 import { S, state } from "./core/store.js";
 import { $ } from "./core/dom.js";
 import { snapshot, updateButtons } from "./core/history.js";
@@ -42,6 +43,7 @@ import { init as init_project_manager } from "./project/manager.js";
 import { init as init_ui_menubar } from "./ui/menubar.js";
 import { init as init_ui_zoombar } from "./ui/zoombar.js";
 
+translateDOM(); // 先翻譯 index.html 的靜態文字
 S.lastSnap = snapshot();
 buildPalette(); // 先建好元件庫，收合狀態（palette init）才套得上
 
@@ -72,7 +74,7 @@ init_ui_zoombar();
       const old = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
       if (old && old.base && validBase(old.base)) {
         const id = uid(),
-          name = old.base.name || "我的專案";
+          name = old.base.name || t("我的專案");
         localStorage.setItem(PKEY(id), JSON.stringify({ ...old, name, designs: parseDesigns(old), cur: 0 }));
         ix = { projects: [{ id, name, updatedAt: Date.now() }], current: id };
         writeIndex(ix);

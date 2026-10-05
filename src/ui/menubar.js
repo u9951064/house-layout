@@ -1,4 +1,5 @@
 // 選單列（檔案／編輯／檢視／底圖／說明）
+import { LANG, LANGS, isEn, setLang, t } from "../core/i18n.js";
 import { S, state } from "../core/store.js";
 import { $, KEY, esc } from "../core/dom.js";
 import { redo, undo } from "../core/history.js";
@@ -16,6 +17,8 @@ import { baseData, download, safeName, saveFile } from "../io/file.js";
 import { showGate } from "./gate.js";
 import { openAI } from "./ai.js";
 
+const GUIDE = isEn ? "guide.en.html" : "guide.html";
+
 export function chk(id) {
   return $(id).checked;
 }
@@ -29,71 +32,71 @@ export function menuItems(name) {
   const ix = readIndex();
   if (name === "file")
     return [
-      { t: "新專案…", f: () => showGate("new") },
-      { t: "開啟檔案…", k: KEY + "O", f: () => $("fileIn").click() },
-      { t: "儲存檔案", k: KEY + "S", f: saveFile, off: !has },
+      { t: t("新專案…"), f: () => showGate("new") },
+      { t: t("開啟檔案…"), k: KEY + "O", f: () => $("fileIn").click() },
+      { t: t("儲存檔案"), k: KEY + "S", f: saveFile, off: !has },
       "-",
-      { h: "切換專案" },
+      { h: t("切換專案") },
       ...ix.projects
         .slice(0, 8)
         .map(q => ({ t: "📁 " + q.name, c: S.PROJ && q.id === S.PROJ.id, f: () => switchProject(q.id) })),
-      { t: "專案管理…", f: openProjMgr },
+      { t: t("專案管理…"), f: openProjMgr },
       "-",
-      { t: "匯出 PNG 圖片", f: () => $("btnPNG").click(), off: !has },
-      { t: "匯出 SVG（1:50 實際比例）", f: () => $("btnSVG").click(), off: !has },
-      { t: "列印…", k: KEY + "P", f: () => $("btnPrint").click(), off: !has },
+      { t: t("匯出 PNG 圖片"), f: () => $("btnPNG").click(), off: !has },
+      { t: t("匯出 SVG（1:50 實際比例）"), f: () => $("btnSVG").click(), off: !has },
+      { t: t("列印…"), k: KEY + "P", f: () => $("btnPrint").click(), off: !has },
     ];
   if (name === "edit")
     return [
-      { t: "復原", k: KEY + "Z", f: undo, off: !S.undoStack.length },
-      { t: "重做", k: "⇧" + KEY + "Z", f: redo, off: !S.redoStack.length },
+      { t: t("復原"), k: KEY + "Z", f: undo, off: !S.undoStack.length },
+      { t: t("重做"), k: "⇧" + KEY + "Z", f: redo, off: !S.redoStack.length },
       "-",
-      { t: "剪下", k: KEY + "X", f: () => copySel(true), off: !sel || !design },
-      { t: "複製", k: KEY + "C", f: () => copySel(false), off: !sel || !design },
-      { t: "貼上", k: KEY + "V", f: () => pasteClip(null), off: !getClip() || !has || !design },
-      { t: "再製", k: KEY + "D", f: dupSel, off: !sel || !design },
-      { t: "刪除", k: "Delete", f: delSel, off: !sel || !design },
+      { t: t("剪下"), k: KEY + "X", f: () => copySel(true), off: !sel || !design },
+      { t: t("複製"), k: KEY + "C", f: () => copySel(false), off: !sel || !design },
+      { t: t("貼上"), k: KEY + "V", f: () => pasteClip(null), off: !getClip() || !has || !design },
+      { t: t("再製"), k: KEY + "D", f: dupSel, off: !sel || !design },
+      { t: t("刪除"), k: "Delete", f: delSel, off: !sel || !design },
       "-",
-      { t: "全選", k: KEY + "A", f: () => setSel(state.items.map(i => i.id)), off: !state.items.length || !design },
-      { t: "旋轉 90°", k: "R", f: () => rotSel(90), off: !sel || !design },
-      { t: "左右鏡像", k: "F", f: flipSel, off: !sel || !design },
+      { t: t("全選"), k: KEY + "A", f: () => setSel(state.items.map(i => i.id)), off: !state.items.length || !design },
+      { t: t("旋轉 90°"), k: "R", f: () => rotSel(90), off: !sel || !design },
+      { t: t("左右鏡像"), k: "F", f: flipSel, off: !sel || !design },
     ];
   if (name === "view")
     return [
-      { t: "格線", c: chk("chkGrid"), f: () => toggleChk("chkGrid") },
-      { t: "顯示家具尺寸", c: chk("chkSize"), f: () => toggleChk("chkSize") },
-      { t: "顯示牆面尺寸標註", c: chk("chkDims"), f: () => toggleChk("chkDims") },
+      { t: t("格線"), c: chk("chkGrid"), f: () => toggleChk("chkGrid") },
+      { t: t("顯示家具尺寸"), c: chk("chkSize"), f: () => toggleChk("chkSize") },
+      { t: t("顯示牆面尺寸標註"), c: chk("chkDims"), f: () => toggleChk("chkDims") },
       "-",
-      { t: "全圖顯示", f: fit, off: !has },
-      { t: "放大", k: "滾輪", f: () => zoomBy(1.25), off: !has },
-      { t: "縮小", f: () => zoomBy(0.8), off: !has },
+      { t: t("全圖顯示"), f: fit, off: !has },
+      { t: t("放大"), k: t("滾輪"), f: () => zoomBy(1.25), off: !has },
+      { t: t("縮小"), f: () => zoomBy(0.8), off: !has },
       "-",
-      { t: "並排比較所有方案…", f: openCompare, off: !S.PROJ },
+      { t: t("並排比較所有方案…"), f: openCompare, off: !S.PROJ },
     ];
   if (name === "base")
     return [
       {
-        t: S.mode === "base" ? "完成底圖編輯" : "編輯底圖",
+        t: S.mode === "base" ? t("完成底圖編輯") : t("編輯底圖"),
         c: S.mode === "base",
         f: () => setMode(S.mode === "base" ? "design" : "base"),
         off: !has,
       },
-      { t: "底圖設定（名稱、透明度）", f: () => $("btnBase").click(), off: !has },
+      { t: t("底圖設定（名稱、透明度）"), f: () => $("btnBase").click(), off: !has },
       "-",
-      { t: "更換底圖…", f: () => showGate("replace"), off: !has },
+      { t: t("更換底圖…"), f: () => showGate("replace"), off: !has },
       {
-        t: "🤖 AI 產生底圖…",
+        t: t("🤖 AI 產生底圖…"),
         f: () => {
           S.gateIntent = has ? "replace" : "new";
           openAI();
         },
       },
-      { t: "重新校正圖片比例", f: startCalib, off: !(has && S.BASE.image) },
+      { t: t("重新校正圖片比例"), f: startCalib, off: !(has && S.BASE.image) },
       {
-        t: "匯出底圖檔",
+        t: t("匯出底圖檔"),
         f: () =>
           download(
-            `${safeName()}-底圖.json`,
+            `${safeName()}-${t("底圖")}.json`,
             new Blob([JSON.stringify(baseData(), null, 1)], { type: "application/json" }),
           ),
         off: !has,
@@ -101,11 +104,11 @@ export function menuItems(name) {
     ];
   if (name === "tools")
     return [
-      { t: "量測距離", k: "M", c: S.measureMode, f: () => setMeasure(!S.measureMode), off: !has },
+      { t: t("量測距離"), k: "M", c: S.measureMode, f: () => setMeasure(!S.measureMode), off: !has },
       "-",
-      { t: "拖曳時貼齊邊緣", c: chk("chkEdge"), f: () => toggleChk("chkEdge") },
-      { t: "吸附格線", c: chk("chkSnap"), f: () => toggleChk("chkSnap") },
-      { h: "吸附精度" },
+      { t: t("拖曳時貼齊邊緣"), c: chk("chkEdge"), f: () => toggleChk("chkEdge") },
+      { t: t("吸附格線"), c: chk("chkSnap"), f: () => toggleChk("chkSnap") },
+      { h: t("吸附精度") },
       ...[1, 5, 10].map(v => ({
         t: `${v} cm`,
         c: +$("selSnap").value === v,
@@ -117,28 +120,31 @@ export function menuItems(name) {
     ];
   if (name === "help")
     return [
-      { t: "📖 使用教學（完整介紹）", k: "↗", f: () => window.open("guide.html", "_blank", "noopener") },
+      { t: t("📖 使用教學（完整介紹）"), k: "↗", f: () => window.open(GUIDE, "_blank", "noopener") },
       {
-        t: "顯示操作提示",
+        t: t("顯示操作提示"),
         f: () => {
           $("tipCard").hidden = false;
           localStorage.removeItem("hl-tip-off");
         },
       },
       "-",
-      { t: "關於 House Layout…", f: () => $("aboutModal").classList.add("show") },
+      { t: t("關於 House Layout…"), f: () => $("aboutModal").classList.add("show") },
       "-",
       {
-        t: "GitHub 原始碼",
+        t: t("GitHub 原始碼"),
         k: "↗",
         f: () => window.open("https://github.com/u9951064/house-layout", "_blank", "noopener"),
       },
       {
-        t: "回報問題／建議",
+        t: t("回報問題／建議"),
         k: "↗",
         f: () => window.open("https://github.com/u9951064/house-layout/issues/new", "_blank", "noopener"),
       },
-      { t: "AI 底圖提示詞（PROMPT.md）", k: "↗", f: () => window.open("PROMPT.md", "_blank", "noopener") },
+      { t: t("AI 底圖提示詞（PROMPT.md）"), k: "↗", f: () => window.open("PROMPT.md", "_blank", "noopener") },
+      "-",
+      { h: "語言 Language" },
+      ...LANGS.map(([k, label]) => ({ t: label, c: LANG === k, f: () => setLang(k) })),
     ];
   return [];
 }

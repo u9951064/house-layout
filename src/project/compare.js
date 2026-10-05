@@ -1,4 +1,5 @@
 // 疊圖與並排比較
+import { t } from "../core/i18n.js";
 import { S, state } from "../core/store.js";
 import { $, el, esc } from "../core/dom.js";
 import { DEFAULTS } from "../shapes/library.js";
@@ -60,12 +61,12 @@ export function openCompare() {
     });
     const card = document.createElement("div");
     card.className = "cmpCard";
-    card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>${esc(d.name)}${k === S.PROJ.cur ? '　<span class="muted">（目前）</span>' : ""}</b><button>切換到此方案</button></div>
+    card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>${esc(d.name)}${k === S.PROJ.cur ? `\u3000<span class="muted">${t("（目前）")}</span>` : ""}</b><button>${t("切換到此方案")}</button></div>
       <img alt="${esc(d.name)}" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSVG(d))}">
-      <div class="muted" style="font-size:12px;line-height:1.6">${d.items.length} 個物件：${
+      <div class="muted" style="font-size:12px;line-height:1.6">${t("{n} 個物件：", { n: d.items.length })}${
         Object.entries(counts)
           .map(([n, c]) => esc(n) + (c > 1 ? " ×" + c : ""))
-          .join("、") || "（空白）"
+          .join(t("、")) || t("（空白）")
       }</div>`;
     card.querySelector("button").onclick = () => {
       $("cmpModal").classList.remove("show");

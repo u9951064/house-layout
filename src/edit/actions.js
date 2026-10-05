@@ -1,4 +1,5 @@
 // 新增、刪除、再製、旋轉、鏡像
+import { t } from "../core/i18n.js";
 import { CURVE_KEYS } from "../shapes/curve.js";
 import { S, state } from "../core/store.js";
 import { commit } from "../core/history.js";
@@ -31,7 +32,7 @@ export function addItem(def, x, y) {
   if (def.thick) it.thick = def.thick;
   if (def.chairs != null) it.chairs = def.chairs;
   if (def.type === "text") {
-    it.label = "文字";
+    it.label = t("文字");
     it.fontSize = 16;
   }
   it.x = snapV(x - it.w / 2);

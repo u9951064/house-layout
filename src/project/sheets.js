@@ -1,4 +1,5 @@
 // 方案分頁（Excel 工作表式）
+import { t } from "../core/i18n.js";
 import { S, state } from "../core/store.js";
 import { $, esc, toast } from "../core/dom.js";
 import { snapshot, updateButtons } from "../core/history.js";
@@ -30,15 +31,15 @@ export function switchDesign(k) {
 export function nextName() {
   const used = new Set(S.PROJ.designs.map(d => d.name));
   for (let i = 0; i < 52; i++) {
-    const n = `方案 ${i < 26 ? String.fromCharCode(65 + i) : String.fromCharCode(65 + i - 26) + "2"}`;
+    const n = t("方案 {x}", { x: i < 26 ? String.fromCharCode(65 + i) : String.fromCharCode(65 + i - 26) + "2" });
     if (!used.has(n)) return n;
   }
-  return `方案 ${S.PROJ.designs.length + 1}`;
+  return t("方案 {x}", { x: S.PROJ.designs.length + 1 });
 }
 export function addDesign(copyIdx) {
   syncDesign();
   const src = copyIdx != null ? S.PROJ.designs[copyIdx] : null;
-  const name = prompt("新方案名稱", src ? `${src.name} 複本` : nextName());
+  const name = prompt(t("新方案名稱"), src ? t("{name} 複本", { name: src.name }) : nextName());
   if (name === null) return;
   const d = {
     id: uid(),
@@ -48,11 +49,11 @@ export function addDesign(copyIdx) {
   };
   S.PROJ.designs.splice(copyIdx != null ? copyIdx + 1 : S.PROJ.designs.length, 0, d);
   switchDesign(S.PROJ.designs.indexOf(d));
-  toast(src ? `已複製成「${d.name}」` : `已新增「${d.name}」`);
+  toast(src ? t("已複製成「{name}」", { name: d.name }) : t("已新增「{name}」", { name: d.name }));
 }
 export function renameDesign(k) {
   const d = S.PROJ.designs[k],
-    n = prompt("方案名稱", d.name);
+    n = prompt(t("方案名稱"), d.name);
   if (n === null || !n.trim()) return;
   d.name = n.trim();
   renderSheets();
@@ -60,11 +61,16 @@ export function renameDesign(k) {
 }
 export function deleteDesign(k) {
   if (S.PROJ.designs.length <= 1) {
-    toast("至少要保留一個方案");
+    toast(t("至少要保留一個方案"));
     return;
   }
   const d = S.PROJ.designs[k];
-  if (!confirm(`刪除方案「${d.name}」（${(k === S.PROJ.cur ? state.items : d.items).length} 個物件）？`)) return;
+  if (
+    !confirm(
+      t("刪除方案「{name}」（{n} 個物件）？", { name: d.name, n: (k === S.PROJ.cur ? state.items : d.items).length }),
+    )
+  )
+    return;
   syncDesign();
   S.PROJ.designs.splice(k, 1);
   if (S.ghostId === d.id) S.ghostId = null;
@@ -96,7 +102,7 @@ export function moveDesignTo(from, to) {
   S.PROJ.cur = S.PROJ.designs.findIndex(x => x.id === cid);
   renderSheets();
   autosave();
-  toast(`已移動「${d.name}」`);
+  toast(t("已移動「{name}」", { name: d.name }));
 }
 export function copyDesignTo(from, to) {
   syncDesign();
@@ -113,7 +119,7 @@ export function copyDesignTo(from, to) {
   };
   S.PROJ.designs.splice(to, 0, d);
   switchDesign(S.PROJ.designs.indexOf(d));
-  toast(`已複製成「${name}」`);
+  toast(t("已複製成「{name}」", { name }));
 }
 export function renderSheets() {
   const T = $("sheets");
@@ -125,12 +131,12 @@ export function renderSheets() {
     S.PROJ.designs
       .map(
         (d, k) =>
-          `<button class="sh${k === S.PROJ.cur ? " on" : ""}${d.id === S.ghostId ? " ghost" : ""}" data-k="${k}" draggable="true" title="點選切換｜雙擊重新命名｜拖曳排序（按住 ⌥／Ctrl 拖曳＝複製）｜右鍵更多">${esc(d.name)} <small>${(k === S.PROJ.cur ? state.items : d.items).length}</small></button>`,
+          `<button class="sh${k === S.PROJ.cur ? " on" : ""}${d.id === S.ghostId ? " ghost" : ""}" data-k="${k}" draggable="true" title="${t("點選切換｜雙擊重新命名｜拖曳排序（按住 ⌥／Ctrl 拖曳＝複製）｜右鍵更多")}">${esc(d.name)} <small>${(k === S.PROJ.cur ? state.items : d.items).length}</small></button>`,
       )
       .join("") +
-    `<button class="sh add" id="shAdd" title="新增空白方案">＋</button><span class="grow"></span>
-    <span class="ctl">疊圖<select id="selGhost" title="把另一個方案以紅色半透明疊在目前畫布上"><option value="">（無）</option>${S.PROJ.designs.map((d, k) => (k === S.PROJ.cur ? "" : `<option value="${d.id}" ${d.id === S.ghostId ? "selected" : ""}>${esc(d.name)}</option>`)).join("")}</select>
-    <button id="shCmp" title="並排比較所有方案">並排比較</button></span>`;
+    `<button class="sh add" id="shAdd" title="${t("新增空白方案")}">＋</button><span class="grow"></span>
+    <span class="ctl">${t("疊圖")}<select id="selGhost" title="${t("把另一個方案以紅色半透明疊在目前畫布上")}"><option value="">${t("（無）")}</option>${S.PROJ.designs.map((d, k) => (k === S.PROJ.cur ? "" : `<option value="${d.id}" ${d.id === S.ghostId ? "selected" : ""}>${esc(d.name)}</option>`)).join("")}</select>
+    <button id="shCmp" title="${t("並排比較所有方案")}">${t("並排比較")}</button></span>`;
   T.querySelectorAll(".sh[data-k]").forEach(b => {
     const k = +b.dataset.k;
     b.onclick = () => switchDesign(k);
@@ -190,9 +196,9 @@ export function renderSheets() {
 export function sheetMenu(k, x, y) {
   const M = $("sheetMenu"),
     n = S.PROJ.designs.length;
-  M.innerHTML = `<div data-a="ren">重新命名</div><div data-a="dup">複製方案</div><div data-a="new">新增空白方案</div><hr>
-    <div data-a="left" ${k === 0 ? 'style="opacity:.4"' : ""}>往左移（也可直接拖曳分頁）</div><div data-a="right" ${k === n - 1 ? 'style="opacity:.4"' : ""}>往右移</div>
-    <div data-a="ghost">${S.PROJ.designs[k].id === S.ghostId ? "取消疊圖" : "疊在目前畫布上比較"}</div><hr><div data-a="del" class="danger">刪除方案</div>`;
+  M.innerHTML = `<div data-a="ren">${t("重新命名")}</div><div data-a="dup">${t("複製方案")}</div><div data-a="new">${t("新增空白方案")}</div><hr>
+    <div data-a="left" ${k === 0 ? 'style="opacity:.4"' : ""}>${t("往左移（也可直接拖曳分頁）")}</div><div data-a="right" ${k === n - 1 ? 'style="opacity:.4"' : ""}>${t("往右移")}</div>
+    <div data-a="ghost">${S.PROJ.designs[k].id === S.ghostId ? t("取消疊圖") : t("疊在目前畫布上比較")}</div><hr><div data-a="del" class="danger">${t("刪除方案")}</div>`;
   M.style.left = x + "px";
   M.style.top = Math.max(8, y - 250) + "px";
   M.classList.add("show");
@@ -209,7 +215,7 @@ export function sheetMenu(k, x, y) {
         if (a === "del") deleteDesign(k);
         if (a === "ghost") {
           if (k === S.PROJ.cur) {
-            toast("不能疊目前的方案");
+            toast(t("不能疊目前的方案"));
             return;
           }
           S.ghostId = S.PROJ.designs[k].id === S.ghostId ? null : S.PROJ.designs[k].id;

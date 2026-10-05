@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = path.join(ROOT, "dist");
 const APP_CSS = ["css/base.css", "css/panels.css", "css/dialogs.css", "css/canvas.css"];
+const GUIDES = ["guide.html", "guide.en.html"];
 const COPY = ["PROMPT.md", "LICENSE", "CNAME", ".nojekyll", "examples", "docs"];
 
 fs.rmSync(DIST, { recursive: true, force: true });
@@ -65,19 +66,22 @@ if (!html.includes(entry)) throw new Error("index.html 找不到進入點 script
 html = html.replace(entry, `<script type="module" src="assets/${appJs}"></script>`);
 fs.writeFileSync(path.join(DIST, "index.html"), html);
 
-// guide.html：CSS 換成雜湊檔，圖片加上內容版本號
-let guide = fs
-  .readFileSync(path.join(ROOT, "guide.html"), "utf8")
-  .replace('href="css/guide.css"', `href="assets/${gCss}"`);
-guide = guide.replace(/src="(docs\/img\/[^"?]+)"/g, (m, src) => {
-  const h = crypto
+// 使用教學頁（中／英）：CSS 換成雜湊檔，圖片加上內容版本號
+const imgHash = src =>
+  crypto
     .createHash("sha1")
     .update(fs.readFileSync(path.join(ROOT, src)))
     .digest("hex")
     .slice(0, 8);
-  return `src="${src}?v=${h}"`;
-});
-fs.writeFileSync(path.join(DIST, "guide.html"), guide);
+for (const page of GUIDES) {
+  const guide = fs
+    .readFileSync(path.join(ROOT, page), "utf8")
+    .replace('href="css/guide.css"', `href="assets/${gCss}"`)
+    .replace(/src="(docs\/img\/[^"?]+)"/g, (m, src) =>
+      fs.existsSync(path.join(ROOT, src)) ? `src="${src}?v=${imgHash(src)}"` : m,
+    );
+  fs.writeFileSync(path.join(DIST, page), guide);
+}
 
 for (const f of COPY)
   if (fs.existsSync(path.join(ROOT, f))) fs.cpSync(path.join(ROOT, f), path.join(DIST, f), { recursive: true });

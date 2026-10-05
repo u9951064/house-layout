@@ -1,4 +1,5 @@
 // 複製／剪下／貼上
+import { t } from "../core/i18n.js";
 import { S, state } from "../core/store.js";
 import { KEY, toast } from "../core/dom.js";
 import { commit } from "../core/history.js";
@@ -17,7 +18,7 @@ export function copySel(cut) {
   if (cut) {
     its = its.filter(i => !i.locked);
     if (!its.length) {
-      toast("已鎖定的物件不能剪下");
+      toast(t("已鎖定的物件不能剪下"));
       return true;
     }
   }
@@ -30,7 +31,7 @@ export function copySel(cut) {
   try {
     localStorage.setItem("hl-clip", JSON.stringify(S.CLIP));
   } catch (e) {}
-  const what = its.length > 1 ? `${its.length} 個物件` : `「${itemName(its[0])}」`;
+  const what = its.length > 1 ? t("{n} 個物件", { n: its.length }) : t("「{name}」", { name: itemName(its[0]) });
   if (cut) {
     state.items = state.items.filter(i => !its.includes(i));
     S.msel = [];
@@ -38,8 +39,8 @@ export function copySel(cut) {
     renderItems();
     renderProps();
     commit();
-    toast(`已剪下${what}，${KEY}V 貼上`);
-  } else toast(`已複製${what}，${KEY}V 貼上（可跨方案分頁）`);
+    toast(t("已剪下{what}，{key}V 貼上", { what, key: KEY }));
+  } else toast(t("已複製{what}，{key}V 貼上（可跨方案分頁）", { what, key: KEY }));
   return true;
 }
 export function getClip() {
@@ -54,7 +55,7 @@ export function getClip() {
 export function pasteClip(at) {
   const cs = getClip();
   if (!cs) {
-    toast("剪貼簿是空的");
+    toast(t("剪貼簿是空的"));
     return;
   }
   if (!S.BASE) return;

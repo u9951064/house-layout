@@ -1,4 +1,5 @@
 // 各元件的平面圖例繪製（建商平面圖風格）
+import { t } from "../core/i18n.js";
 import { curveGeom, subPath, toPath } from "./curve.js";
 import { C, L, PATH, R, TXT, el } from "../core/dom.js";
 
@@ -174,7 +175,7 @@ export const DRAW = {
     L(g, 10, 4, 10, d - 4, "d");
     L(g, w - 10, 4, w - 10, d - 4, "d");
     R(g, w / 2 - Math.min(30, w * 0.25), 4, Math.min(60, w * 0.5), 3, "f");
-    TXT(g, w / 2, d * 0.62, "升降", "sz");
+    TXT(g, w / 2, d * 0.62, t("升降"), "sz");
     chairSym(g, w / 2 - 26, d - 6, 52, 50, "S");
   },
   deskFixed(g, w, d) {
@@ -284,7 +285,7 @@ export const DRAW = {
     L(g, w, 0, 0, d, "d");
     R(g, w - 14, d * 0.35, 10, d * 0.4, "t");
     for (let y = d * 0.4; y < d * 0.75; y += 12) L(g, w - 14, y, w - 4, y);
-    TXT(g, w / 2, d * 0.62, "上下舖", "sz");
+    TXT(g, w / 2, d * 0.62, t("上下舖"), "sz");
   },
   crib(g, w, d) {
     R(g, 0, 0, w, d);
@@ -305,7 +306,7 @@ export const DRAW = {
     for (let x = m; x < w - 5; x += m) L(g, x, 0, x, d);
     for (let y = m; y < d - 5; y += m) L(g, 0, y, w, y);
     R(g, 3, 3, w - 6, d - 6, "t");
-    TXT(g, w / 2, d - 12, "架高 H40", "sz");
+    TXT(g, w / 2, d - 12, t("架高 H40"), "sz");
   },
   wardrobeL(g, w, d) {
     const dp = Math.min(60, w * 0.45, d * 0.45);

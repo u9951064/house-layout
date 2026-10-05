@@ -1,4 +1,5 @@
 // 鍵盤快捷鍵
+import { t } from "../core/i18n.js";
 import { S, opt, state } from "../core/store.js";
 import { $, toast } from "../core/dom.js";
 import { commit, redo, undo } from "../core/history.js";
@@ -70,7 +71,7 @@ export function init() {
     if (mod && e.key.toLowerCase() === "a" && S.BASE) {
       e.preventDefault();
       setSel(state.items.map(i => i.id));
-      toast(`已全選 ${state.items.length} 個物件`);
+      toast(t("已全選 {n} 個物件", { n: state.items.length }));
       return;
     }
     const it = cur();

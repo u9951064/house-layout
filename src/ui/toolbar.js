@@ -1,4 +1,5 @@
 // 常用工具列與舊控制項同步
+import { t } from "../core/i18n.js";
 import { S, opt } from "../core/store.js";
 import { $, toast } from "../core/dom.js";
 import { redo, undo } from "../core/history.js";
@@ -27,7 +28,7 @@ export function init() {
   $("selSnap").onchange = e => {
     opt.step = +e.target.value;
     drawGrid();
-    toast(`吸附精度：${opt.step} cm`);
+    toast(t("吸附精度：{n} cm", { n: opt.step }));
   };
   $("chkGrid").onchange = e => {
     opt.grid = e.target.checked;

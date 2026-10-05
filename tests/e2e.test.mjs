@@ -335,12 +335,57 @@ test("提示卡：第一次顯示、關閉後重新整理不再出現", async ()
   assert.equal(after, true);
 });
 
-test("使用教學頁與範例檔可存取，且圖片都存在", async () => {
-  const html = await (await fetch(URL.replace("index.html", "guide.html"))).text();
-  const imgs = [...html.matchAll(/src="(docs\/img\/[^"]+)"/g)].map(m => m[1]);
-  assert.ok(imgs.length >= 10);
-  for (const src of imgs) assert.equal((await fetch(URL.replace("index.html", src))).status, 200, src);
-  assert.equal((await fetch(URL.replace("index.html", "examples/sample-project.json"))).status, 200);
+test("使用教學頁（中／英）與範例檔可存取，且圖片都存在", async () => {
+  for (const page of ["guide.html", "guide.en.html"]) {
+    const html = await (await fetch(URL.replace("index.html", page))).text();
+    const imgs = [...html.matchAll(/src="(docs\/img\/[^"?]+)/g)].map(m => m[1]);
+    assert.ok(imgs.length >= 10, page);
+    for (const src of imgs) assert.equal((await fetch(URL.replace("index.html", src))).status, 200, src);
+  }
+  for (const f of ["sample-project.json", "sample-project.en.json"])
+    assert.equal((await fetch(URL.replace("index.html", "examples/" + f))).status, 200, f);
+});
+
+test("英文字典涵蓋所有 t() 字串", async () => {
+  const fs = await import("node:fs");
+  const { EN } = await import("../src/i18n/en.js");
+  const files = fs.readdirSync("src", { recursive: true }).filter(f => f.endsWith(".js"));
+  const missing = [];
+  for (const f of files)
+    for (const m of fs.readFileSync(path.join("src", f), "utf8").matchAll(/\bt\(\s*(["'`])((?:\\.|(?!\1).)*)\1/g))
+      if (/\p{Script=Han}/u.test(m[2]) && !(m[2] in EN)) missing.push(`${f}: ${m[2]}`);
+  assert.deepEqual(missing, []);
+});
+
+test("英文語系：介面與範例專案沒有中文，語言選擇會保留", async () => {
+  const han = /\p{Script=Han}/u;
+  await ev(() => localStorage.clear());
+  await page.goto(URL + "?lang=en");
+  await ev(() => document.getElementById("gateSample").click());
+  await page.waitForFunction(() => window.__fp.base);
+  const r = await ev(() => ({
+    lang: document.documentElement.lang,
+    menu: [...document.querySelectorAll("#menubar .mb")].map(b => b.textContent),
+    text: document.body.innerText,
+    proj: window.__fp.proj.name,
+  }));
+  assert.equal(r.lang, "en");
+  assert.deepEqual(r.menu.slice(0, 2), ["File", "Edit"]);
+  assert.equal(r.proj, "Sample 2-bedroom");
+  assert.equal(
+    han.test(r.text),
+    false,
+    r.text
+      .split("\n")
+      .filter(l => han.test(l))
+      .join(" | "),
+  );
+  await page.goto(URL);
+  assert.equal(await ev(() => document.querySelector("#menubar .mb").textContent), "File");
+  await page.goto(URL + "?lang=zh-TW");
+  assert.equal(await ev(() => document.querySelector("#menubar .mb").textContent), "檔案");
+  await page.goto(URL);
+  assert.equal(await ev(() => document.documentElement.lang), "zh-Hant");
 });
 
 test("整個流程沒有任何頁面錯誤", () => {

@@ -1,4 +1,5 @@
 // 圖片底圖的兩點比例校正
+import { t } from "../core/i18n.js";
 import { S, view } from "../core/store.js";
 import { $, el, svg, toast, uiLayer } from "../core/dom.js";
 import { fit } from "../canvas/view.js";
@@ -8,7 +9,7 @@ import { autosave } from "../project/project.js";
 
 export function startCalib() {
   if (!S.BASE || !S.BASE.image) {
-    toast("只有圖片底圖需要校正比例");
+    toast(t("只有圖片底圖需要校正比例"));
     return;
   }
   S.calib = { pts: [] };
@@ -42,7 +43,7 @@ export function drawCalib() {
 export function applyCalib() {
   const [a, b] = S.calib.pts,
     cur = Math.hypot(b.x - a.x, b.y - a.y);
-  const v = prompt(`這兩點的實際距離是幾公分？（目前量到 ${Math.round(cur)} 個單位）`, "300");
+  const v = prompt(t("這兩點的實際距離是幾公分？（目前量到 {n} 個單位）", { n: Math.round(cur) }), "300");
   const real = parseFloat(v);
   if (!real || real <= 0 || !cur) {
     endCalib();
@@ -60,5 +61,5 @@ export function applyCalib() {
   drawBase();
   fit();
   autosave();
-  toast(`比例已校正：圖上 ${Math.round(cur)} → 實際 ${real} cm。可用「量測」再確認一次`);
+  toast(t("比例已校正：圖上 {a} → 實際 {b} cm。可用「量測」再確認一次", { a: Math.round(cur), b: real }));
 }

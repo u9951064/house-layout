@@ -1,4 +1,5 @@
 // 右下角縮放列
+import { t } from "../core/i18n.js";
 import { S, view } from "../core/store.js";
 import { $ } from "../core/dom.js";
 import { fit, zoomBy } from "../canvas/view.js";
@@ -45,7 +46,7 @@ export function init() {
         f: () => setZoom(v / 100),
       })),
       "-",
-      { t: "全圖顯示", k: "⤢", f: fit },
+      { t: t("全圖顯示"), k: "⤢", f: fit },
     ]);
     e.stopPropagation();
   };

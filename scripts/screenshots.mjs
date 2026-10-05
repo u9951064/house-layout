@@ -1,5 +1,5 @@
-// 產生使用教學（guide.html）用的截圖：npm run screenshots
-// 一律使用 examples/sample-project.json 的範例格局，不含任何真實住家資料
+// 產生使用教學用的截圖：npm run screenshots（中文 → docs/img）、npm run screenshots:en（英文 → docs/img/en）
+// 一律使用 examples/ 的範例格局，不含任何真實住家資料
 import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
@@ -7,19 +7,28 @@ import { fileURLToPath } from "node:url";
 import { serve } from "./serve.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = path.join(ROOT, "docs", "img");
+const LANG = process.argv[2] === "en" ? "en" : "zh-TW";
+const EN = LANG === "en";
+const OUT = path.join(ROOT, "docs", "img", ...(EN ? ["en"] : []));
+const SAMPLE = EN ? "sample-project.en.json" : "sample-project.json";
+const SAMPLE_NAME = EN ? "Sample 2-bedroom" : "範例兩房";
+// 依文字找選單項目（中英文標籤都列出，找不到就報錯）
+const MENU_TEXT = {
+  editBase: ["編輯底圖", "Edit base plan"],
+  ai: ["AI 產生底圖", "AI-generate base plan", "AI base plan", "Generate base plan with AI"],
+};
 const PORT = 4320;
 fs.mkdirSync(OUT, { recursive: true });
 
 const server = await serve(PORT);
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1.5 });
-page.on("dialog", d => d.accept(d.type() === "prompt" ? d.defaultValue() || "範例" : undefined));
+page.on("dialog", d => d.accept(d.type() === "prompt" ? d.defaultValue() || SAMPLE_NAME : undefined));
 const shot = (name, clip) => page.screenshot({ path: path.join(OUT, name + ".png"), clip });
 const ev = (fn, arg) => page.evaluate(fn, arg);
-const sample = JSON.parse(fs.readFileSync(path.join(ROOT, "examples", "sample-project.json"), "utf8"));
+const sample = JSON.parse(fs.readFileSync(path.join(ROOT, "examples", SAMPLE), "utf8"));
 
-await page.goto(`http://127.0.0.1:${PORT}/index.html`);
+await page.goto(`http://127.0.0.1:${PORT}/index.html?lang=${LANG}`);
 await ev(() => {
   localStorage.clear();
   localStorage.setItem("hl-tip-off", "1");
@@ -30,7 +39,7 @@ await page.reload();
 await shot("gate", { x: 360, y: 60, width: 720, height: 780 });
 
 // 2. 載入範例專案 → 整體介面
-await ev(d => window.__fp.loadData(d, "範例兩房"), sample);
+await ev(([d, n]) => window.__fp.loadData(d, n), [sample, SAMPLE_NAME]);
 await page.waitForTimeout(2600); // 等「已建立專案」提示消失
 await ev(() => {
   window.__fp.state.sel = null;
@@ -105,11 +114,13 @@ await shot("compare");
 await page.click("#cmpClose");
 
 // 11. 底圖編輯
-await ev(() => {
+await ev(labels => {
   document.querySelector('#menubar .mb[data-menu="base"]').click();
-  [...document.querySelectorAll("#menuPop .mi")].find(d => d.textContent.includes("編輯底圖")).click();
+  const mi = [...document.querySelectorAll("#menuPop .mi")].find(d => labels.some(l => d.textContent.includes(l)));
+  if (!mi) throw new Error("找不到選單項目：" + labels.join(" / "));
+  mi.click();
   document.querySelector('#basePal [data-tool="wall"]').click();
-});
+}, MENU_TEXT.editBase);
 await page.waitForTimeout(200);
 await shot("base-edit");
 await ev(() => document.getElementById("basePalDone").click());
@@ -125,10 +136,12 @@ await page.waitForTimeout(200);
 await shot("curve", { x: 900, y: 86, width: 540, height: 600 });
 
 // 13. AI 產生底圖
-await ev(() => {
+await ev(labels => {
   document.querySelector('#menubar .mb[data-menu="base"]').click();
-  [...document.querySelectorAll("#menuPop .mi")].find(d => d.textContent.includes("AI 產生底圖")).click();
-});
+  const mi = [...document.querySelectorAll("#menuPop .mi")].find(d => labels.some(l => d.textContent.includes(l)));
+  if (!mi) throw new Error("找不到選單項目：" + labels.join(" / "));
+  mi.click();
+}, MENU_TEXT.ai);
 await shot("ai", { x: 330, y: 60, width: 780, height: 780 });
 
 await browser.close();
