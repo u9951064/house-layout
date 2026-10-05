@@ -18,7 +18,7 @@
 
 ## 專案架構
 
-純前端、沒有建置步驟：`index.html` 以瀏覽器原生 ES Modules 載入 `src/main.js`，GitHub Pages 直接部署。
+純前端。開發時 `index.html` 以瀏覽器原生 ES Modules 直接載入 `src/main.js`（不需建置）；部署時 GitHub Actions 以 esbuild 打包成內容雜湊檔名（`dist/assets/app-[hash].js`），避免瀏覽器快取到舊版，並對建置結果跑 e2e 測試後才發布到 GitHub Pages。
 
 ```
 index.html            頁面結構（不含程式與樣式）
@@ -40,6 +40,7 @@ src/
   io/                 file（存檔／開檔）、export（PNG／SVG／列印）
   ui/                 palette、props、menubar、toolbar、zoombar、gate、ai、keyboard、context-menu
 scripts/serve.mjs     開發用靜態伺服器（零相依）
+scripts/build.mjs     正式版建置（esbuild）
 tests/e2e.test.mjs    端對端測試（Playwright）
 eslint.config.js      ESLint 設定（flat config＋eslint-config-prettier）
 .prettierrc.json      Prettier 設定（printWidth 120）
@@ -64,6 +65,8 @@ npm run lint           # ESLint
 npm run format         # Prettier 格式化（JS／CSS）
 npm run check          # lint + 格式檢查 + 測試（CI 同步執行）
 npm run screenshots    # 重新產生教學截圖（docs/img，使用範例專案）
+npm run build          # 正式版建置到 dist/（JS／CSS 打包成內容雜湊檔名）
+npm run preview        # 建置並在 http://127.0.0.1:8001/ 預覽
 ```
 
 ES Modules 不能用 `file://` 直接開啟，請用 `npm run dev`。

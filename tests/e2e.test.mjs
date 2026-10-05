@@ -2,6 +2,7 @@
 // 執行：npm test（會自動啟動靜態伺服器）
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import path from "node:path";
 import { serve } from "../scripts/serve.mjs";
 import { chromium } from "playwright";
 
@@ -28,7 +29,7 @@ const SAMPLE = {
 let server, browser, page;
 const errors = [];
 test.before(async () => {
-  server = await serve(PORT);
+  server = await serve(PORT, process.env.TEST_ROOT ? path.resolve(process.env.TEST_ROOT) : undefined);
   browser = await chromium.launch();
   page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   page.on("pageerror", e => errors.push(e.message));

@@ -15,12 +15,12 @@ const TYPES = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
 };
-export function serve(port = 8000) {
+export function serve(port = 8000, root = ROOT) {
   const server = http.createServer((req, res) => {
     let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
     if (p.endsWith("/")) p += "index.html";
-    const file = path.join(ROOT, p);
-    if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
+    const file = path.join(root, p);
+    if (!file.startsWith(root) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
       res.writeHead(404);
       res.end("Not found");
       return;
@@ -36,6 +36,6 @@ export function serve(port = 8000) {
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const port = +process.argv[2] || 8000;
-  await serve(port);
+  await serve(port, process.argv[3] ? path.resolve(process.argv[3]) : ROOT);
   console.log(`House Layout：http://127.0.0.1:${port}/`);
 }
