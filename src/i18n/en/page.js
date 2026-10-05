@@ -9,6 +9,8 @@ const text = {
   檢視: "View",
   底圖: "Base plan",
   說明: "Help",
+  "🌐 語言": "🌐 Language",
+  "語言 Language": "語言 Language",
   切換專案: "Switch project",
   "復原 (⌘Z)": "Undo (⌘Z)",
   "重做 (⇧⌘Z)": "Redo (⇧⌘Z)",

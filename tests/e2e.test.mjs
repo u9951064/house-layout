@@ -382,6 +382,12 @@ test("英文語系：介面與範例專案沒有中文，語言選擇會保留",
   );
   await page.goto(URL);
   assert.equal(await ev(() => document.querySelector("#menubar .mb").textContent), "File");
+  await page.click('#menubar .mb[data-menu="lang"]');
+  assert.deepEqual(await ev(() => [...document.querySelectorAll("#menuPop .mi")].map(d => d.textContent.trim())), [
+    "繁體中文",
+    "✓English",
+  ]);
+  await page.keyboard.press("Escape");
   await page.goto(URL + "?lang=zh-TW");
   assert.equal(await ev(() => document.querySelector("#menubar .mb").textContent), "檔案");
   await page.goto(URL);

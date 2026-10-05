@@ -142,10 +142,8 @@ export function menuItems(name) {
         f: () => window.open("https://github.com/u9951064/house-layout/issues/new", "_blank", "noopener"),
       },
       { t: t("AI 底圖提示詞（PROMPT.md）"), k: "↗", f: () => window.open("PROMPT.md", "_blank", "noopener") },
-      "-",
-      { h: "語言 Language" },
-      ...LANGS.map(([k, label]) => ({ t: label, c: LANG === k, f: () => setLang(k) })),
     ];
+  if (name === "lang") return LANGS.map(([k, label]) => ({ t: label, c: LANG === k, f: () => setLang(k) }));
   return [];
 }
 export function openMenu(name, btn) {

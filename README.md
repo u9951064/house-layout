@@ -4,7 +4,7 @@
 
 📖 [完整使用教學](https://house-layout.tinycloud.tw/guide.html)｜[English guide](https://house-layout.tinycloud.tw/guide.en.html)
 
-🌐 介面支援繁體中文（預設）與英文：從「說明」選單切換，或在網址加上 `?lang=en`（例如 <https://house-layout.tinycloud.tw/?lang=en>）。
+🌐 介面支援繁體中文（預設）與英文：從選單列的「🌐 語言」切換，或在網址加上 `?lang=en`（例如 <https://house-layout.tinycloud.tw/?lang=en>）。
 
 - **先匯入自己的房屋底圖**：匯入底圖／專案檔（.json）、上傳平面圖圖片並以兩點校正比例，或輸入外框尺寸建立外牆。
 - **AI 產生底圖**：複製內建提示詞（[PROMPT.md](PROMPT.md)）給 ChatGPT／Claude／Gemini，附上平面尺寸圖或不動產說明書，把回覆貼回網頁即可套用；會自動修正小誤差並列出提醒。
