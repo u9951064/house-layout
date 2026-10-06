@@ -1,5 +1,5 @@
 // 裝修元件與門的 3D 模型（局部座標：原點＝物件左上角、地面 y=0、x∈[0,w]、z∈[0,d]，單位 cm）
-import { curveGeom, subPath } from "../shapes/curve.js";
+import { curveGeom, doorPath, pathLen, pleatPath, subPath } from "../shapes/curve.js";
 import { P } from "./catalog.js";
 import { itemMat } from "./helpers.js";
 
@@ -275,6 +275,16 @@ function door3d(it, ctx) {
     box(THREE, g, x0 - 4, y + h, z0, x1 - x0 + 8, 4, depth, fm);
   };
   const open = Math.max(0, Math.min(90, P(it, "openDeg") ?? 15));
+  if (style === "accordion" && it.type !== "swingDoor" && it.type !== "doubleDoor") {
+    // 風琴門：沿路徑的折疊門片，打開時往起點收攏
+    const p = doorPath(it),
+      L = pathLen(p),
+      r = typeof ctx.doors === "number" ? ctx.doors : ctx.doors === "open" ? 1 : 0,
+      n = Math.max(4, Math.round(L / 10));
+    ribbon(THREE, g, p, y + h, 4, 6, fm);
+    ribbon(THREE, g, pleatPath(p, 3, n, Math.max(L * 0.15, L * (1 - 0.85 * r))), y, h - 1, 0.8, m);
+    return g;
+  }
   if (it.type === "swingDoor" || it.type === "doubleDoor") {
     // 門片線在 z=0、x 0..w，往 −z 開
     frame(0, w, -6, 12);

@@ -77,6 +77,7 @@ export default {
   玻璃門: "Glazed door",
   溝縫門: "Grooved door",
   百葉門: "Louvred door",
+  風琴門: "Accordion door",
   門片: "Door leaf",
   門片樣式: "Leaf style",
   門片材質: "Leaf material",

@@ -1,6 +1,6 @@
 // 各元件的平面圖例繪製（建商平面圖風格）
 import { t } from "../core/i18n.js";
-import { curveGeom, subPath, toPath } from "./curve.js";
+import { curveGeom, doorPath, pathLen, pleatPath, subPath, toPath } from "./curve.js";
 import { C, L, PATH, R, TXT, el } from "../core/dom.js";
 
 export const DRAW = {
@@ -578,4 +578,25 @@ export function chairSym(g, x, y, w, h, back) {
   R(gg, 2, 2, w - 4, h - 4, "s", 7);
   if (back === "S") R(gg, 4, h - 9, w - 8, 6, "t", 3);
   else R(gg, 4, 3, w - 8, 6, "t", 3);
+}
+
+// 風琴門（門片樣式 accordion）：沿門的路徑畫軌道與折痕
+for (const k of ["slideDoor", "pocketDoor", "foldDoor", "slideDoorArc", "curveSlide"]) {
+  const base = DRAW[k];
+  DRAW[k] = (g, w, d, it) => {
+    if (!it || it.leafStyle !== "accordion") return base(g, w, d, it);
+    const p = doorPath(it),
+      L = pathLen(p);
+    el("path", { d: toPath(p), fill: "none", stroke: "#9ca3af", "stroke-width": 1, "stroke-dasharray": "4 3" }, g);
+    el(
+      "path",
+      {
+        d: toPath(pleatPath(p, 3, Math.max(4, Math.round(L / 10)))),
+        fill: "none",
+        stroke: "#222",
+        "stroke-width": 1.4,
+      },
+      g,
+    );
+  };
 }

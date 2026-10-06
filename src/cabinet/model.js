@@ -189,13 +189,34 @@ export function cabFronts(it) {
     let df = DOORISH.has(frontKind) ? frontKind : null;
     if (upperKind && DOORISH.has(upperKind)) df = upperKind;
     if (kind === "appliance" && !upperKind) df = null;
-    if (!df) return;
-    let dy1 = dr ? ySplit + g / 2 : fy1;
-    // 電器櫃：下方抽屜，中段開放放電器，上方門
-    if (kind === "appliance") dy1 = Math.max(dy1, fy2 - Math.max(35, (fy2 - fy1) * 0.3));
-    if (dy1 >= fy2 - 5) return;
+    let dy1 = dr ? ySplit + g / 2 : fy1,
+      dy2 = fy2;
     const D = (x1, x2, hinge, k = "door", z = zF) =>
-      doors.push({ x1, x2, y1: dy1, y2: fy2, z1: z[0], z2: z[1], hinge, kind: k, sec: i });
+      doors.push({ x1, x2, y1: dy1, y2: dy2, z1: z[0], z2: z[1], hinge, kind: k, sec: i });
+    const put = df => {
+      if (df === "door1L") D(fx1, fx2, "L");
+      else if (df === "door1R") D(fx1, fx2, "R");
+      else if (df === "door2") {
+        const m = (fx1 + fx2) / 2;
+        D(fx1, m - g / 2, "L");
+        D(m + g / 2, fx2, "R");
+      }
+    };
+    // 電器櫃：下方（抽屜或下櫃門），中段開放放電器，上方門
+    if (kind === "appliance") {
+      const lowK = DOORISH.has(s.lower) && ["door1L", "door1R", "door2"].includes(s.lower) ? s.lower : null;
+      if (lowK) {
+        const lh = Math.max(20, Math.min(+s.lowerH || 80, fy2 - dy1 - 40));
+        dy2 = dy1 + lh - g / 2;
+        put(lowK);
+        zones[zones.length - 1].lowTop = dy2 + g / 2;
+        dy1 = dy2 + g;
+        dy2 = fy2;
+      }
+      dy1 = Math.max(dy1, fy2 - Math.max(20, +s.upperH || Math.max(35, (fy2 - fy1) * 0.3)));
+    }
+    if (!df) return;
+    if (dy1 >= fy2 - 5) return;
     if (df === "door1L") D(fx1, fx2, "L");
     else if (df === "door1R") D(fx1, fx2, "R");
     else if (df === "door2") {
@@ -280,9 +301,13 @@ export function cabParts(it) {
         P(t("吊衣桿"), "rod", ox1, mid - 6, rz, ow, 2.5, 2.5, c.handleMat, { section: i });
       }
     } else if (s.kind === "appliance") {
-      // 下方抽屜之上、門之下留電器空間；門內加一層板
-      const dz = doors.filter(o => o.sec === i);
-      if (dz.length) P(t("固定層板"), "shelf", ox1, dz[0].y1 - T, bt, ow, T, sz + 2, im, { section: i, fixed: true });
+      // 電器空間：下櫃門之上、上門之下各一片固定層板，中段可再加層板
+      const dz = doors.filter(o => o.sec === i).sort((p, q) => p.y1 - q.y1);
+      const up = dz.find(o => !z.lowTop || o.y1 > z.lowTop);
+      const top = up ? up.y1 - T : z.y2;
+      if (up) P(t("固定層板"), "shelf", ox1, top, bt, ow, T, sz + 2, im, { section: i, fixed: true });
+      if (z.lowTop) P(t("固定層板"), "shelf", ox1, z.lowTop, bt, ow, T, sz + 2, im, { section: i, fixed: true });
+      shelves(z.lowTop ? z.lowTop + T : z.y1, top, Math.round(+s.n || 0));
     } else if (!["drawer", "niche", "knee"].includes(s.kind)) shelves(z.y1, z.y2, Math.round(+s.n || 0));
   });
   for (const o of doors) {

@@ -162,4 +162,11 @@ export default {
   鞋櫃: "Shoe cabinet",
   頂板: "Top panel",
   "高櫃／電器櫃": "Tall / appliance cabinet",
+  上櫃: "Upper",
+  上櫃高: "Upper height",
+  下櫃: "Lower",
+  下櫃高: "Lower height",
+  自動: "auto",
+  "電器櫃（下櫃＋開放電器＋上櫃）": "Appliance tower (lower cabinet + open appliances + upper cabinet)",
+  電器層板: "Appliance shelves",
 };

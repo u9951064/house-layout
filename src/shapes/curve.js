@@ -67,3 +67,46 @@ export function subPath(pts, s0, s1, off = 0) {
 }
 
 export const toPath = pts => pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join("");
+
+/** 折線總長 */
+export const pathLen = pts =>
+  pts.reduce((s, p, i) => (i ? s + Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) : 0), 0);
+/** 風琴門：沿路徑 [0, upto] 產生左右交錯的折痕點（amp 為折深的一半，n 片） */
+export function pleatPath(pts, amp, n, upto = pathLen(pts)) {
+  const out = [];
+  for (let k = 0; k <= n; k++) {
+    const s = (upto * k) / n,
+      seg = subPath(pts, Math.max(0, s - 0.5), Math.min(pathLen(pts), s + 0.5));
+    if (seg.length < 2) continue;
+    const [a, b] = [seg[0], seg[seg.length - 1]],
+      L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1,
+      nx = -(b[1] - a[1]) / L,
+      ny = (b[0] - a[0]) / L,
+      o = k % 2 ? amp : -amp;
+    out.push([(a[0] + b[0]) / 2 + nx * o, (a[1] + b[1]) / 2 + ny * o]);
+  }
+  return out;
+}
+/** 門元件的中心路徑（局部座標），給風琴門使用 */
+export function doorPath(it) {
+  const w = it.w,
+    d = it.d;
+  if (it.type === "curveSlide") return curveGeom(it).pts;
+  if (it.type === "slideDoorArc") {
+    const out = [];
+    for (let i = 0; i <= 24; i++) {
+      const a = (i / 24) * (Math.PI / 2);
+      out.push([(w - 6) * Math.sin(a), d - (d - 6) * Math.cos(a)]);
+    }
+    return out;
+  }
+  if (it.type === "foldDoor")
+    return [
+      [0, -d / 2],
+      [w, -d / 2],
+    ];
+  return [
+    [0, d / 2],
+    [w, d / 2],
+  ];
+}

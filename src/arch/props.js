@@ -131,6 +131,7 @@ export const LEAF_LABELS = () => ({
   glass: t("玻璃門"),
   groove: t("溝縫門"),
   louver: t("百葉門"),
+  accordion: t("風琴門"),
 });
 const doorProps = {
   test: it => DOOR_TYPES.includes(it.type),

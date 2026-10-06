@@ -28,11 +28,30 @@ export const PRESETS = () => ({
   [t("衣櫃：吊衣＋下抽")]: [S("hang", 1, 0, { front: "door2", dr: 2 }), S("hang", 1, 0, { front: "door2", dr: 2 })],
   [t("衣櫃：拉門")]: [S("hang", 1, 0, { front: "slide" }), S("hang", 2, 0, { front: "slide" })],
   [t("電器櫃（抽屜＋電器＋上門）")]: [S("appliance", 0, 0, { dr: 2, upper: "door1L" })],
+  [t("電器櫃（下櫃＋開放電器＋上櫃）")]: [
+    S("appliance", 1, 0, { lower: "door2", lowerH: 85, upper: "door2", upperH: 60 }),
+  ],
   [t("書櫃：開放＋玻璃門")]: [S("open", 4), S("glass", 4)],
   [t("電視櫃：抽屜＋凹槽")]: [S("drawer", 1), S("niche", 0, 60), S("drawer", 1)],
   [t("吊櫃：上掀門")]: [S("lift", 1)],
 });
 
+/** 電器櫃位：上門、下櫃門與高度、中段層板 */
+function applianceRow(s, i) {
+  const sel = (f, v) =>
+    `<select data-sf="${f}" data-i="${i}">${[
+      ["", "無門"],
+      ["door1L", "單開門（左鉸）"],
+      ["door1R", "單開門（右鉸）"],
+      ["door2", "雙開門"],
+      ...(f === "upper" ? [["lift", "上掀門"]] : []),
+    ]
+      .map(([k, n]) => `<option value="${k}" ${k === (v || "") ? "selected" : ""}>${t(n)}</option>`)
+      .join("")}</select>`;
+  return `<label>${t("上櫃")}${sel("upper", s.upper)}</label><label>${t("上櫃高")}<input data-sf="upperH" data-i="${i}" type="number" min="0" step="1" value="${+s.upperH || ""}" placeholder="${t("自動")}"></label>
+    <label>${t("下櫃")}${sel("lower", s.lower)}</label><label>${t("下櫃高")}<input data-sf="lowerH" data-i="${i}" type="number" min="0" step="1" value="${+s.lowerH || ""}" placeholder="80"></label>
+    <label>${t("電器層板")}<input data-sf="n" data-i="${i}" type="number" min="0" max="6" step="1" value="${+s.n || 0}"></label>`;
+}
 function sectionRows(it) {
   const c = it.cab,
     L = cabLayout(it);
@@ -58,6 +77,7 @@ function sectionRows(it) {
         <div class="cabsec-h"><b>${i + 1}</b><select data-sf="kind" data-i="${i}">${kinds}</select>
           <button data-sa="up" data-i="${i}" title="${t("往左移")}" ${i ? "" : "disabled"}>◀</button><button data-sa="down" data-i="${i}" title="${t("往右移")}" ${i < c.sections.length - 1 ? "" : "disabled"}>▶</button><button data-sa="del" data-i="${i}" title="${t("刪除分格")}" ${c.sections.length > 1 ? "" : "disabled"}>✕</button></div>
         <div class="cabsec-b"><label>${t("寬")}<input data-sf="w" data-i="${i}" type="number" min="0" step="1" value="${+s.w || ""}" placeholder="${Math.round(L.widths[i])}"></label>
+          ${s.kind === "appliance" ? applianceRow(s, i) : ""}
           ${["niche", "knee", "appliance"].includes(s.kind) ? "" : `<label>${nLabel}<input data-sf="n" data-i="${i}" type="number" min="0" max="12" step="1" value="${+s.n || 0}"></label>`}
           ${["drawer", "knee", "niche"].includes(s.kind) ? "" : `<label>${t("下抽")}<input data-sf="dr" data-i="${i}" type="number" min="0" max="6" step="1" value="${+s.dr || 0}"></label>`}
           ${front}</div></div>`;
@@ -174,7 +194,7 @@ export const cabProps = {
           s.kind = e.value;
           if (s.kind === "drawer" && !(+s.n > 0)) s.n = 3;
           if (s.kind === "hang") s.n = Math.min(2, Math.max(1, +s.n || 1));
-        } else if (f === "front") s.front = e.value;
+        } else if (f === "front" || f === "lower" || f === "upper") s[f] = e.value || null;
         else {
           const v = parseFloat(e.value);
           s[f] = isNaN(v) ? 0 : Math.max(0, f === "w" ? v : Math.round(v));

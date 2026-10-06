@@ -111,6 +111,8 @@ function door(g, it, ctx) {
     if (st === "groove")
       for (let k = 1; k < 5; k++)
         line(g, x + 2, -(y + h) + (h * k) / 5, x + lw - 2, -(y + h) + (h * k) / 5, { "stroke-width": 0.4 });
+    if (st === "accordion")
+      for (let xx = x + 3; xx < x + lw - 2; xx += 5) line(g, xx, -(y + h) + 2, xx, -y - 2, { "stroke-width": 0.35 });
     if (st === "louver")
       for (let yy = 14; yy < h - 12; yy += 5) line(g, x + 8, -(y + yy), x + lw - 8, -(y + yy), { "stroke-width": 0.3 });
     if ((P(it, "handle") || "lever") !== "none") {
