@@ -113,4 +113,5 @@ export default {
   窗框材質: "Frame material",
   門高: "Door height",
   開口高: "Opening height",
+  "格柵屏風（透空）": "Slatted screen (see-through)",
 };

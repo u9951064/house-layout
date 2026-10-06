@@ -139,7 +139,17 @@ function wallFin3d(style) {
       m = ctx.mat(itemMat(it)),
       t = Math.max(0.5, it.d),
       st = style || P(it, "style");
-    if (st === "slat") {
+    if (st === "screen") {
+      // 格柵屏風：上下橫料＋直立格柵，條間透空（採光）
+      const sw = P(it, "slatW") || 3.5,
+        gap = P(it, "slatGap") || 4,
+        rail = 4,
+        n = Math.max(1, Math.floor((it.w + gap) / (sw + gap))),
+        x0 = (it.w - (n * sw + (n - 1) * gap)) / 2;
+      box(THREE, g, 0, y, 0, it.w, rail, t, m);
+      box(THREE, g, 0, y + h - rail, 0, it.w, rail, t, m);
+      for (let i = 0; i < n; i++) box(THREE, g, x0 + i * (sw + gap), y + rail, 0, sw, h - 2 * rail, t, m);
+    } else if (st === "slat") {
       box(THREE, g, 0, y, 0, it.w, h, Math.min(1.2, t), basic(THREE, "#2b2b2b"));
       for (let x = 0; x < it.w; x += 6) box(THREE, g, x, y, 0, Math.min(3.5, it.w - x), h, t, m);
     } else if (st === "panel") {

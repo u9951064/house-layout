@@ -55,6 +55,14 @@ function wallFin(g, it, ctx) {
   const y = itemElev(it),
     h = itemH(it),
     st = P(it, "style");
+  if (st === "screen") {
+    const sw = P(it, "slatW") || 3.5,
+      gap = P(it, "slatGap") || 4;
+    rect(g, 0, -(y + h), it.w, 4, fill(it, ctx));
+    rect(g, 0, -(y + 4), it.w, 4, fill(it, ctx));
+    for (let x = 0; x + sw <= it.w + 0.1; x += sw + gap) rect(g, x, -(y + h - 4), sw, h - 8, fill(it, ctx));
+    return;
+  }
   rect(g, 0, -(y + h), it.w, h, fill(it, ctx));
   if (st === "slat") for (let x = 6; x < it.w; x += 6) line(g, x, -(y + h), x, -y, { "stroke-width": 0.3 });
   if (st === "panel") {

@@ -89,6 +89,7 @@ const wallFinProps = {
           sel("aStyle", P(it, "style") || "flat", [
             ["flat", t("平板")],
             ["slat", t("格柵條")],
+            ["screen", t("格柵屏風（透空）")],
             ["panel", t("線板框")],
             ["groove", t("溝縫")],
           ]),

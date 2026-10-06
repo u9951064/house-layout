@@ -118,6 +118,18 @@ function wallFinDraw(style) {
     );
     const st = style || P(it, "style");
     if (st === "slat") for (let x = 6; x < w; x += 6) L(g, x, 0, x, Math.max(d, 2), "t");
+    if (st === "screen") {
+      const sw = P(it, "slatW") || 3.5,
+        gap = P(it, "slatGap") || 4;
+      g.lastChild.setAttribute("fill", "none");
+      g.lastChild.setAttribute("stroke-dasharray", "3 2");
+      for (let x = 0; x + sw <= w + 0.1; x += sw + gap)
+        el(
+          "rect",
+          { x, y: 0, width: sw, height: Math.max(d, 2), fill: fillOf(it), stroke: "#1e293b", "stroke-width": 0.4 },
+          g,
+        );
+    }
     if (st === "mirror") L(g, 0, Math.max(d, 2) / 2, w, Math.max(d, 2) / 2, "t");
     // 引線標示
     L(g, w / 2, Math.max(d, 2), w / 2, Math.max(d, 2) + 10, "t");
