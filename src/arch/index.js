@@ -26,6 +26,7 @@ export { archRows } from "./schedule.js";
 
 export const ARCH_TYPES = [...FLOOR_TYPES, ...CEIL_TYPES, ...WALLFIN_TYPES, ...CURTAIN_TYPES];
 
+import { rollTableProps } from "./rolltable.js";
 export function register() {
   // 元件庫：放在家具之後、門牆標示之前
   const di = LIB.findIndex(c => c.items.some(i => i.type === "swingDoor")),
@@ -44,6 +45,7 @@ export function register() {
     d.frameMatPref ||= ["wood-white", ["wood", "laminate", "metal"]];
   }
   registerProps(EXT);
+  EXT.props.rollTable = rollTableProps;
   registerPTab(FINISH_TAB);
   registerSchedule({ id: "arch", name: t("裝修工程"), rows: archRows });
 }

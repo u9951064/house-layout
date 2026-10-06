@@ -39,6 +39,7 @@ export const H3D = {
   counter: [90, 0],
   island: [90, 0],
   dining: [75, 0],
+  rollTable: [75, 0],
   diningRound: [75, 0],
   dchair: [85, 0],
   benchSeat: [45, 0],

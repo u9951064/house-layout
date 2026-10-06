@@ -59,6 +59,7 @@ export const LIB = [
       { type: "counter", name: t("流理台"), w: 210, d: 60 },
       { type: "island", name: t("中島／吧檯"), w: 140, d: 70 },
       { type: "dining", name: t("方餐桌"), w: 120, d: 75, chairs: 4 },
+      { type: "rollTable", name: t("移動摺疊餐桌"), w: 120, d: 70 },
       { type: "diningRound", name: t("圓餐桌"), w: 90, d: 90, chairs: 4 },
       { type: "dchair", name: t("餐椅"), w: 45, d: 48 },
       { type: "benchSeat", name: t("長凳"), w: 110, d: 35 },

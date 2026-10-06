@@ -345,6 +345,26 @@ const GEN = {
     for (let i = 0; i < top; i++) g.add(ch(((i + 0.5) * w) / top, -14, 0));
     for (let i = 0; i < bot; i++) g.add(ch(((i + 0.5) * w) / bot, d + 14, Math.PI));
   },
+  rollTable(g, w, d, h, it, c, m) {
+    // 移動摺疊餐桌：中央框架＋輪子；展開時兩側桌板平放，收合時桌板垂下
+    const { K, M } = c,
+      mat = m || M.wood,
+      top = 2.5,
+      fold = !!it.fold,
+      z0 = fold ? 0 : d * 0.3,
+      z1 = fold ? d : d * 0.7,
+      cz = z1 - z0;
+    for (const x of [4, w - 7]) K.boxAt(g, x, 6, z0 + 2, 3, h - top - 6, cz - 4, mat);
+    K.boxAt(g, 4, 6, z0 + 2, w - 8, 3, cz - 4, mat);
+    for (const x of [4, w - 8]) for (const z of [z0 + 2, z1 - 6]) K.boxAt(g, x, 0, z, 4, 6, 4, M.metal);
+    if (!fold) K.boxAt(g, 0, h - top, 0, w, top, d, mat);
+    else {
+      const leaf = it.leaf || 25;
+      K.boxAt(g, 0, h - top, 0, w, top, d, mat);
+      K.boxAt(g, 0, h - top - leaf, -1.5, w, leaf, 1.5, mat);
+      K.boxAt(g, 0, h - top - leaf, d, w, leaf, 1.5, mat);
+    }
+  },
   diningRound(g, w, d, h, it, c, m) {
     const { K, M } = c;
     K.cyl(g, w / 2, h - 3, d / 2, w / 2, 3, m || M.wood, d / 2, 40);

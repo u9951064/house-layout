@@ -145,6 +145,25 @@ export const DRAW = {
     }
     R(g, 0, 0, w, d, "s", 3);
   },
+  /** 移動摺疊餐桌：中央框架附輪子，兩側桌板可翻下；it.fold＝收合（外框即收合尺寸） */
+  rollTable(g, w, d, it) {
+    const fold = it && it.fold;
+    R(g, 0, 0, w, d, "s", 2);
+    const y0 = fold ? 0 : d * 0.3,
+      y1 = fold ? d : d * 0.7;
+    if (fold) L(g, 2, d / 2, w - 2, d / 2, "d");
+    else {
+      L(g, 0, y0, w, y0, "d");
+      L(g, 0, y1, w, y1, "d");
+    }
+    for (const [x, y] of [
+      [7, y0 + 4],
+      [w - 7, y0 + 4],
+      [7, y1 - 4],
+      [w - 7, y1 - 4],
+    ])
+      C(g, x, y, 2.6, "t");
+  },
   diningRound(g, w, d, it) {
     const n = it.chairs ?? 4,
       r = Math.min(w, d) / 2;

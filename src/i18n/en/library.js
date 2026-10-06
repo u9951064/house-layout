@@ -91,4 +91,5 @@ export default {
   柱子: "Column",
   尺寸標註線: "Dimension line",
   文字標籤: "Text label",
+  移動摺疊餐桌: "Rolling folding table",
 };

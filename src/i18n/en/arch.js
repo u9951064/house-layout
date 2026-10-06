@@ -114,4 +114,7 @@ export default {
   門高: "Door height",
   開口高: "Opening height",
   "格柵屏風（透空）": "Slatted screen (see-through)",
+  "收合（兩側桌板垂下）": "Folded (leaves down)",
+  "寬深填目前狀態的外框尺寸；收合時通常只剩中央框架的深度。":
+    "Width/depth are the current outline; when folded only the centre frame's depth remains.",
 };
