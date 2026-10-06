@@ -161,6 +161,26 @@ export function list_materials({ category, query } = {}) {
     .map(m => ({ id: m.id, name: m.name, category: m.cat, color: m.color, code: m.code || undefined }));
 }
 
+// —— 開啟專案 ——
+export async function open_project({ data, name }) {
+  if (!data || typeof data !== "object") throw new Error("檔案內容不正確");
+  const { validBase } = await import("../model/base.js");
+  const { newProject, parseDesigns } = await import("../project/project.js");
+  const { setMode } = await import("../base-edit/base-edit.js");
+  if (S.mode === "base") setMode("design");
+  const isProject = Array.isArray(data.designs) || Array.isArray(data.items);
+  const base = isProject ? data.base : data;
+  if (!validBase(base)) throw new Error("底圖格式不正確（需要 walls 牆面資料或 image 圖片）");
+  const nm = name || data.name || base.name || "專案";
+  const designs = isProject ? parseDesigns(data) : undefined;
+  newProject(nm, base, designs, data.cur || 0, data.ghost || null, Array.isArray(data.materials) ? data.materials : []);
+  return {
+    project: S.PROJ.name,
+    designs: S.PROJ.designs.map((d, k) => ({ index: k, name: d.name, items: d.items.length })),
+    walls: S.BASE.walls.length,
+  };
+}
+
 // —— 物件 ——
 function applyFields(it, f) {
   for (const k of ["w", "d", "rot", "flip", "label", "h", "elev", "locked"]) if (f[k] !== undefined) it[k] = f[k];
@@ -455,6 +475,7 @@ export function redo_({ steps = 1 } = {}) {
 }
 
 export const HANDLERS = {
+  open_project,
   get_state,
   get_catalog,
   list_materials,

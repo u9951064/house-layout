@@ -1,6 +1,7 @@
 // 連線 Claude（MCP）的英文
 export default {
   "網頁不支援這個工具：{name}": "This page doesn't support the tool: {name}",
+  "Claude 開啟了專案「{name}」": "Claude opened the project “{name}”",
   "Claude 新增了 {n} 個物件": "Claude added {n} object(s)",
   "Claude 修改了 {n} 個物件": "Claude updated {n} object(s)",
   "Claude 刪除了 {n} 個物件": "Claude deleted {n} object(s)",

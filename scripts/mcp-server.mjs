@@ -130,6 +130,19 @@ const TOOLS = [
     },
   },
   {
+    name: "open_project",
+    title: "開啟專案檔",
+    description:
+      "在網頁開啟一個 House Layout 專案檔或底圖檔（.json），成為新的專案。path 為本機檔案路徑（由 MCP server 讀取，只在本機傳給網頁）。",
+    input: { path: z.string().describe("本機 .json 檔案的完整路徑"), name: z.string().optional().describe("專案名稱") },
+    local: async ({ path: file, name }) => {
+      if (!/\.json$/i.test(file)) throw new Error("只能開啟 .json 檔");
+      const fs = await import("node:fs/promises");
+      const data = JSON.parse(await fs.readFile(file.replace(/^~(?=\/)/, process.env.HOME || "~"), "utf8"));
+      return { data, name };
+    },
+  },
+  {
     name: "get_catalog",
     title: "元件庫",
     description:
@@ -327,7 +340,7 @@ function makeServer() {
       { title: tl.title, description: tl.description, inputSchema: tl.input },
       async args => {
         try {
-          const r = await callPage(tl.name, args || {});
+          const r = await callPage(tl.name, tl.local ? await tl.local(args || {}) : args || {});
           if (r && r.image) {
             const content = [{ type: "image", data: r.image, mimeType: r.mime || "image/png" }];
             if (r.note) content.push({ type: "text", text: r.note });

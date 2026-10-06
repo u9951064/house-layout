@@ -13,6 +13,7 @@ let ws = null,
 const logs = [];
 // 會修改圖稿的工具（完成時顯示提示）
 const MUTATE = new Set([
+  "open_project",
   "add_items",
   "update_items",
   "delete_items",
@@ -102,6 +103,8 @@ async function handle(sock, data) {
 function summary(tool, a = {}, r = {}) {
   const n = x => (Array.isArray(x) ? x.length : 0);
   switch (tool) {
+    case "open_project":
+      return t("Claude 開啟了專案「{name}」", { name: r.project });
     case "add_items":
       return t("Claude 新增了 {n} 個物件", { n: n(a.items) });
     case "update_items":
