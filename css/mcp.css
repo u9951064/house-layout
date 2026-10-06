@@ -1,0 +1,84 @@
+/* 連線 Claude（MCP） */
+#mcpModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 46;
+}
+#mcpModal.show {
+  display: flex;
+}
+#mcpModal .gcard {
+  max-height: 92vh;
+  overflow-y: auto;
+}
+.mcp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  background: #f6f8fa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.mcp-row .grow {
+  flex: 1;
+}
+.mcp-steps {
+  font-size: 13.5px;
+  line-height: 1.7;
+  padding-left: 20px;
+}
+.mcp-steps pre {
+  margin: 4px 0 8px;
+  padding: 6px 8px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font:
+    12px/1.5 ui-monospace,
+    Menlo,
+    monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: all;
+}
+.mcp-log {
+  max-height: 180px;
+  overflow-y: auto;
+  font-size: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin: 6px 0 10px;
+}
+.mcp-log .err {
+  color: #d1242f;
+}
+.mcp-pill {
+  font-size: 12.5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid #a8c7fa;
+  background: #e0ecff;
+  color: #0b57d0;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+.mcp-pill.wait {
+  background: #fff7e6;
+  border-color: #f5c46b;
+  color: #9a6700;
+}
+.mcp-pill.busy {
+  animation: mcpPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes mcpPulse {
+  to {
+    background: #a8c7fa;
+  }
+}

@@ -18,6 +18,7 @@ const APP_CSS = [
   "css/cabinet.css",
   "css/docs.css",
   "css/view3d.css",
+  "css/mcp.css",
 ];
 const GUIDES = ["guide.html", "guide.en.html"];
 const COPY = ["PROMPT.md", "LICENSE", "CNAME", ".nojekyll", "examples", "docs"];

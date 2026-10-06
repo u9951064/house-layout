@@ -51,7 +51,8 @@ import * as cabinet from "./cabinet/index.js";
 import * as mep from "./mep/index.js";
 import * as view3d from "./view3d/index.js";
 import * as docs from "./docs/index.js";
-const MODULES = [materials, arch, cabinet, mep, view3d, docs];
+import * as mcp from "./mcp/index.js";
+const MODULES = [materials, arch, cabinet, mep, view3d, docs, mcp];
 
 translateDOM(); // 先翻譯 index.html 的靜態文字
 S.lastSnap = snapshot();

@@ -647,6 +647,11 @@ export function mountViewer(host) {
   function expose() {
     window.__fp3d = {
       scene,
+      /** 立即渲染並回傳 PNG data URL（MCP 截圖用） */
+      snapshot: () => {
+        renderer.render(scene, camera);
+        return renderer.domElement.toDataURL("image/png");
+      },
       get model() {
         return model;
       },

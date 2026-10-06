@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "house-layout": {
+      "command": "node",
+      "args": ["scripts/mcp-server.mjs"]
+    }
+  }
+}

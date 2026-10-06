@@ -1,0 +1,41 @@
+// 連線 Claude（MCP）的英文
+export default {
+  "網頁不支援這個工具：{name}": "This page doesn't support the tool: {name}",
+  "Claude 新增了 {n} 個物件": "Claude added {n} object(s)",
+  "Claude 修改了 {n} 個物件": "Claude updated {n} object(s)",
+  "Claude 刪除了 {n} 個物件": "Claude deleted {n} object(s)",
+  "Claude 畫了一段 {type}": "Claude drew a {type} run",
+  "Claude 調整了設計規格／材質": "Claude changed the design spec / materials",
+  "Claude 修改了底圖": "Claude edited the base plan",
+  "Claude 操作了方案分頁": "Claude changed the design tabs",
+  "Claude 查看了截圖（{view}）": "Claude looked at a screenshot ({view})",
+  "Claude 復原了修改": "Claude undid a change",
+  "Claude 重做了修改": "Claude redid a change",
+  "Claude 讀取了 {tool}": "Claude read {tool}",
+  "已連線 Claude（MCP）": "Connected to Claude (MCP)",
+  "等待 MCP server…": "Waiting for the MCP server…",
+  "已連線，Claude 可以讀取與修改目前的圖稿": "Connected — Claude can read and edit the current drawing",
+  "等待本機 MCP server（ws://127.0.0.1:{port}）…": "Waiting for the local MCP server (ws://127.0.0.1:{port})…",
+  未連線: "Not connected",
+  "還沒有任何操作。": "No activity yet.",
+  中斷連線: "Disconnect",
+  連線: "Connect",
+  "連線 Claude（MCP）": "Connect Claude (MCP)",
+  "連線 Claude（MCP）…": "Connect Claude (MCP)…",
+  "讓 Claude 透過 MCP 工具讀取、修改並截圖查看這個網頁上的圖稿：用一句話請它擺家具、畫櫃體、配燈具插座、換材質，或依你的描述調整格局。所有修改都可以「復原」。":
+    "Let Claude read, edit and take screenshots of the drawing on this page through MCP tools: ask in plain words to place furniture, draw cabinets, lay out lights and outlets, change materials or adjust the layout. Every change can be undone.",
+  開啟網頁時自動連線: "Connect automatically when the page opens",
+  連線埠: "Port",
+  "在電腦上啟動 MCP server（需要 Node.js）：": "Start the MCP server on your computer (needs Node.js):",
+  "在 house-layout 專案資料夾執行 claude 會自動載入 .mcp.json；或在任何地方加入：":
+    "running claude in the house-layout folder loads .mcp.json automatically; or add it anywhere with:",
+  "在設定檔（claude_desktop_config.json）加入：": "add to claude_desktop_config.json:",
+  "或以 HTTP 模式執行 npm run mcp，再加入：": "or run npm run mcp (HTTP mode) and add:",
+  "按上方「連線」，狀態變成綠燈。": "Click “Connect” above and wait for the green light.",
+  "在 Claude 輸入需求，例如：「把客廳電視櫃改成 240 公分、加六盞嵌燈並接到同一個開關，畫好後給我看 3D」。":
+    "Ask Claude, e.g. “Make the living-room TV cabinet 240 cm, add six downlights on one switch, then show me the 3D view.”",
+  "隱私：連線後，Claude 會讀取目前專案的資料（包含底圖格局）並傳送到 Anthropic 處理。不按「連線」就不會傳送；網頁本身仍然沒有伺服器。":
+    "Privacy: once connected, Claude reads the current project (including the base plan) and sends it to Anthropic for processing. Nothing is sent unless you click “Connect”; the website itself still has no server.",
+  操作紀錄: "Activity",
+  關閉: "Close",
+};

@@ -15,6 +15,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs 8000",
+    "mcp": "node scripts/mcp-server.mjs --http",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -30,12 +31,15 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "esbuild": "^0.28.2",
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
     "playwright": "^1.59.0",
-    "prettier": "^3.9.9"
+    "prettier": "^3.9.9",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
   },
   "dependencies": {
     "three": "^0.186.1"

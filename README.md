@@ -22,6 +22,25 @@
   - **材質庫**（90 種內建＋自訂）、**數量估算表**（CSV）、**施工圖集**（含圖框，列印或單一 HTML 下載）。
   - 擴充架構說明：[docs/ARCHITECTURE-3D.md](docs/ARCHITECTURE-3D.md)。
 
+## 用 Claude 調整圖稿（MCP）
+
+網頁可以連到本機的 MCP server，讓 Claude（Claude Code／Claude Desktop）用工具直接讀取、修改並截圖查看圖稿：擺家具、畫櫃體、配燈具插座與走線、畫風管、換材質、改底圖門窗、開新方案分頁…，每一步都能在網頁上「復原」。
+
+```
+Claude ⇄ MCP（stdio 或 HTTP）⇄ scripts/mcp-server.mjs ⇄ WebSocket（僅 127.0.0.1）⇄ 開著的網頁
+```
+
+1. 啟動 MCP server（擇一）：
+   - **Claude Code**：在這個資料夾執行 `claude`，會自動載入 `.mcp.json`；或在任何地方 `claude mcp add house-layout -- node /完整路徑/house-layout/scripts/mcp-server.mjs`。
+   - **Claude Desktop**：在 `claude_desktop_config.json` 加入 `"house-layout": { "command": "node", "args": ["/完整路徑/house-layout/scripts/mcp-server.mjs"] }`。
+   - **HTTP 模式**：`npm run mcp`（`http://127.0.0.1:8765/mcp`），再 `claude mcp add --transport http house-layout http://127.0.0.1:8765/mcp`。
+2. 在網頁「設計 → 🤖 連線 Claude（MCP）」按「連線」（或網址加 `?mcp=1`）。
+3. 對 Claude 說需求，例如「把客廳電視櫃改成 240 公分、加六盞嵌燈接同一個開關，畫好給我看 3D」。
+
+工具：`get_state`、`get_catalog`、`list_materials`、`add_items`、`update_items`、`delete_items`、`draw_run`、`set_spec`、`set_wall_finish`、`edit_base`、`designs`、`screenshot`（平面／3D／立面／櫃體圖片）、`show`、`get_schedule`、`get_cabinet`、`undo`、`redo`。
+
+> 隱私：連線後 Claude 會讀到目前專案（含底圖格局）並送到 Anthropic 處理；不按「連線」就不會傳送。WebSocket 只綁定 127.0.0.1，並只接受 localhost 與 house-layout.tinycloud.tw 的網頁連線。
+
 ## 隱私
 
 整個工具只有一個靜態網頁（`index.html`），沒有後端、沒有追蹤程式。你的底圖與設計稿只存在瀏覽器（localStorage）與你下載的檔案中，不會上傳到任何伺服器。
@@ -58,6 +77,7 @@ src/
   docs/               立面圖、數量表、圖框與施工圖集
   i18n/               英文字典（每個模組一個檔）
 scripts/serve.mjs     開發用靜態伺服器（零相依）
+scripts/mcp-server.mjs  MCP server（Claude ⇄ 網頁橋接）；src/mcp/ 為網頁端的工具實作
 scripts/build.mjs     正式版建置（esbuild）
 tests/*.test.mjs      端對端測試（Playwright；e2e 與各模組）
 eslint.config.js      ESLint 設定（flat config＋eslint-config-prettier）

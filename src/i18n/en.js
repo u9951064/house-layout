@@ -10,6 +10,7 @@ import cabinet from "./en/cabinet.js";
 import mep from "./en/mep.js";
 import view3d from "./en/view3d.js";
 import docs from "./en/docs.js";
+import mcp from "./en/mcp.js";
 
 export const EN = {
   ...ui,
@@ -22,6 +23,7 @@ export const EN = {
   ...mep,
   ...view3d,
   ...docs,
+  ...mcp,
   ...page.text,
 };
 export const EN_HTML = page.html;
