@@ -159,6 +159,29 @@ const TOOLS = [
     input: { category: z.string().optional(), query: z.string().optional() },
   },
   {
+    name: "add_material",
+    title: "新增自訂材質",
+    description:
+      "在專案新增（或以 id 更新）自訂材質，回傳材質 id，可用於 floorMat、wallFin、it.mat 等。pattern：plain wood plank herringbone chevron tile hex mosaic marble concrete terrazzo fabric brick stone slat brushed reeded。磁磚用 tile 並設定 tile_w／tile_h（cm）。",
+    input: {
+      id: z.string().optional().describe("要更新的自訂材質 id（custom-…）"),
+      name: z.string(),
+      category: z
+        .string()
+        .describe("floor tile stone wood laminate paint wallpaper ceiling metal glass fabric countertop brick"),
+      color: z.string().describe("#rrggbb"),
+      pattern: z.string().optional(),
+      tile_w: num.optional(),
+      tile_h: num.optional(),
+      grout: z.string().optional().describe("填縫顏色 #rrggbb"),
+      size: num.optional().describe("紋理一格代表的 cm（預設依 tile 尺寸 ×2）"),
+      rough: num.optional(),
+      metal: num.optional(),
+      opacity: num.optional(),
+      code: z.string().optional().describe("規格／色號文字"),
+    },
+  },
+  {
     name: "add_items",
     title: "新增物件",
     description:

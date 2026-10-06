@@ -181,6 +181,35 @@ export async function open_project({ data, name }) {
   };
 }
 
+// —— 自訂材質 ——
+export function add_material(a) {
+  needBase();
+  if (!S.PROJ) throw new Error("沒有專案");
+  const tw = +a.tile_w || 0,
+    th = +a.tile_h || tw;
+  const m = {
+    id: a.id && String(a.id).startsWith("custom-") ? a.id : "custom-" + uid(),
+    name: a.name,
+    cat: a.category,
+    color: a.color,
+    pattern: a.pattern || (tw ? "tile" : "plain"),
+    size: +a.size || (tw ? Math.max(tw, th) * 2 : 100),
+    rough: a.rough ?? 0.6,
+    metal: a.metal ?? 0,
+    opacity: a.opacity ?? 1,
+    code: a.code || (tw ? `${tw}×${th} cm` : ""),
+  };
+  if (tw) Object.assign(m, { tw, th });
+  if (a.grout) m.grout = a.grout;
+  const list = (S.PROJ.materials || []).slice(),
+    i = list.findIndex(x => x.id === m.id);
+  if (i >= 0) list[i] = m;
+  else list.push(m);
+  S.PROJ.materials = list;
+  done();
+  return m;
+}
+
 // —— 物件 ——
 function applyFields(it, f) {
   for (const k of ["w", "d", "rot", "flip", "label", "h", "elev", "locked"]) if (f[k] !== undefined) it[k] = f[k];
@@ -476,6 +505,7 @@ export function redo_({ steps = 1 } = {}) {
 
 export const HANDLERS = {
   open_project,
+  add_material,
   get_state,
   get_catalog,
   list_materials,
