@@ -27,11 +27,16 @@ export { archRows } from "./schedule.js";
 export const ARCH_TYPES = [...FLOOR_TYPES, ...CEIL_TYPES, ...WALLFIN_TYPES, ...CURTAIN_TYPES];
 
 import { rollTableProps } from "./rolltable.js";
+import { BATH_BUILD3D, BATH_CATALOG, BATH_DRAW, BATH_TYPES } from "./bath.js";
 export function register() {
   // 元件庫：放在家具之後、門牆標示之前
   const di = LIB.findIndex(c => c.items.some(i => i.type === "swingDoor")),
     at = di < 0 ? LIB.length : di;
   CATALOGS.forEach((c, k) => registerCatalog(c, at + k));
+  registerCatalog(BATH_CATALOG, at + CATALOGS.length);
+  Object.assign(EXT.draw2d, BATH_DRAW);
+  Object.assign(EXT.build3d, BATH_BUILD3D);
+  for (const k of BATH_TYPES) EXT.noScopeCheck.add(k);
   Object.assign(EXT.draw2d, DRAW2D);
   // 門類元件已有平面圖例（draw.js），這裡只補 3D 與立面
   Object.assign(EXT.build3d, BUILD3D);

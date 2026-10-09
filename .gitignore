@@ -2,3 +2,5 @@ node_modules/
 .DS_Store
 test-results/
 dist/
+現場照片/
+.playwright-mcp/

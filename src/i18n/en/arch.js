@@ -117,4 +117,12 @@ export default {
   "收合（兩側桌板垂下）": "Folded (leaves down)",
   "寬深填目前狀態的外框尺寸；收合時通常只剩中央框架的深度。":
     "Width/depth are the current outline; when folded only the centre frame's depth remains.",
+  "衛浴・陽台": "Bathroom & balcony",
+  馬桶: "Toilet",
+  壁掛面盆: "Wall-hung basin",
+  "淋浴間（玻璃）": "Glass shower enclosure",
+  洗衣機: "Washing machine",
+  洗衣槽: "Laundry sink",
+  熱水器: "Water heater",
+  "曬衣架（天花）": "Ceiling drying rack",
 };
