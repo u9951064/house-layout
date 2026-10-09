@@ -1,6 +1,6 @@
 // 立面圖繪製：牆面裝修、門窗開口、端部剖面、靠牆物件正視、尺寸鏈、高程標記、材質引出線
 import { t } from "../core/i18n.js";
-import { state } from "../core/store.js";
+import { S, state } from "../core/store.js";
 import { el } from "../core/dom.js";
 import { DEFAULTS } from "../shapes/library.js";
 import { EXT } from "../ext/registry.js";
@@ -111,7 +111,14 @@ function corners(it) {
 /** 這面牆前方（depth cm 內）的物件與其立面投影 */
 export function itemsInFront(F, depth = 70) {
   const out = [];
-  for (const it of state.items) {
+  // 底圖固定設備（既有流理台、吊櫃…）也畫進立面，id 以 fx 開頭（不可在立面拖曳）
+  const fixtures = ((S.BASE && S.BASE.fixtures) || []).map((f, k) => ({
+    ...f,
+    rot: f.rot || 0,
+    id: "fx" + k,
+    locked: true,
+  }));
+  for (const it of [...state.items, ...fixtures]) {
     if (SKIP.has(it.type) || layerOf(it) === "floor") continue;
     const ps = corners(it).map(p => project(F, p));
     const smin = Math.min(...ps.map(p => p.s)),
