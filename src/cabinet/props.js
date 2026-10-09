@@ -92,6 +92,7 @@ export const cabProps = {
     const presets = Object.keys(PRESETS());
     return `<div class="cabprops"><b>${t("櫃體參數")}</b>
       <div class="row2"><label>${t("板厚")}<input id="cbThk" type="number" min="0.8" max="5" step="0.1" value="${c.thk}"></label><label>${t("背板厚")}<input id="cbBack" type="number" min="0.3" max="3" step="0.1" value="${c.backThk}"></label></div>
+      <div class="row"><span>${t("層板深度")}</span><input id="cbShelfD" type="number" min="0" step="1" value="${+c.shelfD || ""}" placeholder="${t("滿深")}" title="${t("由背板往前量；空白＝與櫃體同深")}"></div>
       <div class="row2"><label>${t("踢腳高")}<input id="cbToe" type="number" min="0" max="20" step="1" value="${c.toe}"></label><label>${t("踢腳內縮")}<input id="cbToeSet" type="number" min="0" max="15" step="0.5" value="${c.toeSet}"></label></div>
       <div class="row2"><label>${t("門縫")}<input id="cbGap" type="number" min="0" max="1" step="0.1" value="${c.gap}"></label><label>${t("門板形式")}<select id="cbOverlay"><option value="full" ${c.overlay !== "inset" ? "selected" : ""}>${t("全蓋")}</option><option value="inset" ${c.overlay === "inset" ? "selected" : ""}>${t("內嵌")}</option></select></label></div>
       <div class="row2"><label>${t("左封板")}<input id="cbFL" type="number" min="0" max="30" step="0.5" value="${+c.fillerL || 0}"></label><label>${t("右封板")}<input id="cbFR" type="number" min="0" max="30" step="0.5" value="${+c.fillerR || 0}"></label></div>
@@ -137,6 +138,7 @@ export const cabProps = {
     };
     num("cbThk", v => (c.thk = Math.max(0.8, v)));
     num("cbBack", v => (c.backThk = Math.max(0.3, v)));
+    num("cbShelfD", v => (c.shelfD = Math.max(0, v)));
     num("cbToe", v => (c.toe = Math.max(0, v)));
     num("cbToeSet", v => (c.toeSet = Math.max(0, v)));
     num("cbGap", v => (c.gap = Math.max(0, v)));

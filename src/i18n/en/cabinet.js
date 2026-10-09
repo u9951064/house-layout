@@ -169,4 +169,7 @@ export default {
   自動: "auto",
   "電器櫃（下櫃＋開放電器＋上櫃）": "Appliance tower (lower cabinet + open appliances + upper cabinet)",
   電器層板: "Appliance shelves",
+  層板深度: "Shelf depth",
+  滿深: "full",
+  "由背板往前量；空白＝與櫃體同深": "Measured from the back panel; blank = full cabinet depth",
 };

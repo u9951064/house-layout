@@ -287,8 +287,10 @@ export function cabParts(it) {
       if (m <= 0) return;
       const sp = (y2 - y1 - m * T) / (m + 1);
       if (sp < 8) return;
+      // 層板深度：c.shelfD（由背板往前量，0＝滿深），例如儲藏室只做靠牆的淺層板
+      const sd = +c.shelfD > 0 ? Math.min(+c.shelfD, sz) : sz;
       for (let j = 0; j < m; j++)
-        P(t("層板"), "shelf", ox1 + 0.1, y1 + sp * (j + 1) + T * j, bt, ow - 0.2, T, sz, im, { section: i });
+        P(t("層板"), "shelf", ox1 + 0.1, y1 + sp * (j + 1) + T * j, bt, ow - 0.2, T, sd, im, { section: i });
     };
     if (s.kind === "hang") {
       const hat = z.y2 - 32 - T;
