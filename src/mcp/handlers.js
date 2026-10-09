@@ -125,15 +125,7 @@ export function get_state({ include_items = true, include_base = true } = {}) {
       columns: B.columns || [],
       canopies: B.canopies || [],
       outOfScope: B.outOfScope || [],
-      fixtures: (B.fixtures || []).map(f => ({
-        type: f.type,
-        label: f.label,
-        x: f.x,
-        y: f.y,
-        w: f.w,
-        d: f.d,
-        rot: f.rot,
-      })),
+      fixtures: B.fixtures || [],
       hasImage: !!B.image,
     };
   if (include_items) out.items = state.items.map(itemInfo);
