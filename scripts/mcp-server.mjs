@@ -304,6 +304,26 @@ const TOOLS = [
     },
   },
   {
+    name: "items_to_base",
+    title: "物件併入底圖",
+    description:
+      "把物件併入底圖（所有方案共用）：隔間牆物件（type wall）變成底圖的牆，其他物件（既有櫃體、冰箱…）變成固定設備，保留尺寸與參數；原物件從目前方案移除。",
+    input: { ids: z.array(num).min(1) },
+  },
+  {
+    name: "export_base",
+    title: "匯出底圖檔",
+    description: "把目前專案的底圖存成 .json 底圖檔，寫到本機 path（由 MCP server 寫檔，不經過網路）。",
+    input: { path: z.string().describe("要寫入的本機 .json 完整路徑") },
+    post: async (r, args) => {
+      if (!/\.json$/i.test(args.path)) throw new Error("檔名必須是 .json");
+      const fs = await import("node:fs/promises");
+      const file = args.path.replace(/^~(?=\/)/, process.env.HOME || "~");
+      await fs.writeFile(file, JSON.stringify(r.base, null, 1));
+      return { saved: file, walls: (r.base.walls || []).length, fixtures: (r.base.fixtures || []).length };
+    },
+  },
+  {
     name: "designs",
     title: "方案分頁",
     description: "列出、切換、新增（可複製）或重新命名方案分頁。",
@@ -377,7 +397,8 @@ function makeServer() {
       { title: tl.title, description: tl.description, inputSchema: tl.input },
       async args => {
         try {
-          const r = await callPage(tl.name, tl.local ? await tl.local(args || {}) : args || {});
+          let r = await callPage(tl.name, tl.local ? await tl.local(args || {}) : args || {});
+          if (tl.post) r = await tl.post(r, args || {});
           if (r && r.image) {
             const content = [{ type: "image", data: r.image, mimeType: r.mime || "image/png" }];
             if (r.note) content.push({ type: "text", text: r.note });

@@ -3,6 +3,7 @@ import { t } from "../core/i18n.js";
 import { S, opt, view } from "../core/store.js";
 import { L, PATH, R, TXT, baseLayer, el, gridLayer, svg } from "../core/dom.js";
 import { DRAW } from "../shapes/draw.js";
+import { EXT } from "../ext/registry.js";
 import { toWorld } from "./view.js";
 
 export function drawGrid() {
@@ -155,7 +156,8 @@ export function drawBase() {
   }
   for (const f of B.fixtures || []) {
     // 固定設備（例如既有流理台），鎖定不可移動
-    if (!DRAW[f.type]) continue;
+    const draw = DRAW[f.type] || EXT.draw2d[f.type];
+    if (!draw) continue;
     const g = el(
       "g",
       {
@@ -167,7 +169,7 @@ export function drawBase() {
       },
       baseLayer,
     );
-    DRAW[f.type](g, f.w, f.d, f);
+    draw(g, f.w, f.d, f);
     if (f.label) {
       const tg = el(
         "g",

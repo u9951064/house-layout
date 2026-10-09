@@ -355,6 +355,48 @@ export async function edit_base(a) {
   return { walls: B.walls.map(wallInfo), rooms: B.rooms || [] };
 }
 
+// —— 物件併入底圖 ——
+const WALL_TYPES = new Set(["wall"]);
+export function items_to_base({ ids }) {
+  needBase();
+  const B = S.BASE,
+    walls = [],
+    fixtures = [];
+  for (const id of ids) {
+    const it = findItem(id);
+    if (WALL_TYPES.has(it.type)) {
+      // 隔間牆物件 → 底圖的牆（中心線＋厚度）
+      const cx = it.x + it.w / 2,
+        cy = it.y + it.d / 2,
+        a = ((it.rot || 0) * Math.PI) / 180,
+        dx = (Math.cos(a) * it.w) / 2,
+        dy = (Math.sin(a) * it.w) / 2;
+      const w = [cx - dx, cy - dy, cx + dx, cy + dy, it.d, []].map(v => (typeof v === "number" ? r1(v) : v));
+      (B.walls ||= []).push(w);
+      walls.push(w);
+    } else {
+      const { id: _id, z, locked, showName, ...rest } = structuredClone(it);
+      const f = { ...rest, rot: it.rot || 0 };
+      (B.fixtures ||= []).push(f);
+      fixtures.push(f);
+    }
+  }
+  const del = new Set(ids);
+  state.items = state.items.filter(i => !del.has(i.id));
+  state.sel = null;
+  S.msel = [];
+  B.bounds = computeBounds(B);
+  drawGrid();
+  drawBase();
+  done();
+  return { walls: walls.length, fixtures: fixtures.map(f => `${f.label || f.type} ${f.w}×${f.d}`) };
+}
+export async function export_base() {
+  needBase();
+  const { baseData } = await import("../io/file.js");
+  return { base: baseData() };
+}
+
 // —— 方案 ——
 export function designs({ action, index, name, copy_from }) {
   needBase();
@@ -506,6 +548,8 @@ export function redo_({ steps = 1 } = {}) {
 
 export const HANDLERS = {
   open_project,
+  items_to_base,
+  export_base,
   add_material,
   get_state,
   get_catalog,

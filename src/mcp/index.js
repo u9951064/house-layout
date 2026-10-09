@@ -14,6 +14,7 @@ const logs = [];
 // 會修改圖稿的工具（完成時顯示提示）
 const MUTATE = new Set([
   "open_project",
+  "items_to_base",
   "add_material",
   "add_items",
   "update_items",
@@ -120,6 +121,7 @@ function summary(tool, a = {}, r = {}) {
     case "set_wall_finish":
       return t("Claude 調整了設計規格／材質");
     case "edit_base":
+    case "items_to_base":
       return t("Claude 修改了底圖");
     case "designs":
       return t("Claude 操作了方案分頁");
