@@ -287,6 +287,20 @@ const TOOLS = [
         .array(z.tuple([num, num, num, num]))
         .optional()
         .describe("[x1,y1,x2,y2]"),
+      replace_base_path: z
+        .string()
+        .optional()
+        .describe("用本機 .json（底圖檔或專案檔）整個取代目前專案的底圖；由 MCP server 讀檔，物件保留"),
+    },
+    local: async args => {
+      if (!args.replace_base_path) return args;
+      if (!/\.json$/i.test(args.replace_base_path)) throw new Error("只能讀取 .json 檔");
+      const fs = await import("node:fs/promises");
+      const o = JSON.parse(
+        await fs.readFile(args.replace_base_path.replace(/^~(?=\/)/, process.env.HOME || "~"), "utf8"),
+      );
+      const { replace_base_path, ...rest } = args;
+      return { ...rest, replace_base: o.base && typeof o.base === "object" ? o.base : o };
     },
   },
   {

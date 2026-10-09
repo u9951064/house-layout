@@ -4,6 +4,7 @@ import { commit, redo, undo } from "../core/history.js";
 import { DEFAULTS, LIB } from "../shapes/library.js";
 import { computeBounds, drawBase, drawGrid } from "../canvas/base-render.js";
 import { renderItems } from "../canvas/items.js";
+import { fit } from "../canvas/view.js";
 import { setSel } from "../canvas/selection.js";
 import { addItem } from "../edit/actions.js";
 import { renderProps } from "../ui/props.js";
@@ -298,8 +299,15 @@ export function set_wall_finish({ wall, face, material }) {
   done();
   return { wallFin: wf };
 }
-export function edit_base(a) {
+export async function edit_base(a) {
   needBase();
+  if (a.replace_base) {
+    const { validBase } = await import("../model/base.js");
+    if (!validBase(a.replace_base)) throw new Error("底圖格式不正確（需要 walls 牆面資料或 image 圖片）");
+    const { app, version, unit, savedAt, bounds, ...rest } = a.replace_base;
+    S.BASE = { walls: [], ...structuredClone(rest), name: S.BASE.name };
+    S.bsel = null;
+  }
   const B = S.BASE;
   B.walls = B.walls || [];
   const W = i => {
@@ -350,6 +358,7 @@ export function edit_base(a) {
   B.bounds = computeBounds(B);
   drawGrid();
   drawBase();
+  if (a.replace_base) fit();
   done();
   return { walls: B.walls.map(wallInfo), rooms: B.rooms || [] };
 }
