@@ -123,8 +123,12 @@ function ceil3d(kind) {
         h = Math.max(2, ctx.itemH(it));
       for (let x = 0; x < it.w; x += gap) box(THREE, g, x, y, 0, Math.min(3, it.w - x), h, it.d, m);
     } else if (kind === "box") {
-      // 窗簾盒：天花內凹，兩側擋板
-      box(THREE, g, 0, sp.ceilH, 0, it.w, Math.max(2, y - sp.ceilH), 1.2, m);
+      // 窗簾盒：天花內凹（天花面在此挖開口），四周封板＋頂板
+      const ph = Math.max(2, y - sp.ceilH);
+      box(THREE, g, 0, sp.ceilH, 0, it.w, ph, 1.2, m);
+      box(THREE, g, 0, sp.ceilH, it.d - 1.2, it.w, ph, 1.2, m);
+      box(THREE, g, 0, sp.ceilH, 0, 1.2, ph, it.d, m);
+      box(THREE, g, it.w - 1.2, sp.ceilH, 0, 1.2, ph, it.d, m);
       box(THREE, g, 0, y, 0, it.w, 1.2, it.d, m);
     }
     return g;
@@ -219,17 +223,18 @@ function curtain3d(kind) {
 }
 
 // ── 門（平面上的門元件）：門框＋門片，依門片樣式 ──
-function leaf(THREE, parent, w, h, t, style, m) {
+function leaf(THREE, parent, w, h, t, style, m, gopt = {}) {
   const g = new THREE.Group();
   parent.add(g);
   const dark = basic(THREE, "#3b3b3b");
   if (style === "glass") {
-    const fr = 8;
+    // gopt.fr：門框寬（鋁框約 4）；gopt.glass：玻璃材質（例如長虹玻璃），沒指定用預設清玻璃
+    const fr = gopt.fr || 8;
     box(THREE, g, 0, 0, 0, fr, h, t, m);
     box(THREE, g, w - fr, 0, 0, fr, h, t, m);
     box(THREE, g, 0, 0, 0, w, fr + 10, t, m);
     box(THREE, g, 0, h - fr, 0, w, fr, t, m);
-    const glass = basic(THREE, "#cfe3ee", { transparent: true, opacity: 0.35, roughness: 0.05 });
+    const glass = gopt.glass || basic(THREE, "#cfe3ee", { transparent: true, opacity: 0.35, roughness: 0.05 });
     box(THREE, g, fr, fr + 10, t / 2 - 0.3, w - 2 * fr, h - 2 * fr - 10, 0.6, glass).castShadow = false;
   } else if (style === "louver") {
     box(THREE, g, 0, 0, 0, 8, h, t, m);
@@ -278,7 +283,9 @@ function door3d(it, ctx) {
     m = ctx.mat(it.leafMat || itemMat(it, "leafMat")),
     fm = ctx.mat(it.frameMat || itemMat(it, "frameMat")),
     hk = P(it, "handle") || "lever",
-    w = it.w;
+    w = it.w,
+    gm = P(it, "glassMat"),
+    gopt = { glass: gm ? ctx.mat(gm) : null, fr: +P(it, "frameW") || 0 };
   const frame = (x0, x1, z0, depth) => {
     box(THREE, g, x0 - 4, y, z0, 4, h + 4, depth, fm);
     box(THREE, g, x1, y, z0, 4, h + 4, depth, fm);
@@ -310,7 +317,7 @@ function door3d(it, ctx) {
       piv.position.set(hx, y, -t / 2);
       piv.rotation.y = dir * ((open * Math.PI) / 180);
       g.add(piv);
-      const lg = leaf(THREE, piv, lw - 0.6, h - 0.6, t, style, m);
+      const lg = leaf(THREE, piv, lw - 0.6, h - 0.6, t, style, m, gopt);
       lg.position.x = dir > 0 ? 0.3 : -(lw - 0.3);
       handle(THREE, lg, dir > 0 ? lw - 8 : 8, h, t, hk);
     }
@@ -318,16 +325,16 @@ function door3d(it, ctx) {
     const pw = w / 2 + 6,
       d = it.d;
     box(THREE, g, 0, y + h, 0, w, 4, d, fm);
-    const l1 = leaf(THREE, g, pw, h, Math.max(2, d * 0.3), style, m);
+    const l1 = leaf(THREE, g, pw, h, Math.max(2, d * 0.3), style, m, gopt);
     l1.position.set(0, y, d * 0.15);
-    const l2 = leaf(THREE, g, pw, h, Math.max(2, d * 0.3), style, m);
+    const l2 = leaf(THREE, g, pw, h, Math.max(2, d * 0.3), style, m, gopt);
     l2.position.set(w - pw, y, d * 0.55);
     handle(THREE, l1, pw - 6, h, d * 0.3, "bar");
     handle(THREE, l2, 6, h, d * 0.3, "bar");
   } else if (it.type === "pocketDoor") {
     const d = it.d;
     frame(0, w, 0, d);
-    const l = leaf(THREE, g, w * 0.55, h, Math.max(2, d * 0.35), style, m);
+    const l = leaf(THREE, g, w * 0.55, h, Math.max(2, d * 0.35), style, m, gopt);
     l.position.set(0, y, d * 0.33);
     handle(THREE, l, w * 0.55 - 6, h, d * 0.35, "bar");
   } else if (it.type === "foldDoor") {

@@ -73,6 +73,25 @@ export function buildItem(ctx, it) {
   }
 }
 
+/** 物件在平面上的四角（依 rot 繞中心旋轉） */
+function footprint(it) {
+  const cx = it.x + it.w / 2,
+    cy = it.y + it.d / 2,
+    a = ((it.rot || 0) * Math.PI) / 180,
+    c = Math.cos(a),
+    s = Math.sin(a);
+  return [
+    [-1, -1],
+    [1, -1],
+    [1, 1],
+    [-1, 1],
+  ].map(([sx, sy]) => {
+    const dx = (sx * it.w) / 2,
+      dy = (sy * it.d) / 2;
+    return [cx + dx * c - dy * s, cy + dx * s + dy * c];
+  });
+}
+
 /**
  * 建立整個場景內容。opts：{ layers: { layer: bool }, wallTop: "ceil"|"slab", doors: 0..1, labels, night, M（通用材質，可省略） }
  * 回傳 { group, walls, rect, lights: [{ x, y, z, id }], ceilings: [Object3D] }
@@ -82,7 +101,11 @@ export function buildScene(THREE, opts = {}) {
   const ctx = makeCtx(THREE, M, opts);
   const layers = opts.layers || {};
   const group = new THREE.Group();
-  const arch = buildArch(ctx, opts);
+  const ceilHoles =
+    layers.ceiling === false
+      ? []
+      : state.items.filter(it => it.type === "curtainBox" && itemElev(it) > ctx.spec.ceilH).map(footprint);
+  const arch = buildArch(ctx, { ...opts, ceilHoles });
   group.add(arch.group);
   const ceilings = arch.ceiling ? [arch.ceiling] : [];
   const lights = [];

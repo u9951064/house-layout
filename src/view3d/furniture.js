@@ -564,13 +564,16 @@ const GEN = {
   wall: (g, w, d, h, it, c, m) => c.K.boxAt(g, 0, 0, 0, w, h, d, m || c.mat(c.spec.wallMat)),
   halfWall: (g, w, d, h, it, c, m) => c.K.boxAt(g, 0, 0, 0, w, h, d, m || c.mat(c.spec.wallMat)),
   column: (g, w, d, h, it, c, m) => c.K.boxAt(g, 0, 0, 0, w, h, d, m || c.M.column),
-  glassWall(g, w, d, h, it, c) {
-    const { K, M } = c;
-    K.boxAt(g, 0, 0, 0, w, 4, d, M.frameDark);
-    K.boxAt(g, 0, h - 4, 0, w, 4, d, M.frameDark);
-    K.boxAt(g, 0, 4, d / 2 - 0.6, w, h - 8, 1.2, M.glassClear);
+  glassWall(g, w, d, h, it, c, m) {
+    // 框材：物件材質（例如鋁框），沒指定用深色框；玻璃：it.glassMat（例如長虹玻璃），沒指定用清玻璃
+    const { K, M } = c,
+      fr = m || M.frameDark,
+      glass = it.glassMat ? c.mat(it.glassMat) : M.glassClear;
+    K.boxAt(g, 0, 0, 0, w, 4, d, fr);
+    K.boxAt(g, 0, h - 4, 0, w, 4, d, fr);
+    K.boxAt(g, 0, 4, d / 2 - 0.6, w, h - 8, 1.2, glass);
     const n = Math.max(1, Math.round(w / 100));
-    for (let i = 0; i <= n; i++) K.boxAt(g, Math.min(w - 4, (w * i) / n - (i ? 2 : 0)), 4, 0, 4, h - 8, d, M.frameDark);
+    for (let i = 0; i <= n; i++) K.boxAt(g, Math.min(w - 4, (w * i) / n - (i ? 2 : 0)), 4, 0, 4, h - 8, d, fr);
   },
   dimension: () => null,
   text: () => null,

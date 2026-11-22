@@ -135,9 +135,26 @@ export function buildArch(ctx, opts) {
     m.userData.pick = { kind: "floor" };
   }
   // 天花板（朝下的面）
-  const ceilGeo = new THREE.PlaneGeometry(fw, fd);
-  ceilGeo.rotateX(Math.PI / 2);
-  ceilGeo.translate(r.x1 + fw / 2, sp.ceilH, r.y1 + fd / 2);
+  // 窗簾盒等內凹處（opts.ceilHoles：平面多邊形 [[x,y],…]）在天花面挖開口
+  let ceilGeo;
+  const holes = opts.ceilHoles || [];
+  if (holes.length) {
+    const shape = new THREE.Shape();
+    shape.moveTo(r.x1, r.y1);
+    shape.lineTo(r.x2, r.y1);
+    shape.lineTo(r.x2, r.y2);
+    shape.lineTo(r.x1, r.y2);
+    shape.closePath();
+    for (const poly of holes) shape.holes.push(new THREE.Path(poly.map(([x, y]) => new THREE.Vector2(x, y))));
+    ceilGeo = new THREE.ShapeGeometry(shape);
+    // 形狀在 XY 平面 → 轉到 XZ（y→z），法向量朝下
+    ceilGeo.rotateX(Math.PI / 2);
+    ceilGeo.translate(0, sp.ceilH, 0);
+  } else {
+    ceilGeo = new THREE.PlaneGeometry(fw, fd);
+    ceilGeo.rotateX(Math.PI / 2);
+    ceilGeo.translate(r.x1 + fw / 2, sp.ceilH, r.y1 + fd / 2);
+  }
   K.setUV(ceilGeo);
   const ceiling = new THREE.Mesh(ceilGeo, mat(sp.ceilMat));
   ceiling.userData.pick = { kind: "ceiling" };

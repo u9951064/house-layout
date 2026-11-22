@@ -28,6 +28,7 @@ export const ARCH_TYPES = [...FLOOR_TYPES, ...CEIL_TYPES, ...WALLFIN_TYPES, ...C
 
 import { rollTableProps } from "./rolltable.js";
 import { BATH_BUILD3D, BATH_CATALOG, BATH_DRAW, BATH_TYPES } from "./bath.js";
+import { KITCHEN_BUILD3D, KITCHEN_CATALOG, KITCHEN_DRAW } from "./kitchen.js";
 export function register() {
   // 元件庫：放在家具之後、門牆標示之前
   const di = LIB.findIndex(c => c.items.some(i => i.type === "swingDoor")),
@@ -37,6 +38,9 @@ export function register() {
   Object.assign(EXT.draw2d, BATH_DRAW);
   Object.assign(EXT.build3d, BATH_BUILD3D);
   for (const k of BATH_TYPES) EXT.noScopeCheck.add(k);
+  registerCatalog(KITCHEN_CATALOG, at + CATALOGS.length + 1);
+  Object.assign(EXT.draw2d, KITCHEN_DRAW);
+  Object.assign(EXT.build3d, KITCHEN_BUILD3D);
   Object.assign(EXT.draw2d, DRAW2D);
   // 門類元件已有平面圖例（draw.js），這裡只補 3D 與立面
   Object.assign(EXT.build3d, BUILD3D);

@@ -125,4 +125,8 @@ export default {
   洗衣槽: "Laundry sink",
   熱水器: "Water heater",
   "曬衣架（天花）": "Ceiling drying rack",
+  廚房設備: "Kitchen appliances",
+  嵌入式水槽: "Inset sink",
+  "IH 雙口爐": "Induction hob (2-zone)",
+  嵌入式洗碗機: "Built-in dishwasher",
 };
