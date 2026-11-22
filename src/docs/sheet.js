@@ -249,8 +249,14 @@ export function capturePlan(planId) {
     bbox: { x: b.x - 20, y: b.y - 20, w: b.w + 40, h: b.h + 40 },
   };
 }
-export async function planSheet(plan, no) {
+/** 平面圖選項：swings＝false 不畫開門弧線與門片線；labels＝false 不畫物件文字；cabOutline＝true 櫃體只畫外框 */
+export async function planSheet(plan, no, opts = {}) {
   const cap = capturePlan(plan.id);
+  const hide = [];
+  if (opts.swings === false) hide.push(".door-arc", ".door-leaf", ".swing");
+  if (opts.labels === false) hide.push(".item text");
+  if (opts.cabOutline) hide.push(".cab-detail");
+  if (hide.length) cap.el.querySelectorAll(hide.join(",")).forEach(n => n.remove());
   const legend = await legendFor(plan.id);
   const den = fitScale(cap.bbox);
   const root = makeSheet({ title: plan.name, no, den, north: true, legend, node: cap });

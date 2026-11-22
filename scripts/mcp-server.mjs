@@ -338,7 +338,7 @@ const TOOLS = [
     name: "screenshot",
     title: "截圖查看結果",
     description:
-      "把目前方案畫成圖片回傳，用來檢查結果。view：plan（平面，可指定 plan 圖面別 layout|floor|ceiling|light|power|hvac|all）、3d（camera iso|front|back|left|right|top，doors 0~1 門片開啟程度）、elevation（指定 wall、face）、cabinet（指定 cabinet_id，doors closed|open）。",
+      "把目前方案畫成圖片回傳，用來檢查結果。view：plan（平面，可指定 plan 圖面別 layout|floor|ceiling|light|power|hvac|all；doors 0 或 hide 不畫門片開門弧線；simple 另外隱藏櫃體內部線條與物件文字）、3d（camera iso|front|back|left|right|top，doors 0~1 門片開啟程度）、elevation（指定 wall、face）、cabinet（指定 cabinet_id，doors closed|open）。",
     input: {
       view: z.enum(["plan", "3d", "elevation", "cabinet"]),
       plan: z.string().optional(),

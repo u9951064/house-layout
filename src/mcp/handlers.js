@@ -466,7 +466,15 @@ export async function screenshot(a) {
     state.sel = null;
     S.msel = [];
     renderItems();
-    const s = exportSVGString(2);
+    let s = exportSVGString(2);
+    // doors: 0 或 "hide" → 不畫門片與開門弧線（擺設平面圖用）
+    // doors："simple" → 再隱藏櫃體內部線條與物件文字（只留外框、房間名稱）
+    const simple = a.doors === "simple";
+    if (simple || a.doors === 0 || a.doors === "0" || a.doors === "hide")
+      s = s.replace(
+        /(<style[^>]*>)/,
+        "$1.door-arc,.door-leaf,.swing" + (simple ? ",.cab-detail,.item text" : "") + "{display:none}\n",
+      );
     Object.assign(S, { plan: save.plan, msel: save.msel });
     state.sel = save.sel;
     renderItems();

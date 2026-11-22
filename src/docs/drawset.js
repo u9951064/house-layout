@@ -44,7 +44,7 @@ export async function buildSheets(sel) {
   const out = [];
   let n = 1;
   const no = p => `${p}-${String(n++).padStart(2, "0")}`;
-  for (const p of EXT.plans) if (sel.plans.includes(p.id)) out.push(await planSheet(p, no("A")));
+  for (const p of EXT.plans) if (sel.plans.includes(p.id)) out.push(await planSheet(p, no("A"), sel.planOpts));
   n = 1;
   if (sel.elev) for (const f of contentFaces()) out.push(elevationSheet(f, no("E"), { doors: sel.doors }));
   if (sel.cab) out.push(...(await cabinetSheets(1)));
@@ -79,6 +79,11 @@ function readSel(m) {
     cab: q("#dsCab") ? q("#dsCab").checked : false,
     sched: q("#dsSched").checked,
     doors: q("#dsDoors").checked ? "open" : "closed",
+    planOpts: {
+      swings: q("#dsSwings").checked,
+      labels: q("#dsLabels").checked,
+      cabOutline: q("#dsCabOutline").checked,
+    },
   };
 }
 function saveMeta(m) {
@@ -115,7 +120,11 @@ export async function openDrawSet() {
     <div class="ds-cols"><div><b>${t("平面圖")}</b>${EXT.plans
       .filter(p => p.id !== "all")
       .map(p => `<label class="toggle"><input type="checkbox" data-plan="${p.id}" checked>${esc(p.name)}</label>`)
-      .join("")}</div>
+      .join("")}
+      <b style="display:block;margin-top:10px">${t("平面圖選項")}</b>
+      <label class="toggle"><input type="checkbox" id="dsSwings" checked>${t("顯示開門虛線")}</label>
+      <label class="toggle"><input type="checkbox" id="dsLabels" checked>${t("顯示物件文字")}</label>
+      <label class="toggle"><input type="checkbox" id="dsCabOutline">${t("櫃體只畫外框")}</label></div>
     <div><b>${t("其他圖面")}</b>
       <label class="toggle"><input type="checkbox" id="dsElev" ${faces.length ? "checked" : ""}>${t("立面圖（{n} 面）", { n: faces.length })}</label>
       <label class="toggle ds-sub"><input type="checkbox" id="dsDoors">${t("立面圖顯示櫃門打開")}</label>

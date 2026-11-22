@@ -44,15 +44,16 @@ export function drawPlan(g, w, d, it) {
   const cls = upper ? "d" : "s";
   if (c.top && L.topT > 0) {
     el("rect", { x: 0, y: 0, width: w, height: d, class: cls }, g);
-    el("rect", { x: L.x0, y: 0, width: L.W, height: cd + L.front, class: upper ? "d" : "t" }, g);
+    el("rect", { x: L.x0, y: 0, width: L.W, height: cd + L.front, class: (upper ? "d" : "t") + " cab-detail" }, g);
   } else el("rect", { x: 0, y: 0, width: w, height: d, class: cls }, g);
-  for (let i = 1; i < xs.length - 1; i++) el("line", { x1: xs[i], y1: 0, x2: xs[i], y2: cd, class: "t" }, g);
-  el("line", { x1: L.x0, y1: cd, x2: L.x0 + L.W, y2: cd, class: "t" }, g);
+  for (let i = 1; i < xs.length - 1; i++) el("line", { x1: xs[i], y1: 0, x2: xs[i], y2: cd, class: "t cab-detail" }, g);
+  el("line", { x1: L.x0, y1: cd, x2: L.x0 + L.W, y2: cd, class: "t cab-detail" }, g);
   if (upper) {
-    el("line", { x1: 0, y1: 0, x2: w, y2: d, class: "d" }, g);
-    el("line", { x1: w, y1: 0, x2: 0, y2: d, class: "d" }, g);
+    el("line", { x1: 0, y1: 0, x2: w, y2: d, class: "d cab-detail" }, g);
+    el("line", { x1: w, y1: 0, x2: 0, y2: d, class: "d cab-detail" }, g);
   } else if (L.h > 150)
-    for (let i = 0; i < xs.length - 1; i++) el("line", { x1: xs[i], y1: cd, x2: xs[i + 1], y2: 0, class: "t" }, g);
+    for (let i = 0; i < xs.length - 1; i++)
+      el("line", { x1: xs[i], y1: cd, x2: xs[i + 1], y2: 0, class: "t cab-detail" }, g);
   const { doors, drawers } = cabFronts(it);
   const fy = d - ov;
   for (const o of doors) {
@@ -61,18 +62,22 @@ export function drawPlan(g, w, d, it) {
       const r = Math.min(dw, 60),
         hx = o.hinge === "L" ? o.x1 : o.x2,
         sx = o.hinge === "L" ? 1 : -1;
-      el("line", { x1: hx, y1: fy, x2: hx, y2: fy + r, class: "t" }, g);
-      el("path", { d: `M${hx} ${fy + r} A ${r} ${r} 0 0 ${sx > 0 ? 0 : 1} ${hx + sx * r} ${fy}`, class: "d" }, g);
+      el("line", { x1: hx, y1: fy, x2: hx, y2: fy + r, class: "t swing cab-detail" }, g);
+      el(
+        "path",
+        { d: `M${hx} ${fy + r} A ${r} ${r} 0 0 ${sx > 0 ? 0 : 1} ${hx + sx * r} ${fy}`, class: "d swing cab-detail" },
+        g,
+      );
     } else if (o.hinge === "S") {
       const y = fy - (o.z2 > L.cd + L.dt + 0.5 ? 0 : L.dt);
-      el("line", { x1: o.x1, y1: y, x2: o.x2, y2: y, class: "t" }, g);
+      el("line", { x1: o.x1, y1: y, x2: o.x2, y2: y, class: "t cab-detail" }, g);
       const m = (o.x1 + o.x2) / 2,
         a = Math.min(8, dw / 4);
       el(
         "path",
         {
           d: `M${m - a} ${y - 3} L${m + a} ${y - 3} M${m + a - 2} ${y - 4.5} L${m + a} ${y - 3} L${m + a - 2} ${y - 1.5}`,
-          class: "t",
+          class: "t cab-detail",
         },
         g,
       );
@@ -80,7 +85,7 @@ export function drawPlan(g, w, d, it) {
   }
   for (const o of drawers.filter((x, i, a) => a.findIndex(y => y.sec === x.sec) === i)) {
     const m = (o.x1 + o.x2) / 2;
-    el("path", { d: `M${m - 4} ${fy + 2} L${m} ${fy + 6} L${m + 4} ${fy + 2}`, class: "t" }, g);
+    el("path", { d: `M${m - 4} ${fy + 2} L${m} ${fy + 6} L${m + 4} ${fy + 2}`, class: "t cab-detail" }, g);
   }
 }
 
